@@ -99,7 +99,7 @@ export function ThemeShowcase() {
 
       {/* Display & effects — gradient-clipped text, neon glow, frosted glass */}
       <section className="flex flex-col gap-4">
-        <h2 className="font-display text-7xl leading-tight font-black tracking-tighter bg-clip-text text-transparent bg-[image:var(--gradient-text)]">
+        <h2 className="font-display text-7xl leading-tight font-black tracking-tighter bg-clip-text text-transparent bg-[image:var(--gradient-text)] pr-[0.12em]">
           Gradient
         </h2>
         <p className="font-display text-4xl font-extrabold text-text [text-shadow:var(--text-shadow-glow)]">Neon glow heading</p>

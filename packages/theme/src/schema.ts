@@ -207,6 +207,9 @@ const BUNDLED_FONT_FAMILIES = [
   'JetBrains Mono Variable', 'JetBrains Mono',
   'Fraunces Variable', 'Fraunces',
   'Archivo Black',
+  'MS Sans Serif',
+  'Orbitron Variable', 'Orbitron',
+  'Quicksand Variable', 'Quicksand',
 ];
 
 const GENERIC_FONT_KEYWORDS = [

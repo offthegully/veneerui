@@ -156,7 +156,11 @@ export function LandingPreview() {
         </span>
         <h1 className="mx-auto mt-6 max-w-3xl font-display text-6xl leading-tight font-black tracking-tighter">
           Ship one product,{' '}
-          <span className="bg-clip-text text-transparent bg-[image:var(--gradient-text)]">
+          {/* pr/-mr pair: background-clip:text + the headline's negative tracking
+              trims the last glyph's trailing space and clips its right edge. The
+              padding gives the clip region room; the negative margin cancels the
+              width change so the centered line doesn't shift. */}
+          <span className="bg-clip-text text-transparent bg-[image:var(--gradient-text)] pr-[0.12em] -mr-[0.12em]">
             infinite skins
           </span>
         </h1>

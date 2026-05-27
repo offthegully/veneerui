@@ -42,8 +42,8 @@
     "shadow-card": "8px 8px 16px #c5c9cf, -8px -8px 16px #ffffff",
     "inset-shadow-sm": "inset 4px 4px 8px #c5c9cf, inset -4px -4px 8px #ffffff",
     "inset-shadow-lg": "inset 6px 6px 12px #c5c9cf, inset -6px -6px 12px #ffffff",
-    "font-sans": "'Inter Variable', system-ui, sans-serif",
-    "font-display": "'Inter Variable', system-ui, sans-serif",
+    "font-sans": "'Quicksand Variable', system-ui, sans-serif",
+    "font-display": "'Quicksand Variable', system-ui, sans-serif",
     "duration-default": "300",
     "ease-default": "cubic-bezier(0.4, 0, 0.2, 1)",
     "ease-smooth": "cubic-bezier(0.65, 0, 0.35, 1)"

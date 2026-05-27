@@ -94,7 +94,8 @@ colors:
 ## 4. Fonts: name, don't load
 
 You can only reference fonts the app bundles — **Inter, Source Serif 4, JetBrains
-Mono, Fraunces, Archivo Black** — plus CSS generic keywords (`serif`,
+Mono, Fraunces, Archivo Black, MS Sans Serif, Orbitron, Quicksand** — plus CSS
+generic keywords (`serif`,
 `sans-serif`, `monospace`, `system-ui`, …). This is a hard security rule: themes
 can't load external resources (no `url()`), so naming a font the app doesn't have
 is rejected rather than silently falling back to a broken look. Always end a font

@@ -330,7 +330,7 @@ A theme is rejected outright — never silently degraded — if it fails any of:
 
 **Fonts: themes name them, the app loads them.** Since `url()` is banned, a theme
 can't ship a font — it may only *name* one the app bundles (Inter, Source Serif 4,
-JetBrains Mono, Fraunces, Archivo Black) plus CSS generic keywords. Naming
+JetBrains Mono, Fraunces, Archivo Black, MS Sans Serif, Orbitron, Quicksand) plus CSS generic keywords. Naming
 anything else is rejected, so a theme can never silently fall back to a broken
 look. The playground loads the bundled fonts in `apps/playground/src/main.tsx`;
 a consumer app imports whichever of those faces it ships.

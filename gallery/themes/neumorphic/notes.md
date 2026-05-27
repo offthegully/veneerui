@@ -13,6 +13,9 @@ shadows.
   variants reverse it (`inset …`) to press elements *into* the sheet — use them
   for inputs and wells.
 - **Big radii.** 16–40px. Soft material doesn't have crisp edges.
+- **Rounded type.** `font-sans`/`font-display` are Quicksand, a geometric sans
+  with rounded terminals — the letterforms echo the soft shadows and big radii
+  instead of fighting them the way a crisp grotesque (Inter) does.
 - **Slow, smooth motion.** 300ms with eased curves; the style is calm, so the
   motion should be too.
 - **Caveat.** The low-contrast text (`#4a5568` on `#e0e5ec`) is the look's known

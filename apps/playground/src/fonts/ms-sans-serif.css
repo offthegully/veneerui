@@ -1,0 +1,25 @@
+/**
+ * "MS Sans Serif" — the Windows 95/98 UI bitmap face, used by the `windows-95`
+ * gallery theme. Self-hosted (like the @fontsource faces in main.tsx) so the
+ * theme can *name* it without a theme-supplied url(): the app bundles it, the
+ * theme only references it.
+ *
+ * Font: "Pixelated MS Sans Serif" by "lou" (FontStruct), CC BY-SA 3.0. See
+ * ms-sans-serif.LICENSE.txt. It's a vector recreation of the pixel grid, so it
+ * scales cleanly from small UI text up to the hero headline.
+ */
+@font-face {
+  font-family: 'MS Sans Serif';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('./ms_sans_serif.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'MS Sans Serif';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('./ms_sans_serif_bold.woff2') format('woff2');
+}

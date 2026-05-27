@@ -15,7 +15,10 @@ radius, border width, and motion *duration* are first-class theme axes.
 - **The title bar.** `gradient-primary` / `gradient-text` are the
   `#000080 → #1084d0` navy-to-cyan sweep, so the hero headline and the showcase
   band read as a maximized window's title bar.
-- **System type.** `font-sans`/`font-display` lead with `system-ui` for the native
-  chrome feel, capped at weight 700 — the OS never shipped a 900.
+- **The actual UI font.** `font-sans`/`font-display` are **MS Sans Serif** — the
+  bundled Windows 95/98 bitmap face — not `system-ui`, which resolves to a modern
+  San Francisco / Segoe and instantly breaks the spell. Weights are capped at 700;
+  the OS never shipped a 900. It's a vector recreation of the pixel grid, so the
+  hero scales up chunky and the body stays crisp.
 - **No motion.** `duration-*` are all `0`, so states snap instantly. Win95 didn't
   animate, and neither does this.

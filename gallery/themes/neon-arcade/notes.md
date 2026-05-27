@@ -19,8 +19,10 @@ shadows.
 - **Gradients everywhere.** `gradient-text` (magenta→cyan) is meant for
   `bg-clip-text` headlines; `gradient-primary`/`-accent` fill hero panels;
   `gradient-surface` is a subtle vertical fade for backgrounds.
-- **Archivo Black display + wide tracking.** The display face is the heaviest
-  bundled font, and `tracking-widest` (`0.3em`) spaces out arcade-style labels.
+- **Orbitron display + wide tracking.** The display face is Orbitron — a wide,
+  geometric, retro-futuristic sci-fi face — not the heavy grotesque the brutalist
+  theme uses, so the two never look alike. `tracking-widest` (`0.3em`) spaces out
+  arcade-style labels; the body stays Inter for legibility.
 - **Snappy motion.** `duration-default` drops to 120ms with a sharp ease — neon
   UIs feel electric, not languid.
 - **`text-on-primary` is dark** (`#0a0118`): the neons are bright, so text on a
