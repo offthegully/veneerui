@@ -12,7 +12,7 @@ This document describes the architecture and the mental model. The companion doc
 
 **The token schema is the contract.** It is the canonical list of every value a theme is allowed to set: token name, type, category, default value, description. Theme authors target the schema. Component authors reference the same schema through Tailwind utility classes. The two groups never share a vocabulary directly — they share the schema.
 
-**Tailwind is the rendering layer.** Components use Tailwind utilities (`bg-primary`, `rounded-skin`, `text-text-muted`) that resolve to CSS custom properties. Themes mutate those custom properties at runtime. The two systems are connected only through CSS variable names and never call each other.
+**Tailwind is the rendering layer.** Components use Tailwind utilities (`bg-primary`, `rounded-md`, `text-text-muted`) that resolve to CSS custom properties. Themes mutate those custom properties at runtime. The two systems are connected only through CSS variable names and never call each other.
 
 **The library is the user's collection.** Built-in themes plus themes the user has imported from the gallery plus themes the user has created. The library can be large; the user doesn't need to see all of it in their switcher.
 
@@ -92,38 +92,42 @@ type TokenType =
   | 'gradient';    // linear-gradient / radial-gradient string
 
 interface TokenDef {
-  name: string;          // "color-primary"
+  name: string;             // CSS var name without "--", e.g. "color-primary"
   type: TokenType;
-  category: string;      // "Colors", "Radii", "Shadows", "Typography", etc.
-  default: string;       // fallback when a theme doesn't set this token
-  description: string;   // shown in the schema reference docs
-  required?: boolean;    // themes may omit non-required tokens entirely
+  category: string;         // "Colors", "Radii", "Shadows", "Typography", etc.
+  bridge: 'theme' | 'root'; // how it reaches components (see below)
+  default: string;          // fallback when a theme doesn't set this token
+  description: string;      // shown in the schema reference docs
+  required?: boolean;       // themes may omit non-required tokens entirely
+  deprecated?: boolean;     // hidden from authoring docs, still applied at runtime
 }
 ```
 
+**Token names map to Tailwind v4 namespaces.** `bridge: 'theme'` tokens are declared in Tailwind's `@theme` block, so each one both emits a `--name` custom property *and* generates a utility class — `--color-primary` → `bg-primary`, `--radius-md` → `rounded-md`, `--font-weight-bold` → `font-bold`, `--blur-md` → `blur-md` and `backdrop-blur-md`, `--ease-snappy` → `ease-snappy`. `bridge: 'root'` tokens are values Tailwind has no namespace for (border widths, transition durations, opacities, gradients); they're plain `:root` variables consumed via `var()` or arbitrary-property utilities like `duration-(--duration-default)`. Either way, `applyTheme()` overrides the same custom property at runtime, so theming behaves identically for both.
+
 ### Token categories
 
-A target of **80–120 tokens** organized into the following categories. This is larger than a typical "color palette" theme system but smaller than a full design-system spec (Material has ~200). The size is calibrated to allow genuinely different aesthetics — brutalist, neumorphic, glassmorphic, editorial, minimal — not just recolored variants of the same UI.
+The v1 schema lands at **83 tokens**, within the **80–120** target. This is larger than a typical "color palette" theme system but smaller than a full design-system spec (Material has ~200). The size is calibrated to allow genuinely different aesthetics — brutalist, neumorphic, glassmorphic, editorial, minimal — not just recolored variants of the same UI. The authoritative list is `src/theme/schema.ts`; the generated `docs/schema-reference.md` is its human-readable form. The counts below reflect the v1 schema.
 
-**Colors (~10–15 tokens)** — primary, primary-hover, primary-active, accent, success, warning, danger, info, plus their hover/active variants.
+**Colors (12)** — color-primary plus -hover / -active / -subtle; color-accent plus -hover / -active; color-success, -warning, -danger, -info; color-focus-ring.
 
-**Surfaces (~4–6 tokens)** — surface (page background), surface-raised (cards), surface-sunken (wells), surface-overlay (modals), surface-inverse.
+**Surfaces (6)** — color-surface (page background), -surface-raised (cards), -surface-sunken (wells), -surface-overlay (menus/modals), -surface-inverse, -overlay-backdrop (scrim).
 
-**Text (~4–5 tokens)** — text (body), text-muted, text-subtle, text-inverse, text-on-primary.
+**Text (5)** — color-text (body), -text-muted, -text-subtle, -text-inverse, -text-on-primary.
 
-**Borders (~5–7 tokens)** — border-color, border-color-strong, border-color-subtle, border-width-thin (1px), border-width-default (1px), border-width-thick (3px), border-style (solid/dashed).
+**Borders (6)** — color-border, -border-strong, -border-subtle (namespaced colors); border-width-thin / -default / -thick (`root` vars — Tailwind has no border-width namespace). Border-style is omitted from v1.
 
-**Radii (~5 tokens)** — radius-none (0), radius-sm, radius-md, radius-lg, radius-xl, radius-full (pill).
+**Radii (7)** — radius-none (0px), -sm, -md, -lg, -xl, -2xl, -full (pill).
 
-**Shadows (~6–8 tokens)** — shadow-sm, shadow-md, shadow-lg, shadow-xl (elevation scale); shadow-inset-sm, shadow-inset-lg (for neumorphic-style insets); shadow-glow (for retro/playful themes); shadow-card (semantic alias).
+**Shadows (8)** — shadow-sm, -md, -lg, -xl (elevation scale); inset-shadow-sm, -lg (neumorphic insets — note the `inset-shadow-*` namespace, not `shadow-inset-*`); shadow-glow (retro/playful); shadow-card (semantic alias).
 
-**Typography (~15–20 tokens)** — font-sans, font-serif, font-mono, font-display (family stacks); text-xs through text-5xl (size scale, 7–8 steps); weight-light, weight-regular, weight-medium, weight-bold, weight-black; leading-tight, leading-normal, leading-relaxed; tracking-tight, tracking-normal, tracking-wide.
+**Typography (25)** — font-sans, -serif, -mono, -display (family stacks, restricted to the bundled set); text-xs through text-6xl (10 size steps); font-weight-light / -normal / -medium / -bold / -black (the `--font-weight-*` namespace); leading-tight / -normal / -relaxed; tracking-tight / -normal / -wide.
 
-**Spacing (~10–12 tokens)** — space-0 through space-16 on a geometric scale. Enables themes to express layout density (cramped brutalist vs. airy neumorphic vs. dense editorial).
+**Spacing (1)** — a single `spacing` base unit. Tailwind v4 derives the entire scale from it (`p-4` = `calc(var(--spacing) * 4)`), so overriding this one token rescales density globally (cramped brutalist vs. airy neumorphic vs. dense editorial).
 
-**Effects (~4–6 tokens)** — backdrop-blur-sm, backdrop-blur-md, backdrop-blur-lg (for glassmorphism); gradient-primary (theme-defined gradient); opacity-disabled, opacity-overlay.
+**Effects (6)** — blur-sm, -md, -lg (the `--blur-*` namespace feeds *both* `blur-*` and `backdrop-blur-*`, e.g. glassmorphism); gradient-primary (`root`); opacity-disabled, opacity-overlay (`root`).
 
-**Motion (~5–7 tokens)** — duration-fast (80ms), duration-default (200ms), duration-slow (400ms); ease-default, ease-snappy, ease-smooth, ease-bounce.
+**Motion (7)** — duration-fast (80), -default (200), -slow (400) — milliseconds, `root` vars consumed via `duration-(--duration-default)`; ease-default, -snappy, -smooth, -bounce (the `--ease-*` namespace).
 
 ### Example tokens
 
@@ -131,41 +135,39 @@ A small representative sample, illustrating the type system:
 
 ```ts
 const TOKEN_SCHEMA: TokenDef[] = [
-  // Colors
-  { name: 'color-primary',         type: 'color',      category: 'Colors',     default: '#3b82f6', description: 'Main brand color', required: true },
-  { name: 'color-primary-hover',   type: 'color',      category: 'Colors',     default: '#2563eb', description: 'Hover state of primary' },
-  // Surfaces
-  { name: 'color-surface',         type: 'color',      category: 'Surfaces',   default: '#ffffff', description: 'Default page background', required: true },
-  { name: 'color-surface-raised',  type: 'color',      category: 'Surfaces',   default: '#f9fafb', description: 'Background for raised elements like cards' },
-  // Borders
-  { name: 'border-width-default',  type: 'length',     category: 'Borders',    default: '1px',     description: 'Default border thickness' },
-  { name: 'border-width-thick',    type: 'length',     category: 'Borders',    default: '3px',     description: 'Heavier border for brutalist/emphasis themes' },
-  // Radii
-  { name: 'radius-md',             type: 'length',     category: 'Radii',      default: '8px',     description: 'Default radius for cards, buttons' },
-  { name: 'radius-full',           type: 'length',     category: 'Radii',      default: '9999px',  description: 'Pill / fully rounded' },
-  // Shadows
-  { name: 'shadow-md',             type: 'shadow',     category: 'Shadows',    default: '0 4px 6px rgba(0,0,0,0.1)', description: 'Default elevation' },
-  { name: 'shadow-inset-md',       type: 'shadow',     category: 'Shadows',    default: 'inset 0 2px 4px rgba(0,0,0,0.06)', description: 'Inset shadow for neumorphic-style depressions' },
-  // Typography
-  { name: 'font-sans',             type: 'fontFamily', category: 'Typography', default: "'Inter', system-ui, sans-serif", description: 'Default body font stack' },
-  { name: 'font-display',          type: 'fontFamily', category: 'Typography', default: "'Inter', system-ui, sans-serif", description: 'Display/heading font (often a more dramatic face)' },
-  { name: 'text-base',             type: 'length',     category: 'Typography', default: '16px',    description: 'Default body text size' },
-  { name: 'weight-bold',           type: 'number',     category: 'Typography', default: '700',     description: 'Bold weight value' },
-  { name: 'tracking-tight',        type: 'length',     category: 'Typography', default: '-0.02em', description: 'Tight letter-spacing' },
-  // Spacing
-  { name: 'space-4',               type: 'length',     category: 'Spacing',    default: '16px',    description: 'Standard spacing unit' },
-  // Effects
-  { name: 'backdrop-blur-md',      type: 'length',     category: 'Effects',    default: '12px',    description: 'Backdrop blur for glassmorphic surfaces' },
-  { name: 'gradient-primary',      type: 'gradient',   category: 'Effects',    default: 'linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%)', description: 'Optional gradient applied to primary surfaces' },
-  // Motion
-  { name: 'duration-default',      type: 'number',     category: 'Motion',     default: '200',     description: 'Default transition duration in ms' },
-  { name: 'ease-default',          type: 'easing',     category: 'Motion',     default: 'cubic-bezier(0.4, 0, 0.2, 1)', description: 'Default easing curve' },
+  // Colors — bridge 'theme' → bg-primary, text-*, border-*, ring-* utilities
+  { name: 'color-primary',     type: 'color',      category: 'Colors',     bridge: 'theme', default: '#3b82f6', description: 'Main brand color', required: true },
+  { name: 'color-surface',     type: 'color',      category: 'Surfaces',   bridge: 'theme', default: '#ffffff', description: 'Default page background', required: true },
+  { name: 'color-text',        type: 'color',      category: 'Text',       bridge: 'theme', default: '#111827', description: 'Body text color', required: true },
+  // Borders — color is namespaced; width has no namespace, so bridge 'root'
+  { name: 'color-border',      type: 'color',      category: 'Borders',    bridge: 'theme', default: '#e5e7eb', description: 'Default border color' },
+  { name: 'border-width-thick',type: 'length',     category: 'Borders',    bridge: 'root',  default: '3px',     description: 'Heavy border for brutalist/emphasis themes' },
+  // Radii → rounded-md, rounded-full
+  { name: 'radius-md',         type: 'length',     category: 'Radii',      bridge: 'theme', default: '8px',     description: 'Default radius for cards, buttons' },
+  // Shadows → shadow-md, inset-shadow-sm
+  { name: 'shadow-md',         type: 'shadow',     category: 'Shadows',    bridge: 'theme', default: '0 4px 6px -1px rgb(0 0 0 / 0.1)', description: 'Default elevation' },
+  { name: 'inset-shadow-sm',   type: 'shadow',     category: 'Shadows',    bridge: 'theme', default: 'inset 0 2px 4px rgb(0 0 0 / 0.06)', description: 'Inset shadow for neumorphic depressions' },
+  // Typography → font-display, text-base, font-bold, tracking-tight
+  { name: 'font-display',      type: 'fontFamily', category: 'Typography', bridge: 'theme', default: "'Inter Variable', system-ui, sans-serif", description: 'Display/heading font (restricted to the bundled set)' },
+  { name: 'text-base',         type: 'length',     category: 'Typography', bridge: 'theme', default: '16px',    description: 'Default body text size' },
+  { name: 'font-weight-bold',  type: 'number',     category: 'Typography', bridge: 'theme', default: '700',     description: 'Bold weight value' },
+  { name: 'tracking-tight',    type: 'length',     category: 'Typography', bridge: 'theme', default: '-0.02em', description: 'Tight letter-spacing' },
+  // Spacing — one multiplier drives the whole scale (p-4 = calc(spacing * 4))
+  { name: 'spacing',           type: 'length',     category: 'Spacing',    bridge: 'theme', default: '0.25rem', description: 'Base spacing unit; the theme density lever' },
+  // Effects — blur-md feeds blur-* AND backdrop-blur-*; gradient has no namespace
+  { name: 'blur-md',           type: 'length',     category: 'Effects',    bridge: 'theme', default: '12px',    description: 'Blur radius for blur-* and backdrop-blur-* (glassmorphism)' },
+  { name: 'gradient-primary',  type: 'gradient',   category: 'Effects',    bridge: 'root',  default: 'linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%)', description: 'Optional gradient for primary surfaces' },
+  // Motion — durations are root vars; easings are namespaced → ease-default
+  { name: 'duration-default',  type: 'number',     category: 'Motion',     bridge: 'root',  default: '200',     description: 'Default transition duration in ms' },
+  { name: 'ease-default',      type: 'easing',     category: 'Motion',     bridge: 'theme', default: 'cubic-bezier(0.4, 0, 0.2, 1)', description: 'Default easing curve' },
 ];
 ```
 
+The full 83-token list lives in `src/theme/schema.ts`; this is a representative slice showing both bridges and the v4-aligned names.
+
 ### What this schema size enables
 
-With the full ~100-token vocabulary, themes can express fundamentally different design languages, not just color variants. A brutalist theme sets `border-width-default: 3px`, `radius-md: 0`, `shadow-md: 6px 6px 0 0 #000`, picks a tight tracking value and a display font like Archivo Black, and sets `duration-default: 80` for snappy linear motion. A neumorphic theme sets large radii, dual inset+outset shadows, low-contrast surface colors close to the page background, and smooth 300ms easing. A glassmorphic theme uses semi-transparent surfaces, meaningful backdrop-blur, subtle 1px borders, and gradient accents.
+With the full 83-token vocabulary, themes can express fundamentally different design languages, not just color variants. A brutalist theme sets `border-width-thick: 4px`, `radius-md: 0px`, `shadow-md: 4px 4px 0 0 #000`, picks a tight tracking value and a display font like Archivo Black, and sets `duration-default: 80` for snappy motion. A neumorphic theme sets large radii, dual inset+outset shadows, low-contrast surface colors close to the page background, and a smooth easing curve. A glassmorphic theme uses semi-transparent surfaces (`color-surface: rgb(255 255 255 / 0.6)`), a meaningful `blur-md`, subtle borders, and gradient accents. An editorial theme reaches for a serif `font-display`, a larger `spacing` unit for airy density, and the upper end of the type scale.
 
 The schema doubles as a UI specification for the eventual editor, a documentation source for authors, and a JSON Schema generator for editor autocomplete in VS Code. One source of truth.
 

@@ -1,0 +1,10 @@
+{
+  "name": "Light",
+  "description": "The baseline. Sets only the required tokens; everything else falls back to the schema defaults.",
+  "tags": ["light", "default"],
+  "tokens": {
+    "color-primary": "#3b82f6",
+    "color-surface": "#ffffff",
+    "color-text": "#111827"
+  }
+}
