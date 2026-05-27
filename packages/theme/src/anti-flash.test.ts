@@ -4,32 +4,36 @@
  * which `--token` custom properties it writes to documentElement.
  */
 import { describe, expect, it } from 'vitest';
-import { getAntiFlashScript } from './anti-flash';
+import { getAntiFlashScript, SHUFFLE_ATTR } from './anti-flash';
 import { STORAGE_KEY } from './storage-key';
 
 /**
- * Run the script string with a stubbed storage + DOM. Returns the props it set
- * and what (if anything) it wrote back to storage, so first-visit randomization
- * (which persists its pick) can be asserted on both.
+ * Run the script string with a stubbed storage + DOM. Returns the custom props it
+ * set, any attributes it wrote to <html> (the shuffle path records its pick there),
+ * and whether it touched storage (the shuffle path must not — it's ephemeral).
  */
 function run(
   script: string,
   saved: string | null,
-): { props: Record<string, string>; saved: string | null } {
+): { props: Record<string, string>; attrs: Record<string, string>; wrote: boolean } {
   const props: Record<string, string> = {};
-  const store = { value: saved };
+  const attrs: Record<string, string> = {};
+  let wrote = false;
   const localStorage = {
-    getItem: (k: string) => (k === STORAGE_KEY ? store.value : null),
-    setItem: (k: string, v: string) => {
-      if (k === STORAGE_KEY) store.value = v;
+    getItem: (k: string) => (k === STORAGE_KEY ? saved : null),
+    setItem: () => {
+      wrote = true;
     },
   };
   const document = {
-    documentElement: { style: { setProperty: (k: string, v: string) => void (props[k] = v) } },
+    documentElement: {
+      style: { setProperty: (k: string, v: string) => void (props[k] = v) },
+      setAttribute: (k: string, v: string) => void (attrs[k] = v),
+    },
   };
   // The IIFE references bare `localStorage`/`document`; bind them as args.
   new Function('localStorage', 'document', script)(localStorage, document);
-  return { props, saved: store.value };
+  return { props, attrs, wrote };
 }
 
 const savedLib = JSON.stringify({
@@ -62,58 +66,51 @@ describe('getAntiFlashScript', () => {
     expect(script).toContain('\\u003c');
   });
 
-  describe('first-visit randomization', () => {
-    const firstVisit = {
-      pool: [
-        { id: 'a', tokens: { 'color-primary': '#a1a1a1' } },
-        { id: 'b', tokens: { 'color-primary': '#b2b2b2' } },
-      ],
-      enabledIds: ['default-light', 'a', 'b'],
-    };
+  describe('shuffle-until-pinned', () => {
+    const pool = [
+      { id: 'a', tokens: { 'color-primary': '#a1a1a1' } },
+      { id: 'b', tokens: { 'color-primary': '#b2b2b2' } },
+    ];
+    const pinnedLib = JSON.stringify({
+      themes: [{ id: 'saved', tokens: { 'color-primary': '#aaaaaa' } }],
+      currentId: 'saved',
+      pinned: true,
+    });
 
-    it('picks a pool theme on a first visit, applies it, and persists the choice', () => {
-      const { props, saved } = run(getAntiFlashScript(undefined, firstVisit), null);
+    it('picks a pool theme on an empty (first) load, applies it, and records the pick', () => {
+      const { props, attrs, wrote } = run(getAntiFlashScript(undefined, pool), null);
       const picked = props['--color-primary'];
       expect(['#a1a1a1', '#b2b2b2']).toContain(picked);
-
-      // The pick is written back (with tokens, so later loads re-apply it without
-      // a flash) and React reads the same currentId.
-      const lib = JSON.parse(saved!);
-      const pickedId = picked === '#a1a1a1' ? 'a' : 'b';
-      expect(lib).toMatchObject({
-        themes: [{ id: pickedId, tokens: { 'color-primary': picked } }],
-        enabledIds: firstVisit.enabledIds,
-        currentId: pickedId,
-      });
+      // The pick is recorded on <html> for the provider to read back.
+      expect(attrs[SHUFFLE_ATTR]).toBe(picked === '#a1a1a1' ? 'a' : 'b');
+      // Shuffle is ephemeral — it must never touch storage.
+      expect(wrote).toBe(false);
     });
 
-    it('re-applies the persisted pick without re-randomizing on a later load', () => {
-      const script = getAntiFlashScript(undefined, firstVisit);
-      const first = run(script, null);
-      // Feed the written library back in, as a later page load would see it.
-      const second = run(script, first.saved);
-      expect(second.props).toEqual(first.props);
-      expect(second.saved).toBe(first.saved);
+    it('re-rolls on a later unpinned load (does not honor the stored currentId)', () => {
+      // An unpinned library (e.g. saved after toggling a theme) is ignored: still shuffles.
+      const unpinned = JSON.stringify({ themes: pool, currentId: 'a', pinned: false });
+      const { props, attrs } = run(getAntiFlashScript(undefined, pool), unpinned);
+      expect(['#a1a1a1', '#b2b2b2']).toContain(props['--color-primary']);
+      expect(['a', 'b']).toContain(attrs[SHUFFLE_ATTR]);
     });
 
-    it('does not randomize or overwrite when a library is already saved', () => {
-      const { props, saved } = run(getAntiFlashScript(undefined, firstVisit), savedLib);
+    it('applies the pinned theme and does NOT shuffle when the library is pinned', () => {
+      const { props, attrs, wrote } = run(getAntiFlashScript(undefined, pool), pinnedLib);
       expect(props).toEqual({ '--color-primary': '#aaaaaa' });
-      expect(saved).toBe(savedLib);
+      expect(attrs[SHUFFLE_ATTR]).toBeUndefined();
+      expect(wrote).toBe(false);
     });
 
-    it('falls back to default tokens when the pool is empty', () => {
-      const script = getAntiFlashScript({ 'color-primary': '#000000' }, { pool: [], enabledIds: [] });
-      const { props, saved } = run(script, null);
+    it('falls back to default tokens (no shuffle) when the pool is empty', () => {
+      const script = getAntiFlashScript({ 'color-primary': '#000000' }, []);
+      const { props, attrs } = run(script, null);
       expect(props).toEqual({ '--color-primary': '#000000' });
-      expect(saved).toBeNull();
+      expect(attrs[SHUFFLE_ATTR]).toBeUndefined();
     });
 
     it('escapes "<" in inlined pool token values', () => {
-      const script = getAntiFlashScript(undefined, {
-        pool: [{ id: 'x', tokens: { 'font-sans': 'a</script>b' } }],
-        enabledIds: ['x'],
-      });
+      const script = getAntiFlashScript(undefined, [{ id: 'x', tokens: { 'font-sans': 'a</script>b' } }]);
       expect(script).not.toContain('</script>');
       expect(script).toContain('\\u003c');
     });

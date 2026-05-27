@@ -16,25 +16,13 @@
  */
 import { STORAGE_KEY } from './storage-key';
 
-/** One candidate in the first-visit random pool — id plus the tokens to apply. */
-export interface FirstVisitTheme {
+/** The attribute the shuffle path writes the picked id to, for the provider to read. */
+export const SHUFFLE_ATTR = 'data-veneer-shuffle';
+
+/** One candidate in the shuffle pool — id plus the tokens to apply. */
+export interface ShuffleTheme {
   id: string;
   tokens: Record<string, string>;
-}
-
-/**
- * Randomize the theme on a visitor's first-ever load (empty storage). The script
- * picks one of `pool` at random, applies its tokens before first paint, and
- * persists the choice (so it sticks — "first visit" means once, not every reload).
- *
- * `enabledIds` is the switcher set written alongside the pick; it may be wider
- * than the pool (e.g. include neutral light/dark options the random pick skips).
- * It must line up with `<ThemeProvider defaultEnabledIds>` so React's reconcile
- * keeps the same set. An empty `pool` disables randomization.
- */
-export interface FirstVisitRandom {
-  pool: FirstVisitTheme[];
-  enabledIds: string[];
 }
 
 /** Escape `<` so an inlined token value can never break out of the <script> tag. */
@@ -52,43 +40,49 @@ const escapeScriptLiteral = (value: unknown): string =>
  * this script runs before React and can't read the prop. Omit it to preserve
  * the original behavior (no overrides until a theme has been saved).
  *
- * Pass `firstVisit` to instead pick a *random* theme on a first-ever load — the
- * pool's tokens are inlined and one is applied + persisted before first paint, so
- * the randomization is flash-free and React reads back the same saved choice.
- * `defaultTokens` remains the fallback (empty pool, or the rare race where the
- * pick can't apply).
+ * Pass `shufflePool` to instead show a *random* theme on every load until the
+ * visitor pins one. The pool's tokens are inlined; on any load whose saved
+ * library isn't `pinned` (including the first-ever, empty one) the script picks
+ * one at random and applies it before first paint — so it's flash-free — and
+ * records the pick in `SHUFFLE_ATTR` on <html> so the provider seeds the same id
+ * (it does *not* write storage; the pick is intentionally ephemeral). A saved,
+ * pinned library applies its current theme as usual; `defaultTokens` is the final
+ * fallback (empty pool, or a pinned theme whose tokens went missing).
  */
 export function getAntiFlashScript(
   defaultTokens?: Record<string, string>,
-  firstVisit?: FirstVisitRandom,
+  shufflePool?: ShuffleTheme[],
 ): string {
   // Written in ES5-ish, dependency-free style on purpose: it runs before the
   // bundle, so it can't rely on anything the app ships. STORAGE_KEY, the default
-  // tokens, and the first-visit pool are inlined as literals so the string stays
+  // tokens, and the shuffle pool are inlined as literals so the string stays
   // self-contained.
   const defaultLiteral = defaultTokens ? escapeScriptLiteral(defaultTokens) : 'null';
-  const firstVisitLiteral =
-    firstVisit && firstVisit.pool.length > 0 ? escapeScriptLiteral(firstVisit) : 'null';
+  const poolLiteral =
+    shufflePool && shufflePool.length > 0 ? escapeScriptLiteral(shufflePool) : 'null';
   return (
     '(function(){try{' +
     'var d=' +
     defaultLiteral +
-    ';var fv=' +
-    firstVisitLiteral +
+    ';var pool=' +
+    poolLiteral +
     ';var key=' +
     JSON.stringify(STORAGE_KEY) +
     ';var tokens=null;' +
     'var raw=localStorage.getItem(key);' +
-    'if(raw){var lib=JSON.parse(raw);var themes=(lib&&lib.themes)||[];' +
+    'var lib=raw?JSON.parse(raw):null;' +
+    // Shuffle only when a pool is configured AND the saved library isn't pinned
+    // (the first-ever, empty load counts as unpinned). Otherwise this is the
+    // default anti-flash path: apply the saved current theme as before.
+    'var willShuffle=!!pool&&!(lib&&lib.pinned);' +
+    'if(lib&&!willShuffle){var themes=lib.themes||[];' +
     'for(var i=0;i<themes.length;i++){if(themes[i]&&themes[i].id===lib.currentId&&themes[i].tokens){tokens=themes[i].tokens;break;}}}' +
-    // True first visit (nothing saved): pick a random theme from the pool, then
-    // persist it so the choice sticks and React's loadLibrary reads it back. The
-    // pick is stored *with its tokens* so this same script re-applies it without
-    // a flash on later loads (before any interaction writes the full library);
-    // loadLibrary discards this sourceless copy and re-seeds from the app themes.
-    'if(!tokens&&!raw&&fv){var pick=fv.pool[Math.floor(Math.random()*fv.pool.length)];' +
-    'tokens=pick.tokens;' +
-    'try{localStorage.setItem(key,JSON.stringify({themes:[pick],enabledIds:fv.enabledIds,currentId:pick.id}));}catch(e){}}' +
+    // Pick a random theme and apply it; record the pick on <html> for the provider
+    // to read. Deliberately not persisted, so every refresh re-rolls until pinned.
+    'if(willShuffle){var pick=pool[Math.floor(Math.random()*pool.length)];' +
+    'tokens=pick.tokens;document.documentElement.setAttribute(' +
+    JSON.stringify(SHUFFLE_ATTR) +
+    ',pick.id);}' +
     'if(!tokens)tokens=d;' +
     'if(!tokens)return;' +
     'var s=document.documentElement.style;' +

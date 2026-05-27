@@ -19,7 +19,12 @@ import './fonts/ms-sans-serif.css' // Windows 95 UI face (self-hosted, see src/f
 import './index.css'
 import App from './App.tsx'
 import { ThemeProvider } from '@veneer/theme'
-import { APP_THEMES, APP_DEFAULT_THEME_ID, APP_ENABLED_THEME_IDS } from './themes'
+import {
+  APP_THEMES,
+  APP_DEFAULT_THEME_ID,
+  APP_ENABLED_THEME_IDS,
+  APP_FIRST_VISIT_THEME_IDS,
+} from './themes'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
@@ -27,6 +32,7 @@ createRoot(document.getElementById('root')!).render(
       themes={APP_THEMES}
       defaultThemeId={APP_DEFAULT_THEME_ID}
       defaultEnabledIds={APP_ENABLED_THEME_IDS}
+      shuffleIds={APP_FIRST_VISIT_THEME_IDS}
     >
       <App />
     </ThemeProvider>

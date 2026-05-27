@@ -14,6 +14,12 @@ export interface ThemeContextValue {
   currentId: string;
   /** The theme saved as current (ignores any active preview). */
   current: Theme;
+  /**
+   * Whether `current` is a deliberate pick. In a shuffle-until-pinned app, false
+   * means the theme is auto-shuffling on each load; selecting one (or importing)
+   * pins it (true). `shuffle()` returns to the unpinned, re-rolling state.
+   */
+  pinned: boolean;
   /** `themes` filtered & ordered by `enabledIds` — what the switcher renders. */
   enabledThemes: Theme[];
   /**
@@ -21,8 +27,10 @@ export interface ThemeContextValue {
    * While set, it's what's applied to the DOM; `current` is restored on cancel.
    */
   preview: Theme | null;
-  /** Switch the applied theme. No-op if `id` isn't a known, enabled theme. */
+  /** Switch the applied theme and pin it. No-op if `id` isn't a known, enabled theme. */
   setCurrent: (id: string) => void;
+  /** Re-roll to a random enabled theme (from `shuffleIds`) and leave it unpinned. */
+  shuffle: () => void;
   /** Add or replace a theme (used by import). */
   addTheme: (theme: Theme) => void;
   /** Remove a non-built-in theme; built-ins are ignored. */

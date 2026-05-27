@@ -5,13 +5,13 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 import { veneer } from '@veneer/theme/vite'
-import { APP_ENABLED_THEME_IDS, APP_FIRST_VISIT_THEME_IDS } from './src/theme-ids'
+import { APP_FIRST_VISIT_THEME_IDS } from './src/theme-ids'
 
-// Read each first-visit candidate's tokens straight off disk (every id in the
-// pool is a gallery theme) so the anti-flash plugin can inline them and apply a
-// random one before first paint. themes.ts is the runtime source of truth; this
-// touches the same on-disk JSON, and theme-ids.ts keeps the id lists in sync.
-const firstVisitPool = APP_FIRST_VISIT_THEME_IDS.map((id) => {
+// Read each shuffle candidate's tokens straight off disk (every id in the pool is
+// a gallery theme) so the anti-flash plugin can inline them and apply a random one
+// before first paint. themes.ts is the runtime source of truth; this touches the
+// same on-disk JSON, and theme-ids.ts keeps the id lists in sync.
+const shufflePool = APP_FIRST_VISIT_THEME_IDS.map((id) => {
   const url = new URL(`../../gallery/themes/${id}/theme.json`, import.meta.url)
   const { tokens } = JSON.parse(readFileSync(fileURLToPath(url), 'utf8')) as {
     tokens: Record<string, string>
@@ -22,12 +22,9 @@ const firstVisitPool = APP_FIRST_VISIT_THEME_IDS.map((id) => {
 // https://vite.dev/config/
 export default defineConfig({
   // veneer() injects the anti-flash script into index.html — no hand-edited HTML.
-  // randomizeFirstVisit drops a first-time visitor onto a random distinctive theme.
-  plugins: [
-    react(),
-    tailwindcss(),
-    veneer({ randomizeFirstVisit: { pool: firstVisitPool, enabledIds: APP_ENABLED_THEME_IDS } }),
-  ],
+  // shuffleUntilPinned shows a random distinctive theme on each load until the
+  // visitor pins one in the switcher.
+  plugins: [react(), tailwindcss(), veneer({ shuffleUntilPinned: shufflePool })],
   test: {
     environment: 'node',
     include: ['src/**/*.test.ts'],

@@ -28,7 +28,7 @@ export { TOKEN_SCHEMA, TOKEN_BY_NAME, ALLOWED_FONT_FAMILIES } from './schema';
 export { BUILTIN_THEMES, BUILTIN_IDS, DEFAULT_THEME_ID } from './builtin';
 export { defineTheme, type DefineThemeInput } from './define-theme';
 
-export { getAntiFlashScript } from './anti-flash';
+export { getAntiFlashScript, SHUFFLE_ATTR, type ShuffleTheme } from './anti-flash';
 
 export { SCHEMA_VERSION } from './types';
 export type { Theme, ThemeLibrary, TokenDef, TokenType, TokenBridge } from './types';

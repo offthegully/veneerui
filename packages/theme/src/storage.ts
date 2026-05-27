@@ -37,6 +37,7 @@ function defaultLibrary(
     themes: [...appThemes],
     enabledIds: seedEnabledIds(appThemes, defaultEnabledIds),
     currentId: defaultId,
+    pinned: false, // nothing saved yet — an app that shuffles is free to re-roll
   };
 }
 
@@ -98,7 +99,12 @@ export function loadLibrary(
           ? defaultId
           : enabledIds[0];
 
-    return { themes, enabledIds, currentId };
+    // `pinned` only holds if the saved current survived reconciliation; if it got
+    // clamped to a different theme the original pin no longer applies. An app that
+    // shuffles treats an unpinned library as "free to re-roll" (see ThemeProvider).
+    const pinned = parsed.pinned === true && currentId === parsed.currentId;
+
+    return { themes, enabledIds, currentId, pinned };
   } catch {
     return defaultLibrary(appThemes, defaultId, defaultEnabledIds);
   }

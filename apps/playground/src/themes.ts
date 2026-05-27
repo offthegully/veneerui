@@ -21,7 +21,11 @@ import { BUILTIN_THEMES, SCHEMA_VERSION, type Theme } from '@veneer/theme';
 
 // Re-export so existing importers (main.tsx) keep their `./themes` entry point;
 // the lists themselves live in theme-ids.ts, which vite.config can also read.
-export { APP_DEFAULT_THEME_ID, APP_ENABLED_THEME_IDS } from './theme-ids';
+export {
+  APP_DEFAULT_THEME_ID,
+  APP_ENABLED_THEME_IDS,
+  APP_FIRST_VISIT_THEME_IDS,
+} from './theme-ids';
 
 /** Authored gallery JSON, before app bookkeeping. Mirrors the on-disk theme.json. */
 interface GallerySource {
