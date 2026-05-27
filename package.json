@@ -16,10 +16,11 @@
     "dev": "npm run build:theme && npm run dev -w playground",
     "preview": "npm run preview -w playground",
     "lint": "npm run lint --workspaces --if-present",
-    "typecheck": "npm run build:theme && npm run gen:registry && npm run typecheck --workspaces --if-present",
+    "typecheck": "tsc -p tsconfig.json && npm run build:theme && npm run gen:registry && npm run typecheck --workspaces --if-present",
     "test": "npm run build:theme && npm run gen:registry && npm run test --workspaces --if-present"
   },
   "devDependencies": {
+    "@types/node": "^25.9.1",
     "tsx": "^4.22.3",
     "typescript": "~6.0.2"
   }

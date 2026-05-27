@@ -1,0 +1,25 @@
+{
+  // Root project: covers the repo-level build scripts only. Each workspace
+  // (packages/*, apps/*) has its own tsconfig; this one exists so editors and
+  // `npm run typecheck` resolve node globals for scripts/, which run via tsx and
+  // import token sources directly (with .ts extensions).
+  "compilerOptions": {
+    "target": "es2023",
+    "lib": ["ES2023"],
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "types": ["node"],
+
+    "allowImportingTsExtensions": true,
+    "resolveJsonModule": true,
+    "verbatimModuleSyntax": true,
+    "moduleDetection": "force",
+    "isolatedModules": true,
+    "skipLibCheck": true,
+
+    "strict": true,
+    "noFallthroughCasesInSwitch": true,
+    "noEmit": true
+  },
+  "include": ["scripts"]
+}

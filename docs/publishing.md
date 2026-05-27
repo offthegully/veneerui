@@ -8,7 +8,10 @@ Veneer publishes **two** packages from this monorepo:
 | `veneer` | `packages/cli` | the `init`/`add` CLI (run via `npx veneer`) |
 
 > The package names assume the `@veneer` npm scope and the unscoped `veneer` name
-> are available/owned. Verify (or rename) before the first publish.
+> are available/owned. Verify (or rename) before the first publish. Also replace
+> the `your-org/veneer` placeholder links in each package's `README.md` with the
+> real repo URL, and add a `"repository"` field to both `package.json`s — npm
+> renders the README as the package's landing page.
 
 ## Before publishing
 
