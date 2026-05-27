@@ -36,7 +36,8 @@ the PR *is* the submission, and CI validation is the security boundary.
   is inert data; it can never load or execute anything.
 - **Fonts from the bundled set only.** Because `url()` is banned, a theme can't
   ship a font — it may only *name* one Veneer bundles: Inter, Source Serif 4,
-  JetBrains Mono, Fraunces, Archivo Black, MS Sans Serif, Orbitron, Quicksand, plus CSS generic keywords
+  Fraunces, EB Garamond, JetBrains Mono, IBM Plex Mono, Archivo Black, MS Sans
+  Serif, Orbitron, Quicksand, plus CSS generic keywords
   (`serif`, `sans-serif`, `monospace`, `system-ui`, …). Naming anything else is
   rejected so themes can't silently fall back to a broken look.
 - **Required tokens present.** `color-primary`, `color-surface`, and `color-text`

@@ -140,8 +140,9 @@ npm install
 npm run dev          # builds @veneer/theme, then runs the playground at http://localhost:5173
 ```
 
-The playground starts with five built-in themes and the import/preview flow ready.
-To build everything (package, playground, CLI):
+The playground ships 14 themes (two neutral defaults plus the 12-theme gallery),
+with 8 shown in the switcher and the import/preview flow ready. To build everything
+(package, playground, CLI):
 
 ```sh
 npm run build        # gen artifacts → build package → build playground → build CLI
@@ -159,6 +160,11 @@ preview swatches; selecting one applies it instantly and persists the choice. On
 reload, the anti-flash script (injected by the `@veneer/theme/vite` plugin)
 re-applies your saved theme *before* the app loads, so there's no flash of the
 default.
+
+The playground also **shuffles a random theme on each visit** to show off the
+range — until you pick one from the switcher, which pins it (the **Shuffle 🎲** row
+goes back to re-rolling). It's an opt-in package feature, not the default; see the
+[Vite guide](./docs/integration-vite.md#optional-shuffle-themes-until-the-visitor-picks-one).
 
 ### Importing a theme
 
@@ -218,24 +224,15 @@ contrast minimums, common pitfalls) and the generated
 
 ### The gallery
 
-Nine ready-to-use example themes live in **[`gallery/`](./gallery/README.md)**,
-each a fully-realized, distinct design language (also the best starting templates
-for authoring):
+**[`gallery/`](./gallery/README.md)** holds 12 ready-to-use example themes, each a
+fully-realized, distinct design language — and the best starting templates for
+authoring. They span the range from restrained (Sharp Minimalist, Editorial, Warm
+Library) to structural (Brutalist, Neumorphic, Windows 95) to effect-driven
+(Glassmorphic, Terminal, Neon Arcade). Each ships a `notes.md` explaining *why* its
+values were chosen.
 
-| Theme | Style |
-|---|---|
-| **Clean Light** | Conservative neutral baseline — fork this first |
-| **Midnight** | Proper dark theme (raised surfaces lighter than base) |
-| **Brutalist** | Thick black borders, 0 radii, hard offset shadows, display type |
-| **Neumorphic** | Soft extruded UI carved from paired light/dark shadows |
-| **Glassmorphic** | Translucent frosted panels, backdrop blur, drop shadows |
-| **Editorial** | Serif display, enlarged type scale, magazine rhythm |
-| **High Contrast** | Black-on-white accessibility theme |
-| **Sunset Paper** | Warm cream paper, sunset gradient, playful motion |
-| **Neon Arcade** | Synthwave neon, glowing text, gradient headlines |
-
-Each theme ships with a `notes.md` explaining *why* its values were chosen. To
-contribute one, see **[gallery/CONTRIBUTING.md](./gallery/CONTRIBUTING.md)**.
+See **[gallery/README.md](./gallery/README.md)** for the full list, and
+**[gallery/CONTRIBUTING.md](./gallery/CONTRIBUTING.md)** to contribute one.
 
 ---
 
@@ -330,7 +327,8 @@ A theme is rejected outright — never silently degraded — if it fails any of:
 
 **Fonts: themes name them, the app loads them.** Since `url()` is banned, a theme
 can't ship a font — it may only *name* one the app bundles (Inter, Source Serif 4,
-JetBrains Mono, Fraunces, Archivo Black, MS Sans Serif, Orbitron, Quicksand) plus CSS generic keywords. Naming
+Fraunces, EB Garamond, JetBrains Mono, IBM Plex Mono, Archivo Black, MS Sans Serif,
+Orbitron, Quicksand) plus CSS generic keywords. Naming
 anything else is rejected, so a theme can never silently fall back to a broken
 look. The playground loads the bundled fonts in `apps/playground/src/main.tsx`;
 a consumer app imports whichever of those faces it ships.
@@ -345,48 +343,24 @@ and it's narrow and validated.
 ## Project structure
 
 ```
-veneer/                              npm workspace monorepo
+veneer/                    npm workspace monorepo
 ├─ packages/
-│  ├─ theme/                       → @veneer/theme (the published runtime)
-│  │  ├─ src/
-│  │  │  ├─ schema.ts              ★ single source of truth — 112-token TOKEN_SCHEMA
-│  │  │  ├─ types.ts               Theme, ThemeLibrary, TokenDef, SCHEMA_VERSION
-│  │  │  ├─ apply.ts               applyTheme() — writes CSS vars, reconciles defaults
-│  │  │  ├─ validate.ts            validateTheme() — the security boundary
-│  │  │  ├─ value-check{,-browser,-node}.ts  isomorphic per-type CSS checking
-│  │  │  ├─ storage.ts storage-key.ts  localStorage load/save + the shared key
-│  │  │  ├─ theme-context.ts       ThemeContext + useTheme()
-│  │  │  ├─ ThemeProvider.tsx      library/enabled/current/preview state owner
-│  │  │  ├─ import-theme.ts        parse + validate + provenance (file / URL)
-│  │  │  ├─ anti-flash.ts vite.ts next.tsx  pre-paint script + framework adapters
-│  │  │  ├─ index.ts node.ts       public API barrel + the Node (css-tree) entry
-│  │  │  ├─ builtin/               5 built-in themes (light, dark, high-contrast, …)
-│  │  │  └─ *.test.ts              validation, storage, import, schema, builtin
-│  │  ├─ tokens.generated.css      ⚙ shipped as @veneer/theme/tokens.css
-│  │  ├─ theme-v1.json             ⚙ shipped, published JSON Schema
-│  │  └─ package.json tsup.config.ts   exports map, peers, ESM+types build
-│  └─ cli/                         → the `veneer` CLI (init + add + list)
-│     ├─ src/{cli,init,add,list,detect,patch,registry}.ts + *.test.ts
-│     └─ registry/                 ⚙ copy-in components, generated from the playground
+│  ├─ theme/               → @veneer/theme — the published runtime + tokens
+│  │                         (schema, applyTheme, ThemeProvider, validation,
+│  │                          import pipeline, anti-flash, 5 built-in themes)
+│  └─ cli/                 → the `veneer` CLI (init + add + list) and its
+│                            generated copy-in component registry
 ├─ apps/
-│  └─ playground/                  → demo app; the dev harness + conformance/e2e target
-│     ├─ src/{main,App}.tsx index.css   consumes @veneer/theme like any app
-│     ├─ src/components/         ThemeSwitcher, ImportPanel, PreviewBanner, ThemeShowcase
-│     ├─ src/{conformance,gallery}.test.ts   scans rendered UI + validates gallery
-│     ├─ eslint-rules/           shared color detector + no-hardcoded-colors rule
-│     └─ vite.config.ts index.html tsconfig*.json eslint.config.js
-├─ scripts/
-│  ├─ generate-theme.ts            ⚙ regenerates CSS / JSON Schema / token reference
-│  └─ build-registry.ts            ⚙ regenerates the CLI registry from playground source
-├─ gallery/                        8 example themes (+ notes), becomes a GitHub repo in Phase 4
-├─ docs/
-│  ├─ integration-vite.md  integration-next.md   how to add Veneer to your app
-│  ├─ authoring-guide.md          conceptual authoring guide (hand-written)
-│  └─ schema-reference.md          ⚙ generated token reference
-└─ theme-system-{overview,implementation-plan,packaging-plan}.md   design docs
-
-★ = source of truth   ⚙ = generated (do not edit by hand)
+│  └─ playground/          → demo app + the dev harness and conformance/e2e target
+├─ gallery/                → 12 example themes (+ notes); a future standalone repo
+├─ scripts/                → generators for the tokens CSS, JSON Schema, docs, registry
+├─ docs/                   → integration (Vite/Next), authoring guide, token reference
+└─ theme-system-overview.md → the architecture deep-dive
 ```
+
+`packages/theme/src/schema.ts` is the single source of truth — the 112-token
+`TOKEN_SCHEMA`. `npm run gen:theme` regenerates everything downstream from it
+(tokens CSS, JSON Schema, the token reference), so nothing hand-edited can drift.
 
 ---
 
@@ -410,11 +384,11 @@ Run from the repo root; each orchestrates across the workspaces.
 
 ## Testing & quality
 
-`npm test` runs **89 tests** across the workspaces: theme validation, schema
+`npm test` runs the suite across the workspaces: theme validation, schema
 expressiveness, the `defineTheme` helper, storage reconciliation (including
-developer-supplied theme sets), the anti-flash script, built-in and gallery theme
-validity, the import pipeline, conformance, and the CLI (framework detection,
-idempotent config patching, registry resolution).
+developer-supplied theme sets and the shuffle/pinned state), the anti-flash script,
+built-in and gallery theme validity, the import pipeline, conformance, and the CLI
+(framework detection, idempotent config patching, registry resolution).
 
 Two mechanisms keep the app fully themeable — the contract that components use
 *only* semantic token utilities, never hardcoded colors:
@@ -435,16 +409,10 @@ becoming a dead override at runtime.
 
 ## Further reading
 
-- **[theme-system-overview.md](./theme-system-overview.md)** — full architecture
-  and mental model.
-- **[theme-system-implementation-plan.md](./theme-system-implementation-plan.md)**
-  — the phased implementation plan.
-- **[docs/authoring-guide.md](./docs/authoring-guide.md)** — how to author a
-  coherent theme.
-- **[docs/schema-reference.md](./docs/schema-reference.md)** — every token (generated).
-- **[docs/integration-vite.md](./docs/integration-vite.md)** /
-  **[integration-next.md](./docs/integration-next.md)** — add Veneer to your own app.
-- **[docs/publishing.md](./docs/publishing.md)** — releasing the package + CLI, and
-  the semver / `SCHEMA_VERSION` policy.
-- **[theme-system-packaging-plan.md](./theme-system-packaging-plan.md)** — the
-  distribution/packaging design (Phase 6).
+- **Add Veneer to your app** — [Vite](./docs/integration-vite.md) ·
+  [Next.js](./docs/integration-next.md)
+- **Author a theme** — the [authoring guide](./docs/authoring-guide.md) (coherent
+  palettes, pitfalls) and the generated [token reference](./docs/schema-reference.md)
+- **Go deeper** — [theme-system-overview.md](./theme-system-overview.md) for the
+  full architecture, [docs/publishing.md](./docs/publishing.md) for the release and
+  `SCHEMA_VERSION` policy

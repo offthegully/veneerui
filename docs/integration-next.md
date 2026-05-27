@@ -145,6 +145,31 @@ A theme can override as much or as little as you like — change only colors for
 quick re-skin, or also move radius, shadow, type, and motion for a full
 redesign. Tokens you don't set fall back to the schema defaults.
 
+## Optional: shuffle themes until the visitor picks one
+
+To show a **random theme on every visit** until the visitor pins one (by selecting
+it), pass the pool to both the `<AntiFlashScript>` (so the random pick applies
+before paint, flash-free) and the provider's `shuffleIds`:
+
+```tsx
+// app/layout.tsx (head)
+import { AntiFlashScript } from '@veneer/theme/next'
+import { themes } from './themes'
+
+<head><AntiFlashScript shuffleUntilPinned={themes} /></head>
+```
+
+```tsx
+// app/providers.tsx
+<ThemeProvider themes={themes} shuffleIds={themes.map((t) => t.id)}>
+  {children}
+</ThemeProvider>
+```
+
+Selecting a theme pins it (`useTheme().pinned` → `true`) and saves it, stopping the
+shuffle; `useTheme().shuffle()` re-rolls and returns to the unpinned state. Omit
+`shuffleUntilPinned` for the ordinary "apply the saved theme" behavior.
+
 ## Using themes & API
 
 Same as Vite: style with semantic token utilities (`bg-surface`, `text-text`, …),

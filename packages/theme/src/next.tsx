@@ -23,10 +23,20 @@
  *
  * Pass `defaultTheme` to also kill the cold-load flash on a first-ever visit —
  * use the same theme you pass to `<ThemeProvider defaultThemeId>`.
+ *
+ * Pass `shuffleUntilPinned` (a pool of themes) to instead show a random one on
+ * every load until the visitor pins one — see `getAntiFlashScript`, and pair it
+ * with `<ThemeProvider shuffleIds={...}>`.
  */
 import type { Theme } from './types';
-import { getAntiFlashScript } from './anti-flash';
+import { getAntiFlashScript, type ShuffleTheme } from './anti-flash';
 
-export function AntiFlashScript({ defaultTheme }: { defaultTheme?: Theme } = {}) {
-  return <script dangerouslySetInnerHTML={{ __html: getAntiFlashScript(defaultTheme?.tokens) }} />;
+export function AntiFlashScript({
+  defaultTheme,
+  shuffleUntilPinned,
+}: { defaultTheme?: Theme; shuffleUntilPinned?: ShuffleTheme[] } = {}) {
+  const pool = shuffleUntilPinned?.map((t) => ({ id: t.id, tokens: t.tokens }));
+  return (
+    <script dangerouslySetInnerHTML={{ __html: getAntiFlashScript(defaultTheme?.tokens, pool) }} />
+  );
 }

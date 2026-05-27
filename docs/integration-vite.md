@@ -149,11 +149,42 @@ A theme can override as much or as little as you like: change only colors for a
 quick re-skin, or also move radius, shadow, border width, type, and motion for a
 full redesign. Structural tokens you don't set fall back to the schema defaults.
 
+## Optional: shuffle themes until the visitor picks one
+
+For a showcase, you can show a **random theme on every visit** until the visitor
+pins one by selecting it. It stays flash-free: the anti-flash plugin inlines a pool
+of themes and applies a random one before first paint.
+
+```ts
+// vite.config.ts
+import { veneer } from '@veneer/theme/vite'
+import { themes } from './src/themes'
+
+export default defineConfig({
+  // pass the themes a first-time visitor may land on (id + tokens is enough)
+  plugins: [react(), tailwindcss(), veneer({ shuffleUntilPinned: themes })],
+})
+```
+
+```tsx
+// give the in-page shuffle the same pool so both draw from the same themes
+<ThemeProvider themes={themes} shuffleIds={themes.map((t) => t.id)}>
+  <App />
+</ThemeProvider>
+```
+
+Selecting a theme in the switcher **pins** it (`useTheme().pinned` becomes `true`)
+and saves it, which stops the shuffling. `useTheme().shuffle()` re-rolls and returns
+to the unpinned state — wire it to a "Shuffle" control. Omit `shuffleUntilPinned`
+entirely for the ordinary behavior (apply the saved theme, no shuffling).
+
 ## API
 
-`@veneer/theme` exports the runtime: `ThemeProvider`, `useTheme()`, `applyTheme`,
-`defineTheme`, `validateTheme`, `parseAndValidate` / `fetchTheme` / `isFetchableUrl`,
-`tokenValue`, `TOKEN_SCHEMA`, `BUILTIN_THEMES`, `getAntiFlashScript`, and the
-`Theme` / `ThemeLibrary` types. Subpaths: `@veneer/theme/tokens.css` (the
-`@theme` block), `@veneer/theme/vite` (this plugin), `@veneer/theme/next` (the
-Next adapter), `@veneer/theme/node` (the `css-tree` value checker for CI).
+`@veneer/theme` exports the runtime: `ThemeProvider`, `useTheme()` (which returns
+`current`, `enabledThemes`, `setCurrent`, the import/preview actions, and — for the
+shuffle feature — `pinned` and `shuffle()`), `applyTheme`, `defineTheme`,
+`validateTheme`, `parseAndValidate` / `fetchTheme` / `isFetchableUrl`, `tokenValue`,
+`TOKEN_SCHEMA`, `BUILTIN_THEMES`, `getAntiFlashScript`, and the `Theme` /
+`ThemeLibrary` types. Subpaths: `@veneer/theme/tokens.css` (the `@theme` block),
+`@veneer/theme/vite` (this plugin), `@veneer/theme/next` (the Next adapter),
+`@veneer/theme/node` (the `css-tree` value checker for CI).

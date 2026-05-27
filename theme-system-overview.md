@@ -2,7 +2,7 @@
 
 A user-extensible theming system for the application. The app ships with a small set of built-in themes; users can import additional themes from a shared **GitHub gallery**, curate which ones appear in their switcher, and author their own themes locally and contribute them back. There is no custom marketplace server: themes are browsed as JSON files in a public repo and imported into the app client-side. The system is built on Tailwind CSS v4 with CSS custom properties as the runtime mechanism, and treats themes as **data, not code** — making them safe to load from untrusted sources.
 
-This document describes the architecture and the mental model. The companion document, `theme-system-implementation-plan.md`, breaks the work into phases.
+This document is the architecture deep-dive and mental model. For getting Veneer into your own app see the [integration guides](./docs/integration-vite.md); for authoring see the [authoring guide](./docs/authoring-guide.md) and the generated [token reference](./docs/schema-reference.md).
 
 ---
 
@@ -86,10 +86,12 @@ type TokenType =
   | 'color'        // any valid CSS color
   | 'length'       // px, rem, em, %, etc.
   | 'shadow'       // box-shadow value (can include inset, multiple layers)
-  | 'fontFamily'   // CSS font-family stack
+  | 'fontFamily'   // CSS font-family stack (restricted to the bundled set)
   | 'number'       // unitless number (opacity, line-height, font-weight)
-  | 'easing'       // CSS timing function (cubic-bezier, linear, etc.)
-  | 'gradient';    // linear-gradient / radial-gradient string
+  | 'easing'       // CSS timing function (cubic-bezier, linear, steps, …)
+  | 'gradient'     // linear/radial/conic-gradient string
+  | 'textShadow'   // text-shadow value (offsets, blur, color; may be multi-layer)
+  | 'dropShadow';  // drop-shadow() filter argument
 
 interface TokenDef {
   name: string;             // CSS var name without "--", e.g. "color-primary"
@@ -107,7 +109,7 @@ interface TokenDef {
 
 ### Token categories
 
-The v1 schema lands at **83 tokens**, within the **80–120** target. This is larger than a typical "color palette" theme system but smaller than a full design-system spec (Material has ~200). The size is calibrated to allow genuinely different aesthetics — brutalist, neumorphic, glassmorphic, editorial, minimal — not just recolored variants of the same UI. The authoritative list is `src/theme/schema.ts`; the generated `docs/schema-reference.md` is its human-readable form. The counts below reflect the v1 schema.
+The v1 schema lands at **112 tokens**. This is larger than a typical "color palette" theme system but smaller than a full design-system spec (Material has ~200). The size is calibrated to allow genuinely different aesthetics — brutalist, neumorphic, glassmorphic, editorial, terminal — not just recolored variants of the same UI. The authoritative list is `packages/theme/src/schema.ts`; the generated `docs/schema-reference.md` is its human-readable form. The counts below reflect the v1 schema.
 
 **Colors (12)** — color-primary plus -hover / -active / -subtle; color-accent plus -hover / -active; color-success, -warning, -danger, -info; color-focus-ring.
 
@@ -115,19 +117,19 @@ The v1 schema lands at **83 tokens**, within the **80–120** target. This is la
 
 **Text (5)** — color-text (body), -text-muted, -text-subtle, -text-inverse, -text-on-primary.
 
-**Borders (6)** — color-border, -border-strong, -border-subtle (namespaced colors); border-width-thin / -default / -thick (`root` vars — Tailwind has no border-width namespace). Border-style is omitted from v1.
+**Borders (6)** — color-border, -border-strong, -border-subtle (namespaced colors); border-width-thin / -default / -thick (`root` vars — Tailwind has no border-width namespace).
 
-**Radii (7)** — radius-none (0px), -sm, -md, -lg, -xl, -2xl, -full (pill).
+**Radii (9)** — radius-none (0px) through -3xl, plus -full (pill).
 
-**Shadows (8)** — shadow-sm, -md, -lg, -xl (elevation scale); inset-shadow-sm, -lg (neumorphic insets — note the `inset-shadow-*` namespace, not `shadow-inset-*`); shadow-glow (retro/playful); shadow-card (semantic alias).
+**Shadows (18)** — the elevation scale (`shadow-2xs`…`-2xl`); inset shadows (`inset-shadow-*`, for neumorphic depressions — note the namespace, not `shadow-inset-*`); semantic aliases (`shadow-glow`, `-card`); and the separate `text-shadow-*` (incl. a multi-layer `text-shadow-glow`) and `drop-shadow-*` families.
 
-**Typography (25)** — font-sans, -serif, -mono, -display (family stacks, restricted to the bundled set); text-xs through text-6xl (10 size steps); font-weight-light / -normal / -medium / -bold / -black (the `--font-weight-*` namespace); leading-tight / -normal / -relaxed; tracking-tight / -normal / -wide.
+**Typography (36)** — font-sans, -serif, -mono, -display (family stacks, restricted to the bundled set); the full `text-xs`…`-9xl` size scale; `font-weight-thin`…`-black`; and leading / tracking steps.
 
 **Spacing (1)** — a single `spacing` base unit. Tailwind v4 derives the entire scale from it (`p-4` = `calc(var(--spacing) * 4)`), so overriding this one token rescales density globally (cramped brutalist vs. airy neumorphic vs. dense editorial).
 
-**Effects (6)** — blur-sm, -md, -lg (the `--blur-*` namespace feeds *both* `blur-*` and `backdrop-blur-*`, e.g. glassmorphism); gradient-primary (`root`); opacity-disabled, opacity-overlay (`root`).
+**Effects (12)** — `blur-xs`…`-2xl` (the `--blur-*` namespace feeds *both* `blur-*` and `backdrop-blur-*`, e.g. glassmorphism); the gradient set (`gradient-primary`/`-accent`/`-surface`/`-text`, `root` vars with no utility, read via `bg-[image:var(--gradient-*)]`); and `opacity-disabled` / `-overlay`.
 
-**Motion (7)** — duration-fast (80), -default (200), -slow (400) — milliseconds, `root` vars consumed via `duration-(--duration-default)`; ease-default, -snappy, -smooth, -bounce (the `--ease-*` namespace).
+**Motion (7)** — duration-fast / -default / -slow — milliseconds, `root` vars consumed via `duration-(--duration-default)`; ease-default, -snappy, -smooth, -bounce (the `--ease-*` namespace).
 
 ### Example tokens
 
@@ -163,11 +165,11 @@ const TOKEN_SCHEMA: TokenDef[] = [
 ];
 ```
 
-The full 83-token list lives in `src/theme/schema.ts`; this is a representative slice showing both bridges and the v4-aligned names.
+The full 112-token list lives in `packages/theme/src/schema.ts`; this is a representative slice showing both bridges and the v4-aligned names.
 
 ### What this schema size enables
 
-With the full 83-token vocabulary, themes can express fundamentally different design languages, not just color variants. A brutalist theme sets `border-width-thick: 4px`, `radius-md: 0px`, `shadow-md: 4px 4px 0 0 #000`, picks a tight tracking value and a display font like Archivo Black, and sets `duration-default: 80` for snappy motion. A neumorphic theme sets large radii, dual inset+outset shadows, low-contrast surface colors close to the page background, and a smooth easing curve. A glassmorphic theme uses semi-transparent surfaces (`color-surface: rgb(255 255 255 / 0.6)`), a meaningful `blur-md`, subtle borders, and gradient accents. An editorial theme reaches for a serif `font-display`, a larger `spacing` unit for airy density, and the upper end of the type scale.
+With the full 112-token vocabulary, themes can express fundamentally different design languages, not just color variants. A brutalist theme sets `border-width-thick: 4px`, `radius-md: 0px`, `shadow-md: 4px 4px 0 0 #000`, picks a tight tracking value and a display font like Archivo Black, and sets `duration-default: 80` for snappy motion. A neumorphic theme sets large radii, dual inset+outset shadows, low-contrast surface colors close to the page background, and a smooth easing curve. A glassmorphic theme uses semi-transparent surfaces (`color-surface: rgb(255 255 255 / 0.6)`), a meaningful `blur-md`, subtle borders, and gradient accents. An editorial theme reaches for a serif `font-display`, a larger `spacing` unit for airy density, and the upper end of the type scale.
 
 The schema doubles as a UI specification for the eventual editor, a documentation source for authors, and a JSON Schema generator for editor autocomplete in VS Code. One source of truth.
 
@@ -255,6 +257,10 @@ This approach has several useful properties: it works for any theme without prio
 
 To prevent a flash-of-default-theme on initial load, a small synchronous script injected into `<head>` reads the user's current theme ID from `localStorage` and applies it before the React app hydrates. This is the same technique used by every dark-mode implementation.
 
+### Shuffle and pinning
+
+An app can opt into showing a **random theme on every visit** until the user picks one — a fitting default for a showcase. The anti-flash script takes an optional pool of themes; when the saved library isn't `pinned` (including the first-ever, empty load), it picks one at random, applies it before first paint (still flash-free), and records the pick on `<html>` for the provider to adopt. The pick is deliberately *not* persisted, so each reload re-rolls. Selecting a theme from the switcher sets `pinned: true` and saves it, which stops the shuffling; a "Shuffle" control returns to the unpinned, re-rolling state. Apps that don't pass a pool get the ordinary "apply the saved theme" behavior with no shuffling.
+
 ---
 
 ## Library and state
@@ -276,8 +282,9 @@ interface Theme {
 
 interface ThemeLibrary {
   themes: Theme[];                    // everything in the library
-  enabledIds: Set<string>;            // subset shown in switcher
-  currentId: string;                  // currently applied theme
+  enabledIds: string[];               // subset shown in switcher, in display order
+  currentId: string;                  // currently applied theme (must be enabled)
+  pinned?: boolean;                   // see "Shuffle and pinning" below
 }
 ```
 
@@ -300,10 +307,10 @@ This works well because the token schema is published as a **JSON Schema documen
 
 ```json
 {
-  "$schema": "https://yourapp.com/schemas/theme-v1.json",
+  "$schema": "https://veneer.app/schemas/theme-v1.json",
   "name": "Midnight Oak",
   "description": "Warm dark theme with amber accents",
-  "author": "jane",
+  "author": { "id": "jane", "name": "Jane" },
   "version": "1.0.0",
   "schemaVersion": 1,
   "tags": ["dark", "warm"],
@@ -326,7 +333,7 @@ The system ships with:
 
 - A **schema reference** document, auto-generated from `TOKEN_SCHEMA` so it can never drift
 - An **authoring guide** with conceptual advice on coherent palettes, contrast, and common pitfalls
-- An **examples directory** of 4–6 themes covering different aesthetic strategies (clean light, proper dark, high-contrast, warm paper, brutalist, etc.), each with a brief notes file explaining the choices
+- A **gallery** of 12 themes covering different aesthetic strategies (minimalist, editorial, warm paper, brutalist, neumorphic, glassmorphic, terminal, …), each with a `notes.md` explaining the choices and doubling as a fork-ready template
 
 ---
 
@@ -366,7 +373,7 @@ A theme that fails any validation step is rejected outright, not silently degrad
 
 The `url()` blacklist has an important consequence for typography: **a theme cannot load a web font**, because loading one requires `url()` (a `@font-face` src or a stylesheet link), which is exactly what the security model forbids. A `fontFamily` token can therefore only *name* a font — and that name only renders as intended if the font is already available on the page.
 
-So the app **bundles a curated font set** — a sans, a serif, a mono, and one or two display faces (e.g. a dramatic display family for brutalist/editorial looks) — loaded by the app itself, not by any theme. `fontFamily` token values are documented and validated against this bundled set plus generic system stacks (`system-ui`, `serif`, `monospace`, etc.). A theme that names a font outside this set is flagged in validation rather than silently falling back to a system default and looking broken. This is what makes the editorial and brutalist example themes actually render the way their previews promise. Expanding the bundled font set is a deliberate app-level decision, versioned alongside the schema.
+So the app **bundles a curated font set** — sans, serifs, monos, and several display faces (in the playground: Inter, Source Serif 4, Fraunces, EB Garamond, JetBrains Mono, IBM Plex Mono, Archivo Black, MS Sans Serif, Orbitron, Quicksand) — loaded by the app itself, not by any theme. `fontFamily` token values are validated against this bundled set plus generic system stacks (`system-ui`, `serif`, `monospace`, etc.). A theme that names a font outside this set is flagged in validation rather than silently falling back to a system default and looking broken. This is what makes the editorial and terminal example themes actually render the way their previews promise. Expanding the bundled font set is a deliberate app-level decision, versioned alongside the schema.
 
 The reason this works as a security boundary: themes can only ever set the value of declared CSS custom properties via the `applyTheme()` function. Those properties are then consumed by Tailwind utility classes already in the app's compiled CSS. There is no path for a theme to introduce new CSS rules, modify HTML, or execute code. The schema is the only attack surface, and it's narrow and validated.
 

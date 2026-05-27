@@ -47,7 +47,7 @@ Full step-by-step (CLI and manual) for each framework:
 
 | Import | What |
 |---|---|
-| `@veneer/theme` | `ThemeProvider`, `useTheme`, `applyTheme`, `validateTheme`, `parseAndValidate` / `fetchTheme` / `isFetchableUrl`, `tokenValue`, `browserCheckValue`, `getAntiFlashScript`, `TOKEN_SCHEMA`, `BUILTIN_THEMES`, `SCHEMA_VERSION`, and the `Theme` / `ThemeLibrary` / `TokenDef` types |
+| `@veneer/theme` | `ThemeProvider`, `useTheme`, `applyTheme`, `defineTheme`, `validateTheme`, `parseAndValidate` / `fetchTheme` / `isFetchableUrl`, `tokenValue`, `browserCheckValue`, `getAntiFlashScript`, `TOKEN_SCHEMA`, `BUILTIN_THEMES`, `SCHEMA_VERSION`, and the `Theme` / `ThemeLibrary` / `TokenDef` types |
 | `@veneer/theme/tokens.css` | the generated `@theme` / `:root` token block |
 | `@veneer/theme/vite` | `veneer()` — the Vite anti-flash plugin |
 | `@veneer/theme/next` | `<AntiFlashScript />` — the Next anti-flash component |
@@ -68,6 +68,15 @@ only bundled fonts (no `url()`), and contain no dangerous patterns (`url()`,
 `@import`, `javascript:`, `expression()`, `; { } < >`). Because a theme can only
 set declared CSS variables already consumed by compiled utilities, there's no path
 from a theme to new CSS, modified HTML, or executed code.
+
+## Optional: shuffle until pinned
+
+For a showcase, pass `veneer({ shuffleUntilPinned: themes })` (Vite) and
+`<ThemeProvider shuffleIds={...}>` to show a random theme on every visit — applied
+before first paint, so still flash-free — until the visitor selects one, which pins
+it. `useTheme()` exposes `pinned` and `shuffle()` to build the control. Omit it for
+the ordinary "apply the saved theme" behavior. See the
+[Vite guide](https://github.com/your-org/veneer/blob/main/docs/integration-vite.md).
 
 ## License
 
