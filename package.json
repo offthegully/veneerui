@@ -15,6 +15,7 @@
     "build": "npm run build:theme && npm run build -w playground && npm run build:cli",
     "dev": "npm run build:theme && npm run dev -w playground",
     "preview": "npm run preview -w playground",
+    "start": "npm run preview -w playground -- -- --port 3002",
     "lint": "npm run lint --workspaces --if-present",
     "typecheck": "tsc -p tsconfig.json && npm run build:theme && npm run gen:registry && npm run typecheck --workspaces --if-present",
     "test": "npm run build:theme && npm run gen:registry && npm run test --workspaces --if-present"
