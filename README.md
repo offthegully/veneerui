@@ -4,9 +4,9 @@
 surface of an app — color, typography, spacing, borders, radii, shadows, blur,
 and motion — is driven by a fixed set of design **tokens**. A *theme* is a small
 JSON file that overrides some of those tokens. Switching is instant (one DOM
-write, no re-render), users can import and author their own themes, and themes
-are treated as **inert data, not code**, so they're safe to load from untrusted
-sources.
+write, no re-render); an app ships its own set of themes while users can import
+and author more; and themes are treated as **inert data, not code**, so they're
+safe to load from untrusted sources.
 
 There is no server and no account. A user's theme library lives entirely in their
 browser's `localStorage`.
@@ -99,6 +99,29 @@ normal dependency; UI components are **copied into your project** (shadcn-style)
 because Tailwind v4 doesn't scan `node_modules`. The anti-flash script is the only
 framework-specific piece: a Vite plugin (`@veneer/theme/vite`) or a Next
 component (`@veneer/theme/next`).
+
+**Shipping your own themes.** By default `<ThemeProvider>` ships Veneer's five
+built-in themes. To ship *your own* set, author them with `defineTheme` (it fills
+in the bookkeeping, so you write only the tokens) and pass them in:
+
+```tsx
+import { ThemeProvider, defineTheme } from '@veneer/theme'
+
+const themes = [
+  defineTheme({ id: 'brand', name: 'Brand', tokens: { 'color-primary': '#5b21b6', /* … */ } }),
+  defineTheme({ id: 'brand-dark', name: 'Brand Dark', tokens: { /* … */ } }),
+]
+
+// <ThemeProvider themes={themes} defaultThemeId="brand">…</ThemeProvider>
+```
+
+Your themes are **app-owned**: non-deletable and re-seeded from the live
+definitions on every load, while themes a visitor imports or authors are
+preserved alongside them. A theme can change as little as a few colors or as much
+as radius, shadow, type, and motion — anything it omits falls back to the schema
+default. To also kill the flash on a visitor's first-ever load, pass that same
+default to the anti-flash wiring (`veneer({ defaultTheme })` in Vite,
+`<AntiFlashScript defaultTheme />` in Next).
 
 Step-by-step, CLI and manual:
 **[Vite guide](./docs/integration-vite.md)** · **[Next.js guide](./docs/integration-next.md)**.
@@ -387,10 +410,11 @@ Run from the repo root; each orchestrates across the workspaces.
 
 ## Testing & quality
 
-`npm test` runs **75 tests** across the workspaces: theme validation, schema
-expressiveness, storage reconciliation, built-in and gallery theme validity, the
-import pipeline, conformance, and the CLI (framework detection, idempotent config
-patching, registry resolution).
+`npm test` runs **89 tests** across the workspaces: theme validation, schema
+expressiveness, the `defineTheme` helper, storage reconciliation (including
+developer-supplied theme sets), the anti-flash script, built-in and gallery theme
+validity, the import pipeline, conformance, and the CLI (framework detection,
+idempotent config patching, registry resolution).
 
 Two mechanisms keep the app fully themeable — the contract that components use
 *only* semantic token utilities, never hardcoded colors:
@@ -406,29 +430,6 @@ Two mechanisms keep the app fully themeable — the contract that components use
 Every shipped built-in and gallery theme is run through the real validator in
 tests, so an invalid value or a typo'd token name fails the build rather than
 becoming a dead override at runtime.
-
----
-
-## Status & roadmap
-
-Built and verified: **Phase 0** (schema, types, isomorphic validation,
-generators, bundled fonts) · **Phase 1** (runtime, provider, anti-flash switcher,
-5 built-in themes, persistence) · **Phase 2** (adoption lint rule + conformance) ·
-**Phase 3** (local authoring & import: preview/import UI, 8 gallery themes, guides) ·
-**Phase 6** (packaging: `@veneer/theme` package, Tailwind interlock + Vite/Next
-anti-flash adapters, the `veneer` CLI, and integration docs — publishing to npm
-is the remaining manual step).
-
-Planned:
-
-- **Phase 4 — Gallery (GitHub).** Publish `gallery/` as a public repo with a CI
-  Action running `validateTheme()` on every PR, and an optional GitHub Pages
-  browse site. (The switcher's "Browse gallery" link is a placeholder until then;
-  import-by-URL already works today.)
-- **Phase 5 — Library curation.** A management UI for enable/disable, reorder, and
-  remove across a large library, plus an optional update check against a theme's
-  `sourceUrl`. (The underlying `setEnabled`/`removeTheme` operations already exist
-  in the provider.)
 
 ---
 

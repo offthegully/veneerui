@@ -67,6 +67,28 @@ export function nextAntiFlashSnippet(): string {
   ].join('\n');
 }
 
+/**
+ * The "ship your own themes" hint appended to the provider snippet. The default
+ * wiring uses Veneer's built-ins (zero config); this shows how to supply your
+ * own set, and where to pass the same default so there's no first-paint flash.
+ */
+function customThemesHint(framework: 'vite' | 'next'): string[] {
+  const antiFlash =
+    framework === 'next'
+      ? '//   app/layout.tsx: <AntiFlashScript defaultTheme={themes[0]} />'
+      : '//   vite.config: veneer({ defaultTheme: themes[0] })';
+  return [
+    '',
+    '// To ship your own themes instead of the built-ins, define them once and',
+    '// pass them in — then pass the same default to the anti-flash wiring so a',
+    '// first-ever visit paints your default with no flash:',
+    "//   import { defineTheme } from '@veneer/theme'",
+    "//   const themes = [defineTheme({ id: 'brand', name: 'Brand', tokens: { /* ... */ } })]",
+    '//   <ThemeProvider themes={themes} defaultThemeId="brand">',
+    antiFlash,
+  ];
+}
+
 /** The client provider-wrapper snippet (printed by `init` for both frameworks). */
 export function providerSnippet(framework: 'vite' | 'next'): string {
   if (framework === 'next') {
@@ -79,6 +101,7 @@ export function providerSnippet(framework: 'vite' | 'next'): string {
       '}',
       '',
       '// then wrap {children} with <Providers> in app/layout.tsx',
+      ...customThemesHint('next'),
     ].join('\n');
   }
   return [
@@ -92,5 +115,6 @@ export function providerSnippet(framework: 'vite' | 'next'): string {
     '    </ThemeProvider>',
     '  </StrictMode>,',
     ')',
+    ...customThemesHint('vite'),
   ].join('\n');
 }

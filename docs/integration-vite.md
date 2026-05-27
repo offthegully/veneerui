@@ -96,10 +96,63 @@ enforce this — copy them in too if you want the guarantee in your own project.
 Your app ships a **default theme** as its brand; users import or author others.
 See the [authoring guide](./authoring-guide.md) and [token reference](./schema-reference.md).
 
+## Shipping your own themes
+
+By default `<ThemeProvider>` ships Veneer's built-in themes. To ship *your own*
+set instead, author them with `defineTheme` (it fills in the bookkeeping —
+`schemaVersion`, `source`, `version`, author — so you write only the meaningful
+part) and pass them to the provider:
+
+```tsx
+// src/themes.ts — keep this a module-level constant
+import { defineTheme } from '@veneer/theme'
+
+export const themes = [
+  defineTheme({ id: 'brand', name: 'Brand', tokens: { 'color-primary': '#5b21b6', /* ... */ } }),
+  defineTheme({ id: 'brand-dark', name: 'Brand Dark', tokens: { /* ... */ } }),
+]
+```
+
+```tsx
+// src/main.tsx
+import { ThemeProvider } from '@veneer/theme'
+import { themes } from './themes'
+
+<ThemeProvider themes={themes} defaultThemeId="brand">
+  <App />
+</ThemeProvider>
+```
+
+Your themes are the **app-owned tier**: they can't be deleted from the library,
+and on every load the live definitions replace the persisted copies (so shipping
+a theme change reaches returning users). Themes a visitor imports or authors are
+preserved alongside them.
+
+To kill the flash on a visitor's *first-ever* load (before anything is saved),
+pass that same default theme to the anti-flash plugin so its tokens paint
+immediately:
+
+```ts
+// vite.config.ts
+import { veneer } from '@veneer/theme/vite'
+import { themes } from './src/themes'
+
+export default defineConfig({
+  plugins: [react(), tailwindcss(), veneer({ defaultTheme: themes[0] })],
+})
+```
+
+Keep the plugin's `defaultTheme` in sync with the provider's `defaultThemeId` —
+the script runs before React, so it can't read the prop.
+
+A theme can override as much or as little as you like: change only colors for a
+quick re-skin, or also move radius, shadow, border width, type, and motion for a
+full redesign. Structural tokens you don't set fall back to the schema defaults.
+
 ## API
 
 `@veneer/theme` exports the runtime: `ThemeProvider`, `useTheme()`, `applyTheme`,
-`validateTheme`, `parseAndValidate` / `fetchTheme` / `isFetchableUrl`,
+`defineTheme`, `validateTheme`, `parseAndValidate` / `fetchTheme` / `isFetchableUrl`,
 `tokenValue`, `TOKEN_SCHEMA`, `BUILTIN_THEMES`, `getAntiFlashScript`, and the
 `Theme` / `ThemeLibrary` types. Subpaths: `@veneer/theme/tokens.css` (the
 `@theme` block), `@veneer/theme/vite` (this plugin), `@veneer/theme/next` (the

@@ -13,16 +13,34 @@ import { useCallback, useLayoutEffect, useMemo, useState, type ReactNode } from 
 import type { Theme, ThemeLibrary } from './types';
 import { applyTheme } from './apply';
 import { loadLibrary, saveLibrary } from './storage';
-import { BUILTIN_IDS, DEFAULT_THEME_ID } from './builtin';
+import { BUILTIN_THEMES, DEFAULT_THEME_ID } from './builtin';
 import { ThemeContext, type ThemeContextValue } from './theme-context';
 
-function pickFallbackId(enabledIds: string[]): string {
-  if (enabledIds.includes(DEFAULT_THEME_ID)) return DEFAULT_THEME_ID;
-  return enabledIds[0] ?? DEFAULT_THEME_ID;
+function pickFallbackId(enabledIds: string[], defaultId: string): string {
+  if (enabledIds.includes(defaultId)) return defaultId;
+  return enabledIds[0] ?? defaultId;
 }
 
-export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [library, setLibrary] = useState<ThemeLibrary>(loadLibrary);
+export interface ThemeProviderProps {
+  children: ReactNode;
+  /**
+   * The app-owned theme set. Defaults to Veneer's built-ins. Pass your own to
+   * ship a custom set. Use a module-level constant — the seed runs once, so a
+   * fresh array on every render is wasted work (and won't re-seed the library).
+   */
+  themes?: Theme[];
+  /** Theme applied on a visitor's first load. Defaults to the first `themes` entry. */
+  defaultThemeId?: string;
+}
+
+export function ThemeProvider({
+  children,
+  themes = BUILTIN_THEMES,
+  defaultThemeId = themes[0]?.id ?? DEFAULT_THEME_ID,
+}: ThemeProviderProps) {
+  const [library, setLibrary] = useState<ThemeLibrary>(() => loadLibrary(themes, defaultThemeId));
+  // The app-owned tier: these ids are non-deletable and define the fallback set.
+  const appThemeIds = useMemo(() => new Set(themes.map((t) => t.id)), [themes]);
   // A theme being previewed from the import screen — applied but not yet saved.
   const [preview, setPreview] = useState<Theme | null>(null);
 
@@ -69,15 +87,15 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   const removeTheme = useCallback(
     (id: string) =>
       update((lib) => {
-        if (BUILTIN_IDS.has(id)) return lib;
+        if (appThemeIds.has(id)) return lib;
         const enabledIds = lib.enabledIds.filter((e) => e !== id);
         return {
           themes: lib.themes.filter((t) => t.id !== id),
           enabledIds,
-          currentId: lib.currentId === id ? pickFallbackId(enabledIds) : lib.currentId,
+          currentId: lib.currentId === id ? pickFallbackId(enabledIds, defaultThemeId) : lib.currentId,
         };
       }),
-    [update],
+    [update, appThemeIds, defaultThemeId],
   );
 
   const setEnabled = useCallback(
@@ -90,10 +108,10 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
           : lib.enabledIds.filter((e) => e !== id);
         const currentId = enabledIds.includes(lib.currentId)
           ? lib.currentId
-          : pickFallbackId(enabledIds);
+          : pickFallbackId(enabledIds, defaultThemeId);
         return { ...lib, enabledIds, currentId };
       }),
-    [update],
+    [update, defaultThemeId],
   );
 
   const previewTheme = useCallback((theme: Theme) => setPreview(theme), []);

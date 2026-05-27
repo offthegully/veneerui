@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { addTokensImport, addViteAntiFlash, TOKENS_IMPORT } from './patch';
+import { addTokensImport, addViteAntiFlash, providerSnippet, TOKENS_IMPORT } from './patch';
 
 describe('addTokensImport', () => {
   it('inserts the token @import right after the tailwindcss import', () => {
@@ -52,5 +52,23 @@ describe('addViteAntiFlash', () => {
     const out = addViteAntiFlash('export default {}');
     expect(out.changed).toBe(false);
     expect(out.reason).toBeTruthy();
+  });
+});
+
+describe('providerSnippet', () => {
+  it('keeps the zero-config <ThemeProvider> as the default wiring', () => {
+    expect(providerSnippet('vite')).toContain('<ThemeProvider>');
+    expect(providerSnippet('next')).toContain('<ThemeProvider>{children}</ThemeProvider>');
+  });
+
+  it('hints how to ship your own themes with matching anti-flash wiring', () => {
+    const vite = providerSnippet('vite');
+    expect(vite).toContain('defineTheme');
+    expect(vite).toContain('defaultThemeId="brand"');
+    expect(vite).toContain('veneer({ defaultTheme: themes[0] })');
+
+    const next = providerSnippet('next');
+    expect(next).toContain('defineTheme');
+    expect(next).toContain('<AntiFlashScript defaultTheme={themes[0]} />');
   });
 });

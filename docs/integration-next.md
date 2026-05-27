@@ -92,6 +92,59 @@ the DOM — not to React's tree — the client `ThemeProvider` reconciles to the
 values on hydration with no mismatch warning. Returning users see their theme
 immediately.
 
+## Shipping your own themes
+
+By default `<ThemeProvider>` ships Veneer's built-in themes. To ship *your own*
+set, author them with `defineTheme` (it fills in `schemaVersion`, `source`,
+`version`, and author) in a module-level constant and pass them to the provider:
+
+```tsx
+// app/themes.ts
+import { defineTheme } from '@veneer/theme'
+
+export const themes = [
+  defineTheme({ id: 'brand', name: 'Brand', tokens: { 'color-primary': '#5b21b6', /* ... */ } }),
+  defineTheme({ id: 'brand-dark', name: 'Brand Dark', tokens: { /* ... */ } }),
+]
+```
+
+```tsx
+// app/providers.tsx
+'use client'
+import { ThemeProvider } from '@veneer/theme'
+import { themes } from './themes'
+
+export function Providers({ children }: { children: React.ReactNode }) {
+  return (
+    <ThemeProvider themes={themes} defaultThemeId="brand">
+      {children}
+    </ThemeProvider>
+  )
+}
+```
+
+Your themes are the **app-owned tier** — non-deletable and re-seeded from the
+live definitions on every load — while themes a visitor imports or authors are
+preserved alongside them.
+
+To kill the flash on a visitor's *first-ever* load, pass the same default theme
+to `<AntiFlashScript>` so its tokens paint before hydration:
+
+```tsx
+// app/layout.tsx
+import { AntiFlashScript } from '@veneer/theme/next'
+import { themes } from './themes'
+
+<head><AntiFlashScript defaultTheme={themes[0]} /></head>
+```
+
+Keep `AntiFlashScript`'s `defaultTheme` in sync with the provider's
+`defaultThemeId` — the script runs before React, so it can't read the prop.
+
+A theme can override as much or as little as you like — change only colors for a
+quick re-skin, or also move radius, shadow, type, and motion for a full
+redesign. Tokens you don't set fall back to the schema defaults.
+
 ## Using themes & API
 
 Same as Vite: style with semantic token utilities (`bg-surface`, `text-text`, …),

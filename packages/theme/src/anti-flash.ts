@@ -16,21 +16,39 @@
  */
 import { STORAGE_KEY } from './storage-key';
 
-/** The inline JS as a string (an IIFE), without the surrounding `<script>` tags. */
-export function getAntiFlashScript(): string {
+/**
+ * The inline JS as a string (an IIFE), without the surrounding `<script>` tags.
+ *
+ * Pass `defaultTokens` — the token map of the app's default theme — to also kill
+ * the *cold* flash: on a visitor's first-ever load there's no saved library, so
+ * without this the page paints the CSS `:root` schema defaults before React
+ * applies the real default. With it, the default theme's tokens are inlined and
+ * applied immediately. Keep it in sync with `<ThemeProvider defaultThemeId>`;
+ * this script runs before React and can't read the prop. Omit it to preserve
+ * the original behavior (no overrides until a theme has been saved).
+ */
+export function getAntiFlashScript(defaultTokens?: Record<string, string>): string {
   // Written in ES5-ish, dependency-free style on purpose: it runs before the
-  // bundle, so it can't rely on anything the app ships. STORAGE_KEY is inlined
-  // as a literal so the string stays self-contained.
+  // bundle, so it can't rely on anything the app ships. STORAGE_KEY and the
+  // default tokens are inlined as literals so the string stays self-contained.
+  // `<` is escaped so a token value can never break out of the <script> tag.
+  const defaultLiteral = defaultTokens
+    ? JSON.stringify(defaultTokens).replace(/</g, '\\u003c')
+    : 'null';
   return (
     '(function(){try{' +
+    'var d=' +
+    defaultLiteral +
+    ';var tokens=null;' +
     'var raw=localStorage.getItem(' +
     JSON.stringify(STORAGE_KEY) +
-    ');if(!raw)return;' +
-    'var lib=JSON.parse(raw);var themes=(lib&&lib.themes)||[];var theme=null;' +
-    'for(var i=0;i<themes.length;i++){if(themes[i]&&themes[i].id===lib.currentId){theme=themes[i];break;}}' +
-    'if(!theme||!theme.tokens)return;' +
+    ');' +
+    'if(raw){var lib=JSON.parse(raw);var themes=(lib&&lib.themes)||[];' +
+    'for(var i=0;i<themes.length;i++){if(themes[i]&&themes[i].id===lib.currentId&&themes[i].tokens){tokens=themes[i].tokens;break;}}}' +
+    'if(!tokens)tokens=d;' +
+    'if(!tokens)return;' +
     'var s=document.documentElement.style;' +
-    'for(var k in theme.tokens){if(Object.prototype.hasOwnProperty.call(theme.tokens,k)){s.setProperty("--"+k,theme.tokens[k]);}}' +
+    'for(var k in tokens){if(Object.prototype.hasOwnProperty.call(tokens,k)){s.setProperty("--"+k,tokens[k]);}}' +
     '}catch(e){}})();'
   );
 }

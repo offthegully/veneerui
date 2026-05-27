@@ -9,45 +9,58 @@
  * (anti-flash.ts) apply the current theme before any JS module loads — both read
  * STORAGE_KEY from ./storage-key so they can never drift.
  */
-import type { ThemeLibrary } from './types';
-import { BUILTIN_THEMES, BUILTIN_IDS, DEFAULT_THEME_ID } from './builtin';
+import type { Theme, ThemeLibrary } from './types';
+import { BUILTIN_THEMES, DEFAULT_THEME_ID } from './builtin';
 import { STORAGE_KEY } from './storage-key';
 
 export { STORAGE_KEY } from './storage-key';
 
-function defaultLibrary(): ThemeLibrary {
+function defaultLibrary(appThemes: Theme[], defaultId: string): ThemeLibrary {
   return {
-    themes: [...BUILTIN_THEMES],
-    enabledIds: BUILTIN_THEMES.map((t) => t.id),
-    currentId: DEFAULT_THEME_ID,
+    themes: [...appThemes],
+    enabledIds: appThemes.map((t) => t.id),
+    currentId: defaultId,
   };
 }
 
 /**
- * Load and reconcile the library. Built-ins are app-owned: the live definitions
- * always replace whatever stale copies were persisted, and user-imported themes
- * are preserved. enabledIds/currentId are clamped to themes that actually exist.
+ * Load and reconcile the library against the app's own theme set.
+ *
+ * `appThemes` is the app-owned tier (the package built-ins by default, or a set
+ * the developer ships via `<ThemeProvider themes={...}>`); `defaultId` is the
+ * theme applied on a fresh load. The live `appThemes` always replace whatever
+ * app-owned copies were persisted — so an app update that changes or removes a
+ * shipped theme is reflected even for returning users — while a visitor's own
+ * imported/custom themes are preserved. We partition by `source`, not by id:
+ * an id-based filter would leave a *removed* shipped theme lingering forever as
+ * a fake "user theme". enabledIds/currentId are clamped to themes that exist.
  */
-export function loadLibrary(): ThemeLibrary {
+export function loadLibrary(
+  appThemes: Theme[] = BUILTIN_THEMES,
+  defaultId: string = DEFAULT_THEME_ID,
+): ThemeLibrary {
   let raw: string | null;
   try {
     raw = localStorage.getItem(STORAGE_KEY);
   } catch {
-    return defaultLibrary(); // storage unavailable (private mode, disabled)
+    return defaultLibrary(appThemes, defaultId); // storage unavailable (private mode, disabled)
   }
-  if (!raw) return defaultLibrary();
+  if (!raw) return defaultLibrary(appThemes, defaultId);
 
   try {
     const parsed = JSON.parse(raw) as Partial<ThemeLibrary>;
-    if (!parsed || !Array.isArray(parsed.themes)) return defaultLibrary();
+    if (!parsed || !Array.isArray(parsed.themes)) return defaultLibrary(appThemes, defaultId);
 
-    // Drop any persisted built-ins and re-seed from the live definitions, so an
-    // app update that changes a built-in is reflected even for returning users.
+    // Keep only the user tier (imported/custom) and re-seed the app tier from
+    // the live definitions, so the app stays authoritative over what it ships.
     const userThemes = parsed.themes.filter(
       (t): t is ThemeLibrary['themes'][number] =>
-        !!t && typeof t === 'object' && typeof t.id === 'string' && !BUILTIN_IDS.has(t.id),
+        !!t &&
+        typeof t === 'object' &&
+        typeof t.id === 'string' &&
+        (t.source === 'imported' || t.source === 'custom'),
     );
-    const themes = [...BUILTIN_THEMES, ...userThemes];
+    const themes = [...appThemes, ...userThemes];
     const ids = new Set(themes.map((t) => t.id));
 
     let enabledIds = (Array.isArray(parsed.enabledIds) ? parsed.enabledIds : []).filter(
@@ -58,13 +71,13 @@ export function loadLibrary(): ThemeLibrary {
     const currentId =
       typeof parsed.currentId === 'string' && enabledIds.includes(parsed.currentId)
         ? parsed.currentId
-        : enabledIds.includes(DEFAULT_THEME_ID)
-          ? DEFAULT_THEME_ID
+        : enabledIds.includes(defaultId)
+          ? defaultId
           : enabledIds[0];
 
     return { themes, enabledIds, currentId };
   } catch {
-    return defaultLibrary();
+    return defaultLibrary(appThemes, defaultId);
   }
 }
 
