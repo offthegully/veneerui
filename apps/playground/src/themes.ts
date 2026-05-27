@@ -60,10 +60,13 @@ function normalizeGallery(slug: string, src: GallerySource): Theme {
   };
 }
 
-/** Deliberate switcher/gallery order: light/neutral → expressive → dark/effect. */
+/** Deliberate gallery-panel order: light/neutral → expressive → dark/effect. */
 const GALLERY_ORDER = [
+  'sharp-minimalist',
   'editorial',
+  'warm-library',
   'sunset-paper',
+  'monospaced',
   'neumorphic',
   'high-contrast',
   'brutalist',
@@ -91,10 +94,29 @@ for (const t of defaults) byId.set(t.id, t);
 for (const t of galleryThemes) byId.set(t.id, t);
 
 /**
- * The full app theme set: 2 package defaults + 9 gallery themes = 11.
- * Module-level constant so the ThemeProvider seed is stable across renders.
+ * The full app theme set: 2 package defaults + 12 gallery themes = 14. This is
+ * the whole *library* — every entry shows in the "Browse gallery" panel and can
+ * be enabled. Module-level constant so the ThemeProvider seed is stable.
  */
 export const APP_THEMES: Theme[] = [...byId.values()];
 
 /** Applied on a visitor's first load (and the safe fallback). */
 export const APP_DEFAULT_THEME_ID = 'default-light';
+
+/**
+ * The curated set the switcher shows on a first load — eight solid themes that
+ * span the axes (clean, serif, warm, mono, structural, dark) without overwhelming.
+ * The other six stay in the library and remain one click away in the gallery
+ * panel; a returning visitor's own enabled set is preserved. Order here is the
+ * switcher order: neutral defaults → light/expressive → dark.
+ */
+export const APP_ENABLED_THEME_IDS = [
+  'default-light',
+  'default-dark',
+  'sharp-minimalist',
+  'editorial',
+  'warm-library',
+  'monospaced',
+  'brutalist',
+  'terminal',
+];

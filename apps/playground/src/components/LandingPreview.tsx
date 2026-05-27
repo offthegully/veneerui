@@ -121,7 +121,7 @@ export function LandingPreview() {
     // wash for most themes, a vivid color field for glass), so the translucent,
     // backdrop-blurred panels below have something to frost. Opaque themes are
     // unaffected — backdrop-blur does nothing behind a solid fill.
-    <div className="bg-[image:var(--gradient-surface)] text-text">
+    <div className="bg-(image:--gradient-surface) text-text">
       {/* Nav — non-sticky to avoid stacking against the app header/banner. */}
       <nav className="border-border [border-bottom-width:var(--border-width-default)]">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
@@ -160,7 +160,7 @@ export function LandingPreview() {
               trims the last glyph's trailing space and clips its right edge. The
               padding gives the clip region room; the negative margin cancels the
               width change so the centered line doesn't shift. */}
-          <span className="bg-clip-text text-transparent bg-[image:var(--gradient-text)] pr-[0.12em] -mr-[0.12em]">
+          <span className="bg-clip-text text-transparent bg-(image:--gradient-text) pr-[0.12em] mr-[-0.12em]">
             infinite skins
           </span>
         </h1>
@@ -221,7 +221,7 @@ export function LandingPreview() {
       {/* Showcase band — gradient with frosted card */}
       <section className="bg-surface-sunken">
         <div className="mx-auto max-w-6xl px-6 py-20">
-          <div className="relative overflow-hidden rounded-2xl p-10 sm:p-16 bg-[image:var(--gradient-primary)] [box-shadow:var(--shadow-xl)]">
+          <div className="relative overflow-hidden rounded-2xl p-10 sm:p-16 bg-(image:--gradient-primary) [box-shadow:var(--shadow-xl)]">
             <div className="max-w-xl">
               <h2 className="font-display text-4xl font-black tracking-tight text-text-on-primary">
                 See it before you save it

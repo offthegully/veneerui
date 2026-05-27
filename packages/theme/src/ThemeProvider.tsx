@@ -31,14 +31,24 @@ export interface ThemeProviderProps {
   themes?: Theme[];
   /** Theme applied on a visitor's first load. Defaults to the first `themes` entry. */
   defaultThemeId?: string;
+  /**
+   * Which themes the switcher shows on a *first* load. Defaults to every theme in
+   * `themes`; pass a curated subset to keep the switcher uncluttered while the
+   * rest stay in the library (and discoverable in the gallery panel). Returning
+   * visitors keep whatever set they've enabled, so this seeds, it doesn't pin.
+   */
+  defaultEnabledIds?: string[];
 }
 
 export function ThemeProvider({
   children,
   themes = BUILTIN_THEMES,
   defaultThemeId = themes[0]?.id ?? DEFAULT_THEME_ID,
+  defaultEnabledIds,
 }: ThemeProviderProps) {
-  const [library, setLibrary] = useState<ThemeLibrary>(() => loadLibrary(themes, defaultThemeId));
+  const [library, setLibrary] = useState<ThemeLibrary>(() =>
+    loadLibrary(themes, defaultThemeId, defaultEnabledIds),
+  );
   // The app-owned tier: these ids are non-deletable and define the fallback set.
   const appThemeIds = useMemo(() => new Set(themes.map((t) => t.id)), [themes]);
   // A theme being previewed from the import screen — applied but not yet saved.

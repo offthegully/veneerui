@@ -15,10 +15,27 @@ import { STORAGE_KEY } from './storage-key';
 
 export { STORAGE_KEY } from './storage-key';
 
-function defaultLibrary(appThemes: Theme[], defaultId: string): ThemeLibrary {
+/**
+ * The set shown in the switcher on a fresh load. Defaults to *every* app theme;
+ * pass `defaultEnabledIds` to ship a curated subset (the rest stay in the library
+ * and remain discoverable in the gallery panel). Unknown ids are dropped, and an
+ * empty/all-bogus list falls back to "all" so a typo can't leave an empty switcher.
+ */
+function seedEnabledIds(appThemes: Theme[], defaultEnabledIds?: string[]): string[] {
+  if (!defaultEnabledIds) return appThemes.map((t) => t.id);
+  const ids = new Set(appThemes.map((t) => t.id));
+  const seeded = defaultEnabledIds.filter((id) => ids.has(id));
+  return seeded.length > 0 ? seeded : appThemes.map((t) => t.id);
+}
+
+function defaultLibrary(
+  appThemes: Theme[],
+  defaultId: string,
+  defaultEnabledIds?: string[],
+): ThemeLibrary {
   return {
     themes: [...appThemes],
-    enabledIds: appThemes.map((t) => t.id),
+    enabledIds: seedEnabledIds(appThemes, defaultEnabledIds),
     currentId: defaultId,
   };
 }
@@ -34,22 +51,28 @@ function defaultLibrary(appThemes: Theme[], defaultId: string): ThemeLibrary {
  * imported/custom themes are preserved. We partition by `source`, not by id:
  * an id-based filter would leave a *removed* shipped theme lingering forever as
  * a fake "user theme". enabledIds/currentId are clamped to themes that exist.
+ *
+ * `defaultEnabledIds` seeds the switcher on a *first* load only; once a visitor
+ * has a persisted library their own enabled set is honored (they may have turned
+ * gallery themes on or off), so it is not re-applied on return.
  */
 export function loadLibrary(
   appThemes: Theme[] = BUILTIN_THEMES,
   defaultId: string = DEFAULT_THEME_ID,
+  defaultEnabledIds?: string[],
 ): ThemeLibrary {
   let raw: string | null;
   try {
     raw = localStorage.getItem(STORAGE_KEY);
   } catch {
-    return defaultLibrary(appThemes, defaultId); // storage unavailable (private mode, disabled)
+    return defaultLibrary(appThemes, defaultId, defaultEnabledIds); // storage unavailable (private mode, disabled)
   }
-  if (!raw) return defaultLibrary(appThemes, defaultId);
+  if (!raw) return defaultLibrary(appThemes, defaultId, defaultEnabledIds);
 
   try {
     const parsed = JSON.parse(raw) as Partial<ThemeLibrary>;
-    if (!parsed || !Array.isArray(parsed.themes)) return defaultLibrary(appThemes, defaultId);
+    if (!parsed || !Array.isArray(parsed.themes))
+      return defaultLibrary(appThemes, defaultId, defaultEnabledIds);
 
     // Keep only the user tier (imported/custom) and re-seed the app tier from
     // the live definitions, so the app stays authoritative over what it ships.
@@ -77,7 +100,7 @@ export function loadLibrary(
 
     return { themes, enabledIds, currentId };
   } catch {
-    return defaultLibrary(appThemes, defaultId);
+    return defaultLibrary(appThemes, defaultId, defaultEnabledIds);
   }
 }
 

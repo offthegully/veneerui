@@ -28,10 +28,13 @@ describe('gallery themes', () => {
       'editorial',
       'glassmorphic',
       'high-contrast',
+      'monospaced',
       'neon-arcade',
       'neumorphic',
+      'sharp-minimalist',
       'sunset-paper',
       'terminal',
+      'warm-library',
       'windows-95',
     ]);
   });

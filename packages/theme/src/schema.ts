@@ -210,6 +210,8 @@ const BUNDLED_FONT_FAMILIES = [
   'MS Sans Serif',
   'Orbitron Variable', 'Orbitron',
   'Quicksand Variable', 'Quicksand',
+  'EB Garamond Variable', 'EB Garamond',
+  'IBM Plex Mono',
 ];
 
 const GENERIC_FONT_KEYWORDS = [

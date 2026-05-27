@@ -15,15 +15,18 @@ fully-realized example of a different design language, not a stub.
 
 | Theme | Slug | Style |
 |---|---|---|
-| Brutalist | `brutalist` | Thick black borders, 0 radii, hard offset shadows |
-| Neumorphic | `neumorphic` | Soft extruded UI, paired light/dark shadows |
-| Glassmorphic | `glassmorphic` | Translucent frosted panels, backdrop blur, drop shadows |
+| Sharp Minimalist | `sharp-minimalist` | Near-black on white, single indigo, tight radii, Inter |
 | Editorial | `editorial` | Serif display, enlarged scale, magazine rhythm |
-| High Contrast | `high-contrast` | Black-on-white accessibility theme |
+| Warm Library | `warm-library` | EB Garamond throughout, cream paper, terracotta + sage |
 | Sunset Paper | `sunset-paper` | Warm cream paper, sunset gradient, playful motion |
-| Neon Arcade | `neon-arcade` | Synthwave neon, glowing text, gradient headlines |
-| Terminal | `terminal` | CRT phosphor: all-monospace, scanlines, glowing green |
+| Monospaced | `monospaced` | IBM Plex Mono on amber paper, flat-print elevation |
+| Neumorphic | `neumorphic` | Soft extruded UI, paired light/dark shadows |
+| High Contrast | `high-contrast` | Black-on-white accessibility theme |
+| Brutalist | `brutalist` | Thick black borders, 0 radii, hard offset shadows |
 | Windows 95 | `windows-95` | Battleship-gray bevels, square corners, instant motion |
+| Glassmorphic | `glassmorphic` | Translucent frosted panels, backdrop blur, drop shadows |
+| Terminal | `terminal` | CRT phosphor: all-monospace, scanlines, glowing green |
+| Neon Arcade | `neon-arcade` | Synthwave neon, glowing text, gradient headlines |
 
 ## Using a theme
 

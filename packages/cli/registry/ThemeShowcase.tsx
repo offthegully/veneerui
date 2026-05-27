@@ -86,24 +86,24 @@ export function ThemeShowcase() {
 
       {/* Gradients */}
       <section className="grid gap-4 sm:grid-cols-3">
-        <div className="flex items-end rounded-lg p-5 text-text-on-primary [box-shadow:var(--shadow-md)] bg-[image:var(--gradient-primary)]">
+        <div className="flex items-end rounded-lg p-5 text-text-on-primary [box-shadow:var(--shadow-md)] bg-(image:--gradient-primary)">
           <span className="font-display text-xl font-bold">Primary</span>
         </div>
-        <div className="flex items-end rounded-lg p-5 text-text-on-primary [box-shadow:var(--shadow-md)] bg-[image:var(--gradient-accent)]">
+        <div className="flex items-end rounded-lg p-5 text-text-on-primary [box-shadow:var(--shadow-md)] bg-(image:--gradient-accent)">
           <span className="font-display text-xl font-bold">Accent</span>
         </div>
-        <div className="flex items-end rounded-lg border-border p-5 text-text [box-shadow:var(--shadow-md)] bg-[image:var(--gradient-surface)] [border-width:var(--border-width-thin)]">
+        <div className="flex items-end rounded-lg border-border p-5 text-text [box-shadow:var(--shadow-md)] bg-(image:--gradient-surface) [border-width:var(--border-width-thin)]">
           <span className="font-display text-xl font-bold">Surface</span>
         </div>
       </section>
 
       {/* Display & effects — gradient-clipped text, neon glow, frosted glass */}
       <section className="flex flex-col gap-4">
-        <h2 className="font-display text-7xl leading-tight font-black tracking-tighter bg-clip-text text-transparent bg-[image:var(--gradient-text)] pr-[0.12em]">
+        <h2 className="font-display text-7xl leading-tight font-black tracking-tighter bg-clip-text text-transparent bg-(image:--gradient-text) pr-[0.12em]">
           Gradient
         </h2>
         <p className="font-display text-4xl font-extrabold text-text [text-shadow:var(--text-shadow-glow)]">Neon glow heading</p>
-        <div className="relative overflow-hidden rounded-lg p-6 bg-[image:var(--gradient-primary)]">
+        <div className="relative overflow-hidden rounded-lg p-6 bg-(image:--gradient-primary)">
           <div className="rounded-md border-border bg-surface-overlay/60 p-4 backdrop-blur-2xl drop-shadow-lg [border-width:var(--border-width-thin)]">
             <p className="text-sm font-medium text-text">
               Frosted glass — <code className="font-mono">backdrop-blur-2xl</code> over a gradient, lifted by{' '}
