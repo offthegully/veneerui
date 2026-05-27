@@ -1,7 +1,7 @@
 /**
  * The playground's app-owned theme set.
  *
- * The 9 gallery themes (`gallery/themes/<slug>/theme.json`) are the canonical
+ * The gallery themes (`gallery/themes/<slug>/theme.json`) are the canonical
  * example set, so we load them straight from the gallery at build time — the same
  * source the gallery test validates — rather than re-authoring copies. To those we
  * prepend the package's two neutral defaults (`default-light`, `default-dark`),
@@ -40,7 +40,7 @@ const galleryModules = import.meta.glob<GallerySource>('../../../gallery/themes/
 
 const FALLBACK_AUTHOR = { id: 'veneer', name: 'Veneer Team' } as const;
 
-/** slug = the directory name, e.g. ".../themes/midnight/theme.json" → "midnight". */
+/** slug = the directory name, e.g. ".../themes/editorial/theme.json" → "editorial". */
 function slugOf(path: string): string {
   return path.split('/').slice(-2, -1)[0];
 }
@@ -60,17 +60,17 @@ function normalizeGallery(slug: string, src: GallerySource): Theme {
   };
 }
 
-/** Deliberate switcher/gallery order: light → dark → expressive → effect-driven. */
+/** Deliberate switcher/gallery order: light/neutral → expressive → dark/effect. */
 const GALLERY_ORDER = [
-  'clean-light',
-  'midnight',
   'editorial',
+  'sunset-paper',
+  'neumorphic',
   'high-contrast',
   'brutalist',
-  'neumorphic',
+  'windows-95',
   'glassmorphic',
+  'terminal',
   'neon-arcade',
-  'sunset-paper',
 ];
 
 const galleryThemes: Theme[] = Object.entries(galleryModules)

@@ -117,7 +117,11 @@ export function LandingPreview() {
   const { current } = useTheme();
 
   return (
-    <div className="bg-surface text-text">
+    // Page background is the theme's surface gradient (a subtle surface→sunken
+    // wash for most themes, a vivid color field for glass), so the translucent,
+    // backdrop-blurred panels below have something to frost. Opaque themes are
+    // unaffected — backdrop-blur does nothing behind a solid fill.
+    <div className="bg-[image:var(--gradient-surface)] text-text">
       {/* Nav — non-sticky to avoid stacking against the app header/banner. */}
       <nav className="border-border [border-bottom-width:var(--border-width-default)]">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
@@ -196,7 +200,7 @@ export function LandingPreview() {
           {FEATURES.map((f) => (
             <article
               key={f.title}
-              className="flex flex-col gap-3 rounded-xl border-border bg-surface-raised p-6 [box-shadow:var(--shadow-card)] [border-width:var(--border-width-default)]"
+              className="flex flex-col gap-3 rounded-xl border-border bg-surface-raised p-6 backdrop-blur-md [box-shadow:var(--shadow-card)] [border-width:var(--border-width-default)]"
             >
               <span className="inline-flex size-10 items-center justify-center rounded-lg bg-primary-subtle text-primary">
                 <svg viewBox="0 0 24 24" className="size-5" aria-hidden="true">
@@ -245,7 +249,7 @@ export function LandingPreview() {
           {TIERS.map((tier) => (
             <div
               key={tier.name}
-              className={`flex flex-col gap-5 rounded-2xl p-7 [border-width:var(--border-width-default)] ${
+              className={`flex flex-col gap-5 rounded-2xl p-7 backdrop-blur-md [border-width:var(--border-width-default)] ${
                 tier.featured
                   ? 'border-primary bg-surface-raised [box-shadow:var(--shadow-xl)]'
                   : 'border-border bg-surface-raised [box-shadow:var(--shadow-card)]'
@@ -312,7 +316,7 @@ export function LandingPreview() {
           {FAQS.map((item) => (
             <details
               key={item.q}
-              className="group rounded-lg border-border bg-surface-raised p-5 [border-width:var(--border-width-default)]"
+              className="group rounded-lg border-border bg-surface-raised p-5 backdrop-blur-md [border-width:var(--border-width-default)]"
             >
               <summary className="flex cursor-pointer items-center justify-between gap-4 text-base font-semibold text-text marker:content-['']">
                 {item.q}
@@ -328,7 +332,7 @@ export function LandingPreview() {
 
       {/* Final CTA */}
       <section className="mx-auto max-w-6xl px-6 pb-20">
-        <div className="flex flex-col items-center gap-6 rounded-2xl border-border bg-surface-raised px-6 py-14 text-center [box-shadow:var(--shadow-lg)] [border-width:var(--border-width-default)]">
+        <div className="flex flex-col items-center gap-6 rounded-2xl border-border bg-surface-raised px-6 py-14 text-center backdrop-blur-md [box-shadow:var(--shadow-lg)] [border-width:var(--border-width-default)]">
           <h2 className="max-w-2xl font-display text-4xl font-black tracking-tight text-text">
             Try a theme on this exact page
           </h2>

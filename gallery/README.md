@@ -15,8 +15,6 @@ fully-realized example of a different design language, not a stub.
 
 | Theme | Slug | Style |
 |---|---|---|
-| Clean Light | `clean-light` | Conservative neutral baseline — fork this first |
-| Midnight | `midnight` | Proper dark theme (raised surfaces lighter than base) |
 | Brutalist | `brutalist` | Thick black borders, 0 radii, hard offset shadows |
 | Neumorphic | `neumorphic` | Soft extruded UI, paired light/dark shadows |
 | Glassmorphic | `glassmorphic` | Translucent frosted panels, backdrop blur, drop shadows |
@@ -24,6 +22,8 @@ fully-realized example of a different design language, not a stub.
 | High Contrast | `high-contrast` | Black-on-white accessibility theme |
 | Sunset Paper | `sunset-paper` | Warm cream paper, sunset gradient, playful motion |
 | Neon Arcade | `neon-arcade` | Synthwave neon, glowing text, gradient headlines |
+| Terminal | `terminal` | CRT phosphor: all-monospace, scanlines, glowing green |
+| Windows 95 | `windows-95` | Battleship-gray bevels, square corners, instant motion |
 
 ## Using a theme
 
@@ -39,8 +39,9 @@ Nothing is uploaded and there is no account — your library lives in your brows
 
 ## Authoring your own
 
-Copy the `theme.json` closest to what you want (start from `clean-light` for a
-blank-ish slate) and edit it. See the [authoring guide](../docs/authoring-guide.md)
+Copy the `theme.json` closest to what you want and edit it — anything you omit
+falls back to its default, so you only change what differs. See the
+[authoring guide](../docs/authoring-guide.md)
 for how to pick a coherent palette and the [token reference](../docs/schema-reference.md)
 for every token you can set. Add `"$schema": "https://veneer.app/schemas/theme-v1.json"`
 to the top of your file for editor autocomplete and inline validation.

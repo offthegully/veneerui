@@ -29,10 +29,11 @@ flag invalid values before you ever open the app.
 
 ## 1. Start from an example, not a blank file
 
-Copy the gallery theme closest to your goal and edit it. `clean-light` is the most
-neutral starting point; if you're building a dark theme, fork `midnight` so the
-surface conventions (below) are already right. Starting from zero means
-rediscovering every relationship the examples already encode.
+Copy the gallery theme closest to your goal and edit it — anything you leave out
+falls back to its schema default, so you only set what differs. If you're building
+a dark theme, start from one of the dark examples so the surface conventions
+(below) are already right. Starting from zero means rediscovering every
+relationship the examples already encode.
 
 ## 2. Pick the palette as a system, not 20 swatches
 

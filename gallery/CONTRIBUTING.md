@@ -8,7 +8,8 @@
 ## The local flow (today)
 
 1. **Start from an example.** Copy a `themes/<slug>/theme.json` whose look is
-   closest to your idea. `clean-light` is the most neutral base.
+   closest to your idea. Every token you omit falls back to its schema default,
+   so you only set what makes your theme different.
 2. **Edit with autocomplete.** Keep the `"$schema"` line at the top so your editor
    suggests token names and flags invalid values and unknown tokens as you type.
    The full list is in [`docs/schema-reference.md`](../docs/schema-reference.md).

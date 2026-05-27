@@ -25,14 +25,14 @@ describe('gallery themes', () => {
   it('ships the documented set of examples', () => {
     expect(entries.map((e) => e.slug).sort()).toEqual([
       'brutalist',
-      'clean-light',
       'editorial',
       'glassmorphic',
       'high-contrast',
-      'midnight',
       'neon-arcade',
       'neumorphic',
       'sunset-paper',
+      'terminal',
+      'windows-95',
     ]);
   });
 

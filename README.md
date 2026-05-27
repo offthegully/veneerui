@@ -182,7 +182,7 @@ error list before it can touch the page.
 
 No in-app editor — you author JSON in your own editor and preview it in the app.
 
-1. Copy the gallery file closest to your goal (start from `clean-light`).
+1. Copy the gallery theme closest to your goal (every token you omit falls back to its default, so you only edit what differs).
 2. Keep the `$schema` line for autocomplete and inline validation in VS Code.
 3. Edit token values. Anything you omit uses the default.
 4. Drop the file into **Manage themes** to preview; iterate; **Save**.
