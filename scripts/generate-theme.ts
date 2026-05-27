@@ -1,8 +1,11 @@
 /**
  * Generates everything downstream of TOKEN_SCHEMA so nothing drifts:
- *   - src/theme/tokens.generated.css  (@theme + :root defaults)
- *   - public/schemas/theme-v1.json    (published JSON Schema for $schema autocomplete)
- *   - docs/schema-reference.md         (human reference, grouped by category)
+ *   - packages/theme/tokens.generated.css  (@theme + :root defaults; shipped as
+ *                                            @veneer/theme/tokens.css)
+ *   - packages/theme/theme-v1.json          (published JSON Schema for $schema
+ *                                            autocomplete; shipped as
+ *                                            @veneer/theme/theme-v1.json)
+ *   - docs/schema-reference.md              (human reference, grouped by category)
  *
  * Run: `npm run gen:theme`. CI re-runs it and fails if the working tree changed,
  * which guarantees the artifacts always match the schema.
@@ -10,8 +13,8 @@
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { SCHEMA_VERSION } from '../src/theme/types.ts';
-import { TOKEN_SCHEMA } from '../src/theme/schema.ts';
+import { SCHEMA_VERSION } from '../packages/theme/src/types.ts';
+import { TOKEN_SCHEMA } from '../packages/theme/src/schema.ts';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const write = (rel: string, contents: string) => {
@@ -21,7 +24,8 @@ const write = (rel: string, contents: string) => {
   console.log(`  wrote ${rel}`);
 };
 
-const BANNER = '/* AUTO-GENERATED from src/theme/schema.ts by scripts/generate-theme.ts — do not edit. */';
+const BANNER =
+  '/* AUTO-GENERATED from packages/theme/src/schema.ts by scripts/generate-theme.ts — do not edit. */';
 
 // ── tokens.generated.css ───────────────────────────────────────────────────
 function buildCss(): string {
@@ -93,7 +97,7 @@ function buildJsonSchema(): string {
 function buildReference(): string {
   const categories = [...new Set(TOKEN_SCHEMA.map((t) => t.category))];
   const out: string[] = [
-    '<!-- AUTO-GENERATED from src/theme/schema.ts by scripts/generate-theme.ts — do not edit. -->',
+    '<!-- AUTO-GENERATED from packages/theme/src/schema.ts by scripts/generate-theme.ts — do not edit. -->',
     '',
     '# Theme Token Reference',
     '',
@@ -114,7 +118,7 @@ function buildReference(): string {
 }
 
 console.log('Generating theme artifacts from TOKEN_SCHEMA…');
-write('src/theme/tokens.generated.css', buildCss());
-write('public/schemas/theme-v1.json', buildJsonSchema());
+write('packages/theme/tokens.generated.css', buildCss());
+write('packages/theme/theme-v1.json', buildJsonSchema());
 write('docs/schema-reference.md', buildReference());
 console.log(`Done — ${TOKEN_SCHEMA.length} tokens.`);

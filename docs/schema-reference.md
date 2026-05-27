@@ -1,4 +1,4 @@
-<!-- AUTO-GENERATED from src/theme/schema.ts by scripts/generate-theme.ts — do not edit. -->
+<!-- AUTO-GENERATED from packages/theme/src/schema.ts by scripts/generate-theme.ts — do not edit. -->
 
 # Theme Token Reference
 

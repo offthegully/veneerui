@@ -1,0 +1,25 @@
+{
+  "name": "veneer",
+  "version": "0.1.0",
+  "description": "CLI to add Veneer theming to an existing Vite or Next + Tailwind v4 app (init + add).",
+  "license": "MIT",
+  "type": "module",
+  "bin": {
+    "veneer": "./dist/cli.js"
+  },
+  "files": [
+    "dist",
+    "registry"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "^24.12.4",
+    "tsup": "^8.5.0",
+    "typescript": "~6.0.2",
+    "vitest": "^4.1.7"
+  }
+}

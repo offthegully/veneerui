@@ -1,0 +1,30 @@
+{
+  "components": [
+    {
+      "name": "import-panel",
+      "file": "ImportPanel.tsx",
+      "description": "Drop / paste-URL modal that validates and previews a theme.",
+      "dependencies": []
+    },
+    {
+      "name": "banner",
+      "file": "PreviewBanner.tsx",
+      "description": "Sticky banner shown while previewing an unsaved imported theme.",
+      "dependencies": []
+    },
+    {
+      "name": "showcase",
+      "file": "ThemeShowcase.tsx",
+      "description": "Demo surface exercising the full token set — handy reference.",
+      "dependencies": []
+    },
+    {
+      "name": "switcher",
+      "file": "ThemeSwitcher.tsx",
+      "description": "Dropdown to switch and manage themes (opens the import panel).",
+      "dependencies": [
+        "import-panel"
+      ]
+    }
+  ]
+}

@@ -11,6 +11,11 @@ sources.
 There is no server and no account. A user's theme library lives entirely in their
 browser's `localStorage`.
 
+Veneer ships as an npm package (`@veneer/theme`) plus a small `veneer` CLI, so you
+drop it into an **existing Vite or Next + Tailwind v4 app** — see
+**[Using Veneer in your app](#using-veneer-in-your-app)**. This repository is the
+monorepo: the package, the CLI, and a playground app that exercises them.
+
 ```
  Gallery (public JSON files)  ──import──▶  Library  ──enable──▶  Enabled  ──select──▶  Current
    browse / download / paste URL          everything           switcher subset      applied now
@@ -22,7 +27,8 @@ browser's `localStorage`.
 ## Table of contents
 
 - [How it works](#how-it-works)
-- [Setup](#setup)
+- [Using Veneer in your app](#using-veneer-in-your-app)
+- [Running this repo](#running-this-repo)
 - [Usage](#usage)
   - [Switching themes](#switching-themes)
   - [Importing a theme](#importing-a-theme)
@@ -48,8 +54,8 @@ Four ideas carry the whole system:
    scripts, no markup. Any token it omits falls back to a schema default, so a
    theme only sets what it wants to change.
 
-2. **The token schema is the contract.** `src/theme/schema.ts` is the single
-   source of truth — the canonical list of every value a theme may set (name,
+2. **The token schema is the contract.** `packages/theme/src/schema.ts` is the
+   single source of truth — the canonical list of every value a theme may set (name,
    type, category, default, description). Theme authors target it; components
    consume it through Tailwind utilities. The two never share a vocabulary
    directly — they share the schema.
@@ -71,23 +77,52 @@ your library never clutters your switcher.
 
 ---
 
-## Setup
+## Using Veneer in your app
 
-**Prerequisites:** Node 20+ and npm.
+Veneer is a **drop-in add-on, not a scaffolder** — you keep your own Vite/Next +
+Tailwind v4 project and add Veneer on top, the way you'd add shadcn/ui. The
+`veneer` CLI does the wiring; everything it does is also documented as manual
+steps.
+
+```sh
+# in your existing Vite + React + Tailwind v4 app
+npm i @veneer/theme
+npx veneer init            # @import the tokens, wire the anti-flash, print the provider step
+npx veneer add switcher    # copy a ThemeSwitcher into your components
+```
+
+The interlock is one line of CSS — `@import "@veneer/theme/tokens.css";` after
+`@import "tailwindcss";` — which makes Tailwind v4 generate the token utilities
+(`bg-primary`, `rounded-md`, …) that Veneer's runtime then overrides at runtime.
+The runtime (`ThemeProvider`, `useTheme`, validation, the import pipeline) is a
+normal dependency; UI components are **copied into your project** (shadcn-style)
+because Tailwind v4 doesn't scan `node_modules`. The anti-flash script is the only
+framework-specific piece: a Vite plugin (`@veneer/theme/vite`) or a Next
+component (`@veneer/theme/next`).
+
+Step-by-step, CLI and manual:
+**[Vite guide](./docs/integration-vite.md)** · **[Next.js guide](./docs/integration-next.md)**.
+
+---
+
+## Running this repo
+
+This is an npm **workspace** monorepo (`packages/theme`, `packages/cli`,
+`apps/playground`). **Prerequisites:** Node 20+ and npm.
 
 ```sh
 git clone <repo-url> veneer
 cd veneer
 npm install
-npm run dev          # http://localhost:5173
+npm run dev          # builds @veneer/theme, then runs the playground at http://localhost:5173
 ```
 
-That's it — the app starts with five built-in themes and the import/preview flow
-ready. To produce a production build:
+The playground starts with five built-in themes and the import/preview flow ready.
+To build everything (package, playground, CLI):
 
 ```sh
-npm run build        # regenerates token artifacts, typechecks, and bundles to dist/
-npm run preview      # serve the build locally
+npm run build        # gen artifacts → build package → build playground → build CLI
+npm run preview      # serve the playground build locally
 ```
 
 ---
@@ -98,8 +133,9 @@ npm run preview      # serve the build locally
 
 Click the theme switcher in the top-right. It lists your **enabled** themes with
 preview swatches; selecting one applies it instantly and persists the choice. On
-reload, a tiny synchronous script in `index.html` re-applies your saved theme
-*before* the app loads, so there's no flash of the default.
+reload, the anti-flash script (injected by the `@veneer/theme/vite` plugin)
+re-applies your saved theme *before* the app loads, so there's no flash of the
+default.
 
 ### Importing a theme
 
@@ -183,11 +219,12 @@ contribute one, see **[gallery/CONTRIBUTING.md](./gallery/CONTRIBUTING.md)**.
 
 The v1 schema is **83 tokens**, sized to allow genuinely different design
 languages (brutalist, neumorphic, editorial, …) rather than just recolored
-variants. It's defined once in `src/theme/schema.ts`; `npm run gen:theme`
+variants. It's defined once in `packages/theme/src/schema.ts`; `npm run gen:theme`
 generates everything downstream so nothing drifts:
 
-- `src/theme/tokens.generated.css` — the Tailwind `@theme` / `:root` defaults
-- `public/schemas/theme-v1.json` — the published JSON Schema for `$schema`
+- `packages/theme/tokens.generated.css` — the Tailwind `@theme` / `:root`
+  defaults, shipped as `@veneer/theme/tokens.css`
+- `packages/theme/theme-v1.json` — the published JSON Schema for `$schema`
 - `docs/schema-reference.md` — the human-readable token reference
 
 | Category | Count | Examples |
@@ -217,13 +254,14 @@ overridden the same way at runtime.
 
 ```
 ┌──────────────────────────────────────────────────────────┐
-│  Theme runtime (src/theme)                                │
+│  Theme runtime  (@veneer/theme — packages/theme)          │
 │   • schema.ts        single source of truth (83 tokens)   │
 │   • applyTheme()     writes CSS vars to <html>            │
 │   • ThemeProvider    library/enabled/current + preview    │
 │   • storage.ts       localStorage persistence (no server) │
 │   • validate.ts      isomorphic 3-layer validation        │
 │   • import-theme.ts  file/URL → validate → preview        │
+│   • anti-flash       getAntiFlashScript + vite/next adapter│
 ├──────────────────────────────────────────────────────────┤
 │  Tailwind CSS v4                                          │
 │   • @theme: tokens → CSS variables + utility classes      │
@@ -239,16 +277,18 @@ variable names in the schema: Tailwind reads them, the runtime writes them.
 Neither knows the other's internals, so a component refactor never breaks themes
 and a new theme never requires a component change.
 
-**Anti-flash on load.** A self-contained script in `index.html` reads the
-persisted library from `localStorage` and applies the current theme's tokens
-before any module loads — the same technique every dark-mode implementation uses.
+**Anti-flash on load.** A self-contained script (from `getAntiFlashScript()`)
+reads the persisted library from `localStorage` and applies the current theme's
+tokens before any module loads — the same technique every dark-mode
+implementation uses. It's injected by the `@veneer/theme/vite` plugin (Vite) or
+rendered via `<AntiFlashScript/>` from `@veneer/theme/next` (Next).
 
 ---
 
 ## Security model
 
 Because themes can be loaded from untrusted sources, validation
-(`src/theme/validate.ts`) is the security boundary. It's pure and isomorphic — the
+(`packages/theme/src/validate.ts`) is the security boundary. It's pure and isomorphic — the
 same logic runs in the browser (via `CSS.supports`), in Node/CI (via `css-tree`),
 and at three points: on contribution (gallery CI, Phase 4), on import, and on
 apply.
@@ -268,7 +308,8 @@ A theme is rejected outright — never silently degraded — if it fails any of:
 can't ship a font — it may only *name* one the app bundles (Inter, Source Serif 4,
 JetBrains Mono, Fraunces, Archivo Black) plus CSS generic keywords. Naming
 anything else is rejected, so a theme can never silently fall back to a broken
-look. The bundled fonts are loaded in `src/main.tsx`.
+look. The playground loads the bundled fonts in `apps/playground/src/main.tsx`;
+a consumer app imports whichever of those faces it ships.
 
 Because a theme can only set declared CSS variables — which are then consumed by
 utilities already in the compiled CSS — there is no path from a theme to new CSS
@@ -280,42 +321,45 @@ and it's narrow and validated.
 ## Project structure
 
 ```
-veneer/
-├─ src/
-│  ├─ App.tsx                  App shell: header + showcase + preview banner
-│  ├─ main.tsx                 Entry; loads bundled fonts, mounts ThemeProvider
-│  ├─ index.css                Tailwind import + generated tokens + base layer
-│  └─ theme/
-│     ├─ schema.ts             ★ single source of truth — the 83-token TOKEN_SCHEMA
-│     ├─ types.ts              Theme, ThemeLibrary, TokenDef, SCHEMA_VERSION
-│     ├─ apply.ts              applyTheme() — writes CSS vars, reconciles defaults
-│     ├─ validate.ts           validateTheme() — the security boundary
-│     ├─ value-check.{ts,browser,node}.ts   isomorphic per-type CSS checking
-│     ├─ storage.ts            localStorage load/save + defensive reconciliation
-│     ├─ theme-context.ts      ThemeContext + useTheme()
-│     ├─ ThemeProvider.tsx     library/enabled/current/preview state owner
-│     ├─ import-theme.ts       parse + validate + provenance (file / URL)
-│     ├─ ThemeSwitcher.tsx     switcher dropdown + Manage themes entry
-│     ├─ ImportPanel.tsx       import modal (drop zone + raw URL)
-│     ├─ PreviewBanner.tsx     live-preview banner (Save / Stop)
-│     ├─ ThemeShowcase.tsx     token-driven demo surface
-│     ├─ tokens.generated.css  ⚙ generated @theme / :root defaults
-│     ├─ builtin/              5 built-in themes (light, dark, high-contrast, …)
-│     └─ *.test.ts             validation, storage, conformance, gallery, import
-├─ eslint-rules/
-│  ├─ detect-hardcoded-colors.js   shared color detector
-│  └─ no-hardcoded-colors.js       custom ESLint rule (lint + conformance share it)
+veneer/                              npm workspace monorepo
+├─ packages/
+│  ├─ theme/                       → @veneer/theme (the published runtime)
+│  │  ├─ src/
+│  │  │  ├─ schema.ts              ★ single source of truth — 83-token TOKEN_SCHEMA
+│  │  │  ├─ types.ts               Theme, ThemeLibrary, TokenDef, SCHEMA_VERSION
+│  │  │  ├─ apply.ts               applyTheme() — writes CSS vars, reconciles defaults
+│  │  │  ├─ validate.ts            validateTheme() — the security boundary
+│  │  │  ├─ value-check{,-browser,-node}.ts  isomorphic per-type CSS checking
+│  │  │  ├─ storage.ts storage-key.ts  localStorage load/save + the shared key
+│  │  │  ├─ theme-context.ts       ThemeContext + useTheme()
+│  │  │  ├─ ThemeProvider.tsx      library/enabled/current/preview state owner
+│  │  │  ├─ import-theme.ts        parse + validate + provenance (file / URL)
+│  │  │  ├─ anti-flash.ts vite.ts next.tsx  pre-paint script + framework adapters
+│  │  │  ├─ index.ts node.ts       public API barrel + the Node (css-tree) entry
+│  │  │  ├─ builtin/               5 built-in themes (light, dark, high-contrast, …)
+│  │  │  └─ *.test.ts              validation, storage, import, schema, builtin
+│  │  ├─ tokens.generated.css      ⚙ shipped as @veneer/theme/tokens.css
+│  │  ├─ theme-v1.json             ⚙ shipped, published JSON Schema
+│  │  └─ package.json tsup.config.ts   exports map, peers, ESM+types build
+│  └─ cli/                         → the `veneer` CLI (init + add + list)
+│     ├─ src/{cli,init,add,list,detect,patch,registry}.ts + *.test.ts
+│     └─ registry/                 ⚙ copy-in components, generated from the playground
+├─ apps/
+│  └─ playground/                  → demo app; the dev harness + conformance/e2e target
+│     ├─ src/{main,App}.tsx index.css   consumes @veneer/theme like any app
+│     ├─ src/components/         ThemeSwitcher, ImportPanel, PreviewBanner, ThemeShowcase
+│     ├─ src/{conformance,gallery}.test.ts   scans rendered UI + validates gallery
+│     ├─ eslint-rules/           shared color detector + no-hardcoded-colors rule
+│     └─ vite.config.ts index.html tsconfig*.json eslint.config.js
 ├─ scripts/
-│  └─ generate-theme.ts        ⚙ regenerates CSS / JSON Schema / token reference
-├─ gallery/                    8 example themes (+ notes), becomes a GitHub repo in Phase 4
-│  ├─ themes/<slug>/{theme.json, notes.md}
-│  ├─ README.md  CONTRIBUTING.md
+│  ├─ generate-theme.ts            ⚙ regenerates CSS / JSON Schema / token reference
+│  └─ build-registry.ts            ⚙ regenerates the CLI registry from playground source
+├─ gallery/                        8 example themes (+ notes), becomes a GitHub repo in Phase 4
 ├─ docs/
-│  ├─ authoring-guide.md       conceptual authoring guide (hand-written)
-│  └─ schema-reference.md      ⚙ generated token reference
-├─ public/schemas/theme-v1.json  ⚙ generated, published JSON Schema
-├─ theme-system-overview.md            design doc: architecture & mental model
-└─ theme-system-implementation-plan.md design doc: phased plan
+│  ├─ integration-vite.md  integration-next.md   how to add Veneer to your app
+│  ├─ authoring-guide.md          conceptual authoring guide (hand-written)
+│  └─ schema-reference.md          ⚙ generated token reference
+└─ theme-system-{overview,implementation-plan,packaging-plan}.md   design docs
 
 ★ = source of truth   ⚙ = generated (do not edit by hand)
 ```
@@ -324,23 +368,28 @@ veneer/
 
 ## Scripts
 
+Run from the repo root; each orchestrates across the workspaces.
+
 | Command | What it does |
 |---|---|
-| `npm run dev` | Vite dev server |
-| `npm run build` | `gen:theme` → `tsc -b` → `vite build` |
+| `npm run dev` | Build `@veneer/theme`, then run the playground dev server |
+| `npm run build` | gen artifacts → build package → build playground → build CLI |
+| `npm run build:theme` / `build:cli` | Build just the package / just the CLI (+ its registry) |
 | `npm run gen:theme` | Regenerate CSS / JSON Schema / token reference from `TOKEN_SCHEMA` |
-| `npm run lint` | ESLint, including the `veneer/no-hardcoded-colors` rule |
-| `npm run typecheck` | `tsc -b` |
-| `npm test` | Vitest (validation, storage, conformance, gallery, import) |
-| `npm run preview` | Serve the production build |
+| `npm run gen:registry` | Regenerate the CLI's copy-in registry from the playground components |
+| `npm run lint` | ESLint across workspaces (incl. the `veneer/no-hardcoded-colors` rule) |
+| `npm run typecheck` | Type-check every workspace |
+| `npm test` | Vitest across every workspace (package, playground, CLI) |
+| `npm run preview` | Serve the playground production build |
 
 ---
 
 ## Testing & quality
 
-`npm test` runs **54 tests** across 7 files: theme validation, schema
+`npm test` runs **68 tests** across the workspaces: theme validation, schema
 expressiveness, storage reconciliation, built-in and gallery theme validity, the
-import pipeline, and conformance.
+import pipeline, conformance, and the CLI (framework detection, idempotent config
+patching, registry resolution).
 
 Two mechanisms keep the app fully themeable — the contract that components use
 *only* semantic token utilities, never hardcoded colors:
@@ -364,7 +413,10 @@ becoming a dead override at runtime.
 Built and verified: **Phase 0** (schema, types, isomorphic validation,
 generators, bundled fonts) · **Phase 1** (runtime, provider, anti-flash switcher,
 5 built-in themes, persistence) · **Phase 2** (adoption lint rule + conformance) ·
-**Phase 3** (local authoring & import: preview/import UI, 8 gallery themes, guides).
+**Phase 3** (local authoring & import: preview/import UI, 8 gallery themes, guides) ·
+**Phase 6** (packaging: `@veneer/theme` package, Tailwind interlock + Vite/Next
+anti-flash adapters, the `veneer` CLI, and integration docs — publishing to npm
+is the remaining manual step).
 
 Planned:
 
@@ -388,7 +440,14 @@ Planned:
 - **[docs/authoring-guide.md](./docs/authoring-guide.md)** — how to author a
   coherent theme.
 - **[docs/schema-reference.md](./docs/schema-reference.md)** — every token (generated).
+- **[docs/integration-vite.md](./docs/integration-vite.md)** /
+  **[integration-next.md](./docs/integration-next.md)** — add Veneer to your own app.
+- **[docs/publishing.md](./docs/publishing.md)** — releasing the package + CLI, and
+  the semver / `SCHEMA_VERSION` policy.
+- **[theme-system-packaging-plan.md](./theme-system-packaging-plan.md)** — the
+  distribution/packaging design (Phase 6).
 
 ## Stack
 
-React 19 · Vite 8 · TypeScript · Tailwind CSS v4 · Vitest · ESLint 10 (flat config).
+React 19 · Vite 8 · TypeScript · Tailwind CSS v4 · Vitest · ESLint 10 (flat config) ·
+npm workspaces · tsup (package + CLI builds).

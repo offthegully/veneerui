@@ -1,0 +1,106 @@
+# Add Veneer to a Vite + React app
+
+Veneer is a drop-in add-on, not a scaffolder. Start from your own
+**Vite + React + Tailwind v4** project (created however you like — `npm create
+vite`, an existing app, a template) and add Veneer on top. Two paths: the CLI
+does the wiring for you, or do the four steps by hand.
+
+> Requires Tailwind **v4** (the CSS-first `@theme` engine). v3 is not supported.
+
+## The fast path (CLI)
+
+```sh
+npm i @veneer/theme
+npx veneer init            # patches your CSS + vite.config, prints the provider step
+npx veneer add switcher    # copies a ThemeSwitcher into src/components
+```
+
+`veneer init` is idempotent and supports `--dry-run`. It:
+
+1. confirms `@veneer/theme` and `tailwindcss` are present (it never installs for you),
+2. adds `@import "@veneer/theme/tokens.css";` to your global stylesheet,
+3. adds the `veneer()` anti-flash plugin to `vite.config.ts`,
+4. prints the `<ThemeProvider>` wrapper to add to `src/main.tsx` (it doesn't edit
+   your entry file — wrapping the root is the one step you do by hand).
+
+Then wrap your app root as printed, and you're done.
+
+## The manual path (four steps)
+
+### 1. Install
+
+```sh
+npm i @veneer/theme
+```
+
+### 2. Import the tokens into your Tailwind stylesheet
+
+In the CSS file where you import Tailwind (commonly `src/index.css`), add the
+Veneer tokens right after it:
+
+```css
+@import "tailwindcss";
+@import "@veneer/theme/tokens.css";
+```
+
+This is the whole interlock. The `@theme` block in `tokens.css` makes Tailwind
+generate the token utilities (`bg-primary`, `rounded-md`, …); Veneer's runtime
+overrides the same CSS variables when you switch themes.
+
+### 3. Wire the anti-flash script
+
+So a returning user's saved theme applies *before* first paint (no flash of the
+default), add the plugin to your Vite config:
+
+```ts
+// vite.config.ts
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+import tailwindcss from '@tailwindcss/vite'
+import { veneer } from '@veneer/theme/vite'
+
+export default defineConfig({
+  plugins: [react(), tailwindcss(), veneer()],
+})
+```
+
+The plugin injects a tiny synchronous script into `index.html` — you never edit
+HTML yourself.
+
+### 4. Wrap your app in the provider
+
+```tsx
+// src/main.tsx
+import { ThemeProvider } from '@veneer/theme'
+
+createRoot(document.getElementById('root')!).render(
+  <StrictMode>
+    <ThemeProvider>
+      <App />
+    </ThemeProvider>
+  </StrictMode>,
+)
+```
+
+That's it. Add a switcher with `npx veneer add switcher`, or build your own UI
+against the [`useTheme()`](#api) hook.
+
+## Using themes
+
+Components style themselves with the semantic token utilities Tailwind generated
+— `bg-surface`, `text-text`, `border-border`, `rounded-md`, `shadow-card`, and so
+on. Never hardcode a color (`bg-blue-500`, `text-[#fff]`); that's an island a
+theme can't reskin. (Veneer ships an ESLint rule and a conformance test that
+enforce this — copy them in too if you want the guarantee in your own project.)
+
+Your app ships a **default theme** as its brand; users import or author others.
+See the [authoring guide](./authoring-guide.md) and [token reference](./schema-reference.md).
+
+## API
+
+`@veneer/theme` exports the runtime: `ThemeProvider`, `useTheme()`, `applyTheme`,
+`validateTheme`, `parseAndValidate` / `fetchTheme` / `isFetchableUrl`,
+`tokenValue`, `TOKEN_SCHEMA`, `BUILTIN_THEMES`, `getAntiFlashScript`, and the
+`Theme` / `ThemeLibrary` types. Subpaths: `@veneer/theme/tokens.css` (the
+`@theme` block), `@veneer/theme/vite` (this plugin), `@veneer/theme/next` (the
+Next adapter), `@veneer/theme/node` (the `css-tree` value checker for CI).

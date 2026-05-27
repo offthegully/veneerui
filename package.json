@@ -1,44 +1,26 @@
 {
-  "name": "veneer",
+  "name": "veneer-monorepo",
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
   "scripts": {
-    "dev": "vite",
     "gen:theme": "tsx scripts/generate-theme.ts",
-    "build": "npm run gen:theme && tsc -b && vite build",
-    "lint": "eslint .",
-    "typecheck": "tsc -b",
-    "test": "vitest run",
-    "preview": "vite preview"
-  },
-  "dependencies": {
-    "@fontsource-variable/fraunces": "^5.2.9",
-    "@fontsource-variable/inter": "^5.2.8",
-    "@fontsource-variable/jetbrains-mono": "^5.2.8",
-    "@fontsource-variable/source-serif-4": "^5.2.9",
-    "@fontsource/archivo-black": "^5.2.8",
-    "@tailwindcss/vite": "^4.3.0",
-    "react": "^19.2.6",
-    "react-dom": "^19.2.6",
-    "tailwindcss": "^4.3.0"
+    "gen:registry": "tsx scripts/build-registry.ts",
+    "build:theme": "npm run gen:theme && npm run build -w @veneer/theme",
+    "build:cli": "npm run gen:registry && npm run build -w veneer",
+    "build": "npm run build:theme && npm run build -w playground && npm run build:cli",
+    "dev": "npm run build:theme && npm run dev -w playground",
+    "preview": "npm run preview -w playground",
+    "lint": "npm run lint --workspaces --if-present",
+    "typecheck": "npm run build:theme && npm run gen:registry && npm run typecheck --workspaces --if-present",
+    "test": "npm run build:theme && npm run gen:registry && npm run test --workspaces --if-present"
   },
   "devDependencies": {
-    "@eslint/js": "^10.0.1",
-    "@types/css-tree": "^2.3.11",
-    "@types/node": "^24.12.4",
-    "@types/react": "^19.2.14",
-    "@types/react-dom": "^19.2.3",
-    "@vitejs/plugin-react": "^6.0.1",
-    "css-tree": "^3.2.1",
-    "eslint": "^10.3.0",
-    "eslint-plugin-react-hooks": "^7.1.1",
-    "eslint-plugin-react-refresh": "^0.5.2",
-    "globals": "^17.6.0",
     "tsx": "^4.22.3",
-    "typescript": "~6.0.2",
-    "typescript-eslint": "^8.59.2",
-    "vite": "^8.0.12",
-    "vitest": "^4.1.7"
+    "typescript": "~6.0.2"
   }
 }
