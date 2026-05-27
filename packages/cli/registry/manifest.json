@@ -1,6 +1,12 @@
 {
   "components": [
     {
+      "name": "gallery-panel",
+      "file": "GalleryPanel.tsx",
+      "description": "Modal grid that previews every available theme and applies one on click.",
+      "dependencies": []
+    },
+    {
       "name": "import-panel",
       "file": "ImportPanel.tsx",
       "description": "Drop / paste-URL modal that validates and previews a theme.",
@@ -21,9 +27,10 @@
     {
       "name": "switcher",
       "file": "ThemeSwitcher.tsx",
-      "description": "Dropdown to switch and manage themes (opens the import panel).",
+      "description": "Dropdown to switch and manage themes (opens the import and gallery panels).",
       "dependencies": [
-        "import-panel"
+        "import-panel",
+        "gallery-panel"
       ]
     }
   ]

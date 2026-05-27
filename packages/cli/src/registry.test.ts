@@ -7,16 +7,18 @@ describe('registry', () => {
   it('ships the curated set of components', () => {
     expect(components.map((c) => c.name).sort()).toEqual([
       'banner',
+      'gallery-panel',
       'import-panel',
       'showcase',
       'switcher',
     ]);
   });
 
-  it('resolves the switcher together with its import-panel dependency', () => {
+  it('resolves the switcher together with its panel dependencies', () => {
     const names = resolveWithDeps(['switcher'], components).map((c) => c.name);
     expect(names).toContain('switcher');
     expect(names).toContain('import-panel');
+    expect(names).toContain('gallery-panel');
   });
 
   it('throws on an unknown component', () => {

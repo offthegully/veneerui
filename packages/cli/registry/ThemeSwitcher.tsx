@@ -11,6 +11,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTheme, tokenValue, type Theme } from '@veneer/theme';
 import { ImportPanel } from './ImportPanel';
+import { GalleryPanel } from './GalleryPanel';
 
 function Swatches({ theme }: { theme: Theme }) {
   const surface = tokenValue(theme, 'color-surface');
@@ -32,6 +33,7 @@ export function ThemeSwitcher() {
   const { enabledThemes, currentId, current, setCurrent } = useTheme();
   const [open, setOpen] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
+  const [galleryOpen, setGalleryOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -118,8 +120,14 @@ export function ThemeSwitcher() {
             >
               Manage themes
             </button>
-            {/* Gallery browse arrives in Phase 4. */}
-            <button type="button" className="hover:text-text" title="Coming in Phase 4" disabled>
+            <button
+              type="button"
+              className="font-medium hover:text-text"
+              onClick={() => {
+                setGalleryOpen(true);
+                setOpen(false);
+              }}
+            >
               Browse gallery
             </button>
           </div>
@@ -127,6 +135,7 @@ export function ThemeSwitcher() {
       )}
 
       {importOpen && <ImportPanel onClose={() => setImportOpen(false)} />}
+      {galleryOpen && <GalleryPanel onClose={() => setGalleryOpen(false)} />}
     </div>
   );
 }

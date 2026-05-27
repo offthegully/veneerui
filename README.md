@@ -448,8 +448,3 @@ becoming a dead override at runtime.
   the semver / `SCHEMA_VERSION` policy.
 - **[theme-system-packaging-plan.md](./theme-system-packaging-plan.md)** — the
   distribution/packaging design (Phase 6).
-
-## Stack
-
-React 19 · Vite 8 · TypeScript · Tailwind CSS v4 · Vitest · ESLint 10 (flat config) ·
-npm workspaces · tsup (package + CLI builds).

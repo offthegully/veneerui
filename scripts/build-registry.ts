@@ -24,8 +24,9 @@ const OUT = join(root, 'packages/cli/registry');
 
 /** Filename → registry slug + human description. The curated public surface. */
 const CATALOG: Record<string, { slug: string; description: string }> = {
-  'ThemeSwitcher.tsx': { slug: 'switcher', description: 'Dropdown to switch and manage themes (opens the import panel).' },
+  'ThemeSwitcher.tsx': { slug: 'switcher', description: 'Dropdown to switch and manage themes (opens the import and gallery panels).' },
   'ImportPanel.tsx': { slug: 'import-panel', description: 'Drop / paste-URL modal that validates and previews a theme.' },
+  'GalleryPanel.tsx': { slug: 'gallery-panel', description: 'Modal grid that previews every available theme and applies one on click.' },
   'PreviewBanner.tsx': { slug: 'banner', description: 'Sticky banner shown while previewing an unsaved imported theme.' },
   'ThemeShowcase.tsx': { slug: 'showcase', description: 'Demo surface exercising the full token set — handy reference.' },
 };
