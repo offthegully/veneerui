@@ -183,6 +183,10 @@
           "type": "string",
           "description": "No rounding (brutalist/sharp) (length, default: 0px)"
         },
+        "radius-xs": {
+          "type": "string",
+          "description": "Hairline rounding (length, default: 2px)"
+        },
         "radius-sm": {
           "type": "string",
           "description": "Small radius (length, default: 4px)"
@@ -203,9 +207,17 @@
           "type": "string",
           "description": "Very large radius (neumorphic) (length, default: 24px)"
         },
+        "radius-3xl": {
+          "type": "string",
+          "description": "Pillowy radius for soft/playful themes (length, default: 32px)"
+        },
         "radius-full": {
           "type": "string",
           "description": "Pill / fully rounded (length, default: 9999px)"
+        },
+        "shadow-2xs": {
+          "type": "string",
+          "description": "Faintest hairline elevation (shadow, default: 0 1px rgb(0 0 0 / 0.05))"
         },
         "shadow-sm": {
           "type": "string",
@@ -223,21 +235,57 @@
           "type": "string",
           "description": "Highest elevation (shadow, default: 0 20px 25px -5px rgb(0 0 0 / 0.1))"
         },
+        "shadow-2xl": {
+          "type": "string",
+          "description": "Dramatic floating elevation (shadow, default: 0 25px 50px -12px rgb(0 0 0 / 0.25))"
+        },
         "shadow-card": {
           "type": "string",
           "description": "Semantic alias for card elevation (shadow, default: 0 1px 3px 0 rgb(0 0 0 / 0.1))"
         },
         "shadow-glow": {
           "type": "string",
-          "description": "Glow for retro/playful themes (shadow, default: 0 0 20px rgb(59 130 246 / 0.45))"
+          "description": "Glow for retro/playful themes (follows the palette) (shadow, default: 0 0 20px color-mix(in srgb, var(--color-primary) 45%, transparent))"
         },
         "inset-shadow-sm": {
           "type": "string",
           "description": "Small inset (neumorphic) (shadow, default: inset 0 2px 4px rgb(0 0 0 / 0.06))"
         },
+        "inset-shadow-md": {
+          "type": "string",
+          "description": "Medium inset (neumorphic) (shadow, default: inset 0 3px 6px rgb(0 0 0 / 0.09))"
+        },
         "inset-shadow-lg": {
           "type": "string",
           "description": "Large inset (neumorphic) (shadow, default: inset 0 4px 8px rgb(0 0 0 / 0.12))"
+        },
+        "text-shadow-sm": {
+          "type": "string",
+          "description": "Subtle text depth (textShadow, default: 0 1px 2px rgb(0 0 0 / 0.1))"
+        },
+        "text-shadow-md": {
+          "type": "string",
+          "description": "Default text depth (textShadow, default: 0 2px 4px rgb(0 0 0 / 0.12))"
+        },
+        "text-shadow-lg": {
+          "type": "string",
+          "description": "Strong text depth (display headings) (textShadow, default: 0 4px 8px rgb(0 0 0 / 0.15))"
+        },
+        "text-shadow-glow": {
+          "type": "string",
+          "description": "Neon glow on text (retro/synthwave; follows the palette) (textShadow, default: 0 0 12px color-mix(in srgb, var(--color-primary) 55%, transparent))"
+        },
+        "drop-shadow-sm": {
+          "type": "string",
+          "description": "Subtle alpha-aware shadow (dropShadow, default: 0 1px 1px rgb(0 0 0 / 0.1))"
+        },
+        "drop-shadow-md": {
+          "type": "string",
+          "description": "Default alpha-aware shadow (glass/cutout) (dropShadow, default: 0 3px 4px rgb(0 0 0 / 0.15))"
+        },
+        "drop-shadow-lg": {
+          "type": "string",
+          "description": "Deep alpha-aware shadow (dropShadow, default: 0 8px 12px rgb(0 0 0 / 0.2))"
         },
         "font-sans": {
           "type": "string",
@@ -295,6 +343,22 @@
           "type": "string",
           "description": "Hero display size (length, default: 60px)"
         },
+        "text-7xl": {
+          "type": "string",
+          "description": "Oversized display (length, default: 72px)"
+        },
+        "text-8xl": {
+          "type": "string",
+          "description": "Editorial poster size (length, default: 96px)"
+        },
+        "text-9xl": {
+          "type": "string",
+          "description": "Maximal hero size (length, default: 128px)"
+        },
+        "font-weight-thin": {
+          "type": "string",
+          "description": "Thin weight (fashion/editorial) (number, default: 100)"
+        },
         "font-weight-light": {
           "type": "string",
           "description": "Light weight (number, default: 300)"
@@ -307,9 +371,17 @@
           "type": "string",
           "description": "Medium weight (number, default: 500)"
         },
+        "font-weight-semibold": {
+          "type": "string",
+          "description": "Semibold weight (number, default: 600)"
+        },
         "font-weight-bold": {
           "type": "string",
           "description": "Bold weight (number, default: 700)"
+        },
+        "font-weight-extrabold": {
+          "type": "string",
+          "description": "Extra-bold weight (number, default: 800)"
         },
         "font-weight-black": {
           "type": "string",
@@ -319,6 +391,10 @@
           "type": "string",
           "description": "Tight line-height (number, default: 1.25)"
         },
+        "leading-snug": {
+          "type": "string",
+          "description": "Snug line-height (number, default: 1.375)"
+        },
         "leading-normal": {
           "type": "string",
           "description": "Default line-height (number, default: 1.5)"
@@ -326,6 +402,14 @@
         "leading-relaxed": {
           "type": "string",
           "description": "Relaxed line-height (number, default: 1.625)"
+        },
+        "leading-loose": {
+          "type": "string",
+          "description": "Loose line-height (airy editorial) (number, default: 2)"
+        },
+        "tracking-tighter": {
+          "type": "string",
+          "description": "Very tight letter-spacing (display) (length, default: -0.05em)"
         },
         "tracking-tight": {
           "type": "string",
@@ -339,9 +423,21 @@
           "type": "string",
           "description": "Wide letter-spacing (length, default: 0.05em)"
         },
+        "tracking-wider": {
+          "type": "string",
+          "description": "Wider letter-spacing (length, default: 0.1em)"
+        },
+        "tracking-widest": {
+          "type": "string",
+          "description": "Widest letter-spacing (eyebrow/label) (length, default: 0.2em)"
+        },
         "spacing": {
           "type": "string",
           "description": "Base spacing unit; the whole scale is calc(spacing * n) (length, default: 0.25rem)"
+        },
+        "blur-xs": {
+          "type": "string",
+          "description": "Hairline blur / backdrop-blur (length, default: 4px)"
         },
         "blur-sm": {
           "type": "string",
@@ -355,9 +451,29 @@
           "type": "string",
           "description": "Large blur / backdrop-blur (length, default: 16px)"
         },
+        "blur-xl": {
+          "type": "string",
+          "description": "Extra-large blur / backdrop-blur (length, default: 24px)"
+        },
+        "blur-2xl": {
+          "type": "string",
+          "description": "Frosted-glass blur / backdrop-blur (length, default: 40px)"
+        },
         "gradient-primary": {
           "type": "string",
-          "description": "Optional gradient for primary surfaces (gradient, default: linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%))"
+          "description": "Optional gradient for primary surfaces (follows the palette) (gradient, default: linear-gradient(135deg, var(--color-primary) 0%, var(--color-accent) 100%))"
+        },
+        "gradient-accent": {
+          "type": "string",
+          "description": "Gradient for accent/secondary surfaces (follows the palette) (gradient, default: linear-gradient(135deg, var(--color-accent) 0%, var(--color-primary) 100%))"
+        },
+        "gradient-surface": {
+          "type": "string",
+          "description": "Subtle background gradient for page/hero (follows the palette) (gradient, default: linear-gradient(180deg, var(--color-surface) 0%, var(--color-surface-sunken) 100%))"
+        },
+        "gradient-text": {
+          "type": "string",
+          "description": "Gradient for clipped headline text (follows the palette) (gradient, default: linear-gradient(135deg, var(--color-primary) 0%, var(--color-accent) 100%))"
         },
         "opacity-disabled": {
           "type": "string",

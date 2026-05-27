@@ -19,10 +19,11 @@ fully-realized example of a different design language, not a stub.
 | Midnight | `midnight` | Proper dark theme (raised surfaces lighter than base) |
 | Brutalist | `brutalist` | Thick black borders, 0 radii, hard offset shadows |
 | Neumorphic | `neumorphic` | Soft extruded UI, paired light/dark shadows |
-| Glassmorphic | `glassmorphic` | Translucent frosted panels, backdrop blur |
+| Glassmorphic | `glassmorphic` | Translucent frosted panels, backdrop blur, drop shadows |
 | Editorial | `editorial` | Serif display, enlarged scale, magazine rhythm |
 | High Contrast | `high-contrast` | Black-on-white accessibility theme |
 | Sunset Paper | `sunset-paper` | Warm cream paper, sunset gradient, playful motion |
+| Neon Arcade | `neon-arcade` | Synthwave neon, glowing text, gradient headlines |
 
 ## Using a theme
 

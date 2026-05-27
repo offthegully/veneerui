@@ -77,6 +77,18 @@ colors:
 - **Motion** — `duration-*` (in ms, unitless numbers) and `ease-*` set the
   personality of interactions. Snappy linear vs. slow eased vs. a playful
   overshoot are very different feels.
+- **Glow & emitted light** — `text-shadow-*` (incl. a `text-shadow-glow` for a
+  multi-layer neon halo) and `drop-shadow-*` (alpha-aware, follows the rendered
+  shape) are separate from `shadow-*`. A two-layer `text-shadow-glow` reads as a
+  lit sign rather than a blur; lead a `shadow-*` with a `0 0 0 1px <neon>` ring to
+  outline cards in light. See **Neon Arcade**.
+- **Gradients** — beyond `gradient-primary` you can set `gradient-accent`,
+  `gradient-surface` (a subtle page/hero fade), and `gradient-text` (built for
+  `bg-clip-text` headlines). These have no Tailwind utility; components read them
+  via `bg-[image:var(--gradient-*)]`.
+- **Display scale** — the size scale runs to `text-9xl` and weights from
+  `font-weight-thin` to `-black`; `tracking-tighter`/`-widest` cover poster-tight
+  headlines and spaced-out eyebrow labels.
 
 ## 4. Fonts: name, don't load
 

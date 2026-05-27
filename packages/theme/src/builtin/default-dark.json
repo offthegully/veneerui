@@ -34,7 +34,10 @@
     "shadow-lg": "0 10px 15px -3px rgb(0 0 0 / 0.6)",
     "shadow-xl": "0 20px 25px -5px rgb(0 0 0 / 0.7)",
     "shadow-card": "0 1px 3px 0 rgb(0 0 0 / 0.5)",
+    "shadow-2xl": "0 25px 50px -12px rgb(0 0 0 / 0.8)",
     "shadow-glow": "0 0 24px rgb(96 165 250 / 0.5)",
-    "gradient-primary": "linear-gradient(135deg, #60a5fa 0%, #22d3ee 100%)"
+    "drop-shadow-lg": "0 12px 28px rgb(0 0 0 / 0.6)",
+    "text-shadow-lg": "0 2px 8px rgb(0 0 0 / 0.6)",
+    "text-shadow-glow": "0 0 16px rgb(96 165 250 / 0.6)"
   }
 }

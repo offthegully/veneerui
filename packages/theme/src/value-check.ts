@@ -17,6 +17,12 @@ export const TYPE_PROPERTY: Record<TokenType, string> = {
   fontFamily: 'font-family',
   easing: 'transition-timing-function',
   gradient: 'background-image',
+  textShadow: 'text-shadow',
+  // A drop-shadow() argument has the same grammar as text-shadow (2–3 lengths +
+  // optional color, no inset, no spread), so validate it against text-shadow.
+  // Don't validate via `filter: drop-shadow(…)` — css-tree accepts any argument
+  // there, which would let malformed values through in Node/CI.
+  dropShadow: 'text-shadow',
   number: '', // handled by NUMBER_RE, not a CSS property
 };
 

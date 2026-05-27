@@ -30,6 +30,7 @@ describe('gallery themes', () => {
       'glassmorphic',
       'high-contrast',
       'midnight',
+      'neon-arcade',
       'neumorphic',
       'sunset-paper',
     ]);

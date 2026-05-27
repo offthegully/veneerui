@@ -38,11 +38,16 @@
     "blur-sm": "10px",
     "blur-md": "16px",
     "blur-lg": "24px",
+    "blur-xl": "32px",
+    "blur-2xl": "48px",
     "shadow-sm": "0 2px 12px rgb(0 0 0 / 0.25)",
     "shadow-md": "0 6px 24px rgb(0 0 0 / 0.32)",
     "shadow-lg": "0 12px 40px rgb(0 0 0 / 0.4)",
     "shadow-card": "0 8px 32px rgb(0 0 0 / 0.37)",
+    "drop-shadow-md": "0 6px 16px rgb(0 0 0 / 0.4)",
+    "drop-shadow-lg": "0 16px 40px rgb(0 0 0 / 0.5)",
     "gradient-primary": "linear-gradient(135deg, #a78bfa 0%, #f0abfc 100%)",
+    "gradient-accent": "linear-gradient(135deg, #818cf8 0%, #f0abfc 100%)",
     "font-sans": "'Inter Variable', system-ui, sans-serif",
     "font-display": "'Inter Variable', system-ui, sans-serif"
   }

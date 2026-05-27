@@ -89,4 +89,33 @@ describe('validateTheme', () => {
     });
     expect(result.valid).toBe(true);
   });
+
+  it('validates textShadow tokens, including multi-layer glows', () => {
+    const result = check({
+      ...base,
+      tokens: {
+        ...base.tokens,
+        'text-shadow-md': '0 2px 4px rgb(0 0 0 / 0.12)',
+        'text-shadow-glow': '0 0 10px rgb(0 240 255 / 0.9), 0 0 24px rgb(255 43 214 / 0.7)',
+      },
+    });
+    expect(result.valid).toBe(true);
+  });
+
+  it('rejects a textShadow value that is not a valid text-shadow (e.g. inset)', () => {
+    const result = check({ ...base, tokens: { ...base.tokens, 'text-shadow-md': 'inset 0 0 4px #000' } });
+    expect(result.valid).toBe(false);
+    expect(result.errors.some((e) => e.path === 'tokens.text-shadow-md')).toBe(true);
+  });
+
+  it('validates dropShadow tokens (a drop-shadow() argument)', () => {
+    const result = check({ ...base, tokens: { ...base.tokens, 'drop-shadow-lg': '0 8px 12px rgb(0 0 0 / 0.2)' } });
+    expect(result.valid).toBe(true);
+  });
+
+  it('rejects a dropShadow value drop-shadow() cannot take (inset / spread)', () => {
+    const result = check({ ...base, tokens: { ...base.tokens, 'drop-shadow-lg': 'inset 0 8px 12px 4px #000' } });
+    expect(result.valid).toBe(false);
+    expect(result.errors.some((e) => e.path === 'tokens.drop-shadow-lg')).toBe(true);
+  });
 });

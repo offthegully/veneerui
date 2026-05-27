@@ -195,7 +195,7 @@ contrast minimums, common pitfalls) and the generated
 
 ### The gallery
 
-Eight ready-to-use example themes live in **[`gallery/`](./gallery/README.md)**,
+Nine ready-to-use example themes live in **[`gallery/`](./gallery/README.md)**,
 each a fully-realized, distinct design language (also the best starting templates
 for authoring):
 
@@ -205,10 +205,11 @@ for authoring):
 | **Midnight** | Proper dark theme (raised surfaces lighter than base) |
 | **Brutalist** | Thick black borders, 0 radii, hard offset shadows, display type |
 | **Neumorphic** | Soft extruded UI carved from paired light/dark shadows |
-| **Glassmorphic** | Translucent frosted panels, backdrop blur, gradient accents |
+| **Glassmorphic** | Translucent frosted panels, backdrop blur, drop shadows |
 | **Editorial** | Serif display, enlarged type scale, magazine rhythm |
 | **High Contrast** | Black-on-white accessibility theme |
 | **Sunset Paper** | Warm cream paper, sunset gradient, playful motion |
+| **Neon Arcade** | Synthwave neon, glowing text, gradient headlines |
 
 Each theme ships with a `notes.md` explaining *why* its values were chosen. To
 contribute one, see **[gallery/CONTRIBUTING.md](./gallery/CONTRIBUTING.md)**.
@@ -217,8 +218,8 @@ contribute one, see **[gallery/CONTRIBUTING.md](./gallery/CONTRIBUTING.md)**.
 
 ## The token schema
 
-The v1 schema is **83 tokens**, sized to allow genuinely different design
-languages (brutalist, neumorphic, editorial, …) rather than just recolored
+The v1 schema is **112 tokens**, sized to allow genuinely different design
+languages (brutalist, neumorphic, editorial, neon, …) rather than just recolored
 variants. It's defined once in `packages/theme/src/schema.ts`; `npm run gen:theme`
 generates everything downstream so nothing drifts:
 
@@ -233,11 +234,11 @@ generates everything downstream so nothing drifts:
 | Surfaces | 6 | `color-surface`, `-raised`, `-sunken`, `-overlay`, `-inverse`, `-overlay-backdrop` |
 | Text | 5 | `color-text`, `-muted`, `-subtle`, `-inverse`, `-on-primary` |
 | Borders | 6 | `color-border` (+ strong/subtle), `border-width-thin`/`-default`/`-thick` |
-| Radii | 7 | `radius-none` … `radius-2xl`, `radius-full` |
-| Shadows | 8 | `shadow-sm`…`-xl`, `inset-shadow-sm`/`-lg`, `shadow-glow`, `shadow-card` |
-| Typography | 25 | `font-sans`/`-serif`/`-mono`/`-display`, `text-xs`…`-6xl`, `font-weight-*`, leading/tracking |
+| Radii | 9 | `radius-none`/`-xs` … `radius-3xl`, `radius-full` |
+| Shadows | 18 | `shadow-2xs`…`-2xl`, `inset-shadow-*`, `shadow-glow`/`-card`, `text-shadow-*` (+ glow), `drop-shadow-*` |
+| Typography | 36 | `font-sans`/`-serif`/`-mono`/`-display`, `text-xs`…`-9xl`, `font-weight-thin`…`-black`, leading/tracking |
 | Spacing | 1 | `spacing` — one base unit that rescales the whole density |
-| Effects | 6 | `blur-sm`/`-md`/`-lg`, `gradient-primary`, `opacity-disabled`/`-overlay` |
+| Effects | 12 | `blur-xs`…`-2xl`, `gradient-primary`/`-accent`/`-surface`/`-text`, `opacity-disabled`/`-overlay` |
 | Motion | 7 | `duration-fast`/`-default`/`-slow`, `ease-default`/`-snappy`/`-smooth`/`-bounce` |
 
 Each token records a **bridge**: `theme` tokens sit in a Tailwind v4 namespace and
@@ -255,7 +256,7 @@ overridden the same way at runtime.
 ```
 ┌──────────────────────────────────────────────────────────┐
 │  Theme runtime  (@veneer/theme — packages/theme)          │
-│   • schema.ts        single source of truth (83 tokens)   │
+│   • schema.ts        single source of truth (112 tokens)  │
 │   • applyTheme()     writes CSS vars to <html>            │
 │   • ThemeProvider    library/enabled/current + preview    │
 │   • storage.ts       localStorage persistence (no server) │
@@ -325,7 +326,7 @@ veneer/                              npm workspace monorepo
 ├─ packages/
 │  ├─ theme/                       → @veneer/theme (the published runtime)
 │  │  ├─ src/
-│  │  │  ├─ schema.ts              ★ single source of truth — 83-token TOKEN_SCHEMA
+│  │  │  ├─ schema.ts              ★ single source of truth — 112-token TOKEN_SCHEMA
 │  │  │  ├─ types.ts               Theme, ThemeLibrary, TokenDef, SCHEMA_VERSION
 │  │  │  ├─ apply.ts               applyTheme() — writes CSS vars, reconciles defaults
 │  │  │  ├─ validate.ts            validateTheme() — the security boundary
@@ -386,7 +387,7 @@ Run from the repo root; each orchestrates across the workspaces.
 
 ## Testing & quality
 
-`npm test` runs **68 tests** across the workspaces: theme validation, schema
+`npm test` runs **75 tests** across the workspaces: theme validation, schema
 expressiveness, storage reconciliation, built-in and gallery theme validity, the
 import pipeline, conformance, and the CLI (framework detection, idempotent config
 patching, registry resolution).

@@ -12,7 +12,9 @@ export type TokenType =
   | 'fontFamily' // CSS font-family stack (restricted to the bundled set)
   | 'number' // unitless number (opacity, line-height, font-weight)
   | 'easing' // CSS timing function (cubic-bezier, linear, steps, ...)
-  | 'gradient'; // linear/radial/conic-gradient string
+  | 'gradient' // linear/radial/conic-gradient string
+  | 'textShadow' // text-shadow value (offsets, blur, color; may be multi-layer)
+  | 'dropShadow'; // drop-shadow() filter argument (offset-x offset-y blur color)
 
 /**
  * How a token reaches components.

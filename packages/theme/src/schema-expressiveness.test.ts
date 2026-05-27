@@ -76,8 +76,28 @@ describe('schema expressiveness', () => {
         'spacing': '0.3rem',
         'text-5xl': '52px',
         'text-6xl': '72px',
+        'text-9xl': '160px',
+        'font-weight-extrabold': '800',
         'leading-relaxed': '1.75',
-        'tracking-tight': '-0.03em',
+        'leading-loose': '2',
+        'tracking-tighter': '-0.05em',
+        'tracking-widest': '0.25em',
+      }),
+    );
+  });
+
+  it('expresses a neon/synthwave theme (text-shadow, drop-shadow, gradients)', () => {
+    expectValid(
+      wrap('Neon Arcade', {
+        'color-surface': '#0a0118',
+        'color-text': '#f5e6ff',
+        'font-display': "'Archivo Black', sans-serif",
+        'text-shadow-glow': '0 0 10px rgb(0 240 255 / 0.9), 0 0 24px rgb(255 43 214 / 0.7)',
+        'text-shadow-lg': '0 0 10px rgb(255 43 214 / 0.7)',
+        'drop-shadow-lg': '0 0 16px rgb(0 240 255 / 0.5)',
+        'shadow-glow': '0 0 24px rgb(255 43 214 / 0.6)',
+        'gradient-text': 'linear-gradient(135deg, #ff2bd6 0%, #00f0ff 100%)',
+        'gradient-surface': 'linear-gradient(180deg, #160a2e 0%, #0a0118 100%)',
       }),
     );
   });
