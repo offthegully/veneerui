@@ -45,6 +45,10 @@
     "tracking-tighter": "-0.045em",
     "tracking-tight": "-0.025em",
     "leading-tight": "1.2",
-    "leading-normal": "1.5"
+    "leading-normal": "1.5",
+    "duration-fast": "50",
+    "duration-default": "120",
+    "duration-slow": "240",
+    "ease-default": "cubic-bezier(0.2, 0, 0, 1)"
   }
 }

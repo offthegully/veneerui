@@ -59,6 +59,10 @@
     "tracking-tighter": "-0.04em",
     "tracking-tight": "-0.02em",
     "tracking-widest": "0.25em",
-    "spacing": "0.3rem"
+    "spacing": "0.3rem",
+    "duration-fast": "120",
+    "duration-default": "280",
+    "duration-slow": "520",
+    "ease-default": "cubic-bezier(0.65, 0, 0.35, 1)"
   }
 }

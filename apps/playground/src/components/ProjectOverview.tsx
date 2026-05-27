@@ -12,6 +12,21 @@ import { GalleryPanel } from './GalleryPanel';
 
 const motion = 'transition-colors duration-[calc(var(--duration-default)*1ms)] ease-default';
 
+// Buttons/CTAs: a theme-timed lift on hover and a snappy scale-down on press, so
+// the feel of every interaction tracks the active theme's motion tokens.
+const interactive =
+  'transition-[transform,box-shadow,background-color,border-color,color] ' +
+  'duration-[calc(var(--duration-default)*1ms)] ease-default ' +
+  'hover:-translate-y-px active:translate-y-0 active:scale-[0.98] ' +
+  'active:duration-[calc(var(--duration-fast)*1ms)] active:ease-snappy ' +
+  'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring';
+
+// Cards: a subtle lift with border emphasis on hover; `group` lets the icon nudge.
+const card =
+  'group transition-[transform,box-shadow,border-color] ' +
+  'duration-[calc(var(--duration-default)*1ms)] ease-default ' +
+  'hover:-translate-y-0.5 hover:border-border-strong';
+
 const GITHUB_URL = 'https://github.com/offthegully/veneer';
 
 /** GitHub mark, drawn in currentColor so it inherits the surrounding token color. */
@@ -81,7 +96,7 @@ export function ProjectOverview() {
       {/* Hero */}
       <header className="mx-auto max-w-5xl px-6 pt-20 pb-16 text-center">
         <span className="inline-flex items-center gap-2 rounded-full bg-primary-subtle px-3 py-1 text-xs font-medium text-primary">
-          <span className="size-1.5 rounded-full bg-primary" />
+          <span className="size-1.5 rounded-full bg-primary veneer-live-dot" />
           Open source · MIT
         </span>
         <div className="mt-7 flex items-center justify-center gap-3">
@@ -108,7 +123,7 @@ export function ProjectOverview() {
             href={GITHUB_URL}
             target="_blank"
             rel="noreferrer"
-            className={`inline-flex items-center gap-2 rounded-md bg-primary px-5 py-2.5 text-sm font-semibold text-text-on-primary [box-shadow:var(--shadow-sm)] hover:bg-primary-hover ${motion}`}
+            className={`inline-flex items-center gap-2 rounded-md bg-primary px-5 py-2.5 text-sm font-semibold text-text-on-primary [box-shadow:var(--shadow-sm)] hover:bg-primary-hover hover:[box-shadow:var(--shadow-md)] ${interactive}`}
           >
             <svg viewBox="0 0 24 24" className="size-4" aria-hidden="true">
               <path d={GITHUB_PATH} fill="currentColor" />
@@ -118,7 +133,7 @@ export function ProjectOverview() {
           <button
             type="button"
             onClick={() => setGalleryOpen(true)}
-            className={`inline-flex items-center justify-center rounded-md border-border bg-surface px-5 py-2.5 text-sm font-semibold text-text [box-shadow:var(--shadow-sm)] [border-width:var(--border-width-default)] hover:bg-surface-sunken ${motion}`}
+            className={`inline-flex items-center justify-center rounded-md border-border bg-surface px-5 py-2.5 text-sm font-semibold text-text [box-shadow:var(--shadow-sm)] [border-width:var(--border-width-default)] hover:bg-surface-sunken hover:[box-shadow:var(--shadow-md)] ${interactive}`}
           >
             Browse the themes
           </button>
@@ -129,6 +144,7 @@ export function ProjectOverview() {
       <section className="border-border [border-top-width:var(--border-width-thin)] [border-bottom-width:var(--border-width-thin)] bg-surface-sunken">
         <div className="mx-auto flex max-w-4xl flex-col items-center gap-3 px-6 py-10 text-center">
           <p className="text-base leading-relaxed text-text">
+            <span className="mr-2 inline-block size-2 rounded-full bg-primary veneer-live-dot align-middle" />
             You're viewing the <span className="font-semibold text-primary">{current.name}</span> theme.
             This whole page is rendered from it — switch themes with the picker in the top-right or
             bottom-right corner and watch every pixel follow. Nothing reloads.
@@ -149,9 +165,9 @@ export function ProjectOverview() {
           {FEATURES.map((f) => (
             <article
               key={f.title}
-              className="flex flex-col gap-3 rounded-xl border-border bg-surface-raised p-6 backdrop-blur-md [box-shadow:var(--shadow-card)] [border-width:var(--border-width-default)]"
+              className={`flex flex-col gap-3 rounded-xl border-border bg-surface-raised p-6 backdrop-blur-md [box-shadow:var(--shadow-card)] [border-width:var(--border-width-default)] hover:[box-shadow:var(--shadow-lg)] ${card}`}
             >
-              <span className="inline-flex size-10 items-center justify-center rounded-lg bg-primary-subtle text-primary">
+              <span className="inline-flex size-10 items-center justify-center rounded-lg bg-primary-subtle text-primary transition-transform duration-[calc(var(--duration-default)*1ms)] ease-default group-hover:scale-110">
                 <svg viewBox="0 0 24 24" className="size-5" aria-hidden="true">
                   <path d={f.path} fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
@@ -181,7 +197,7 @@ export function ProjectOverview() {
                   href={GITHUB_URL}
                   target="_blank"
                   rel="noreferrer"
-                  className={`inline-flex items-center gap-2 rounded-md bg-surface px-5 py-2.5 text-sm font-semibold text-text [box-shadow:var(--shadow-md)] hover:bg-surface-raised ${motion}`}
+                  className={`inline-flex items-center gap-2 rounded-md bg-surface px-5 py-2.5 text-sm font-semibold text-text [box-shadow:var(--shadow-md)] hover:bg-surface-raised hover:[box-shadow:var(--shadow-lg)] ${interactive}`}
                 >
                   <svg viewBox="0 0 24 24" className="size-4" aria-hidden="true">
                     <path d={GITHUB_PATH} fill="currentColor" />
@@ -223,7 +239,7 @@ export function ProjectOverview() {
 
       {/* Closing CTA — hand off into the playground surfaces */}
       <section className="mx-auto max-w-6xl px-6 pb-20">
-        <div className="flex flex-col items-center gap-6 rounded-2xl border-border bg-surface-raised px-6 py-14 text-center backdrop-blur-md [box-shadow:var(--shadow-lg)] [border-width:var(--border-width-default)]">
+        <div className={`flex flex-col items-center gap-6 rounded-2xl border-border bg-surface-raised px-6 py-14 text-center backdrop-blur-md [box-shadow:var(--shadow-lg)] [border-width:var(--border-width-default)] hover:[box-shadow:var(--shadow-xl)] ${card}`}>
           <h2 className="max-w-2xl font-display text-4xl font-black tracking-tight text-text">
             See it on real screens
           </h2>

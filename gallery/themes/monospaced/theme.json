@@ -47,6 +47,11 @@
     "leading-normal": "1.6",
     "leading-relaxed": "1.75",
     "tracking-tighter": "0em",
-    "tracking-tight": "0em"
+    "tracking-tight": "0em",
+    "duration-fast": "50",
+    "duration-default": "110",
+    "duration-slow": "200",
+    "ease-default": "linear",
+    "ease-snappy": "linear"
   }
 }

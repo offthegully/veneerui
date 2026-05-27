@@ -18,3 +18,32 @@ body {
   margin: 0;
   min-height: 100svh;
 }
+
+/*
+ * "Live" indicator dot. The cadence is driven by the active theme's slow
+ * duration and default easing, so it breathes slowly under Editorial and blinks
+ * fast under Terminal — motion itself reads as part of the theme.
+ */
+@keyframes veneer-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%      { opacity: 0.5; transform: scale(0.8); }
+}
+.veneer-live-dot {
+  animation: veneer-pulse calc(var(--duration-slow) * 4ms) var(--ease-default, ease-in-out) infinite;
+}
+
+/*
+ * Accessibility: the landing page now animates broadly (hover lifts, presses,
+ * the live dot), so honor a reduced-motion preference globally by collapsing
+ * transitions and animations to effectively instant.
+ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

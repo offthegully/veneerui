@@ -54,6 +54,10 @@
     "leading-normal": "1.7",
     "leading-relaxed": "1.85",
     "tracking-tight": "-0.01em",
-    "spacing": "0.27rem"
+    "spacing": "0.27rem",
+    "duration-fast": "100",
+    "duration-default": "260",
+    "duration-slow": "480",
+    "ease-default": "cubic-bezier(0.33, 0, 0.2, 1)"
   }
 }
