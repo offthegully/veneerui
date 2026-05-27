@@ -16,7 +16,7 @@ export function PreviewBanner() {
   return (
     <div
       role="status"
-      className="sticky top-0 z-40 flex flex-wrap items-center gap-x-4 gap-y-2 border-border bg-surface-inverse px-6 py-3 text-text-inverse [border-bottom-width:var(--border-width-default)]"
+      className="flex flex-wrap items-center gap-x-4 gap-y-2 border-border bg-surface-inverse px-6 py-3 text-text-inverse [border-bottom-width:var(--border-width-default)]"
     >
       <span className="flex-1 text-sm">
         <span className="font-medium">Previewing untested theme:</span>{' '}

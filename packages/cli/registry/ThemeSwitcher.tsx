@@ -29,8 +29,16 @@ function Swatches({ theme }: { theme: Theme }) {
   );
 }
 
-export function ThemeSwitcher() {
+/**
+ * `header` (default): square-ish button, dropdown opens downward — for the bar at
+ * the top. `floating`: a rounded pill with stronger elevation whose dropdown opens
+ * *upward*, for the control fixed to the bottom-right corner.
+ */
+type SwitcherVariant = 'header' | 'floating';
+
+export function ThemeSwitcher({ variant = 'header' }: { variant?: SwitcherVariant } = {}) {
   const { enabledThemes, currentId, current, setCurrent } = useTheme();
+  const floating = variant === 'floating';
   const [open, setOpen] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
   const [galleryOpen, setGalleryOpen] = useState(false);
@@ -64,7 +72,9 @@ export function ThemeSwitcher() {
         onClick={() => setOpen((v) => !v)}
         aria-haspopup="listbox"
         aria-expanded={open}
-        className="flex items-center gap-2 rounded-md border border-border bg-surface-raised px-3 py-2 text-sm font-medium text-text shadow-sm transition-colors hover:bg-surface-sunken"
+        className={`flex items-center gap-2 border border-border bg-surface-raised px-3 py-2 text-sm font-medium text-text transition-colors hover:bg-surface-sunken ${
+          floating ? 'rounded-full shadow-lg' : 'rounded-md shadow-sm'
+        }`}
       >
         <Swatches theme={current} />
         <span>{current.name}</span>
@@ -76,7 +86,9 @@ export function ThemeSwitcher() {
       {open && (
         <div
           role="listbox"
-          className="absolute right-0 z-50 mt-2 w-64 overflow-hidden rounded-lg border border-border bg-surface-overlay shadow-lg"
+          className={`absolute right-0 z-50 w-64 overflow-hidden rounded-lg border border-border bg-surface-overlay shadow-lg ${
+            floating ? 'bottom-full mb-2' : 'mt-2'
+          }`}
         >
           <ul className="max-h-80 overflow-auto p-1">
             {enabledThemes.map((theme) => {

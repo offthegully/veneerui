@@ -2,30 +2,38 @@ import { useState } from 'react'
 import { ThemeSwitcher } from './components/ThemeSwitcher'
 import { ThemeShowcase } from './components/ThemeShowcase'
 import { LandingPreview } from './components/LandingPreview'
+import { ProjectOverview } from './components/ProjectOverview'
 import { ThemeTokens } from './components/ThemeTokens'
 import { PreviewBanner } from './components/PreviewBanner'
+import { FloatingControls } from './components/FloatingControls'
 
-type View = 'landing' | 'components' | 'tokens'
+export type View = 'overview' | 'landing' | 'components' | 'tokens'
 
 const TABS: { id: View; label: string }[] = [
-  { id: 'landing', label: 'Landing page' },
+  { id: 'overview', label: 'Overview' },
+  { id: 'landing', label: 'SaaS demo' },
   { id: 'components', label: 'Components' },
   { id: 'tokens', label: 'What changed' },
 ]
 
 export default function App() {
-  const [view, setView] = useState<View>('landing')
+  const [view, setView] = useState<View>('overview')
 
   return (
     <div className="min-h-svh bg-surface font-sans text-text">
-      <PreviewBanner />
-      <header className="flex items-center justify-between border-border px-6 py-4 [border-bottom-width:var(--border-width-default)]">
-        <div className="flex items-baseline gap-2">
-          <span className="font-display text-xl font-bold tracking-tight text-text">Veneer</span>
-          <span className="text-sm text-text-muted">theme runtime</span>
-        </div>
-        <ThemeSwitcher />
-      </header>
+      {/* Banner + header pin together as one block so the switcher stays reachable
+          while scrolling. One sticky wrapper (rather than two competing
+          `sticky top-0` layers) keeps the preview banner above the bar. */}
+      <div className="sticky top-0 z-40 bg-surface">
+        <PreviewBanner />
+        <header className="flex items-center justify-between border-border px-6 py-4 [border-bottom-width:var(--border-width-default)]">
+          <div className="flex items-baseline gap-2">
+            <span className="font-display text-xl font-bold tracking-tight text-text">Veneer</span>
+            <span className="text-sm text-text-muted">theme runtime</span>
+          </div>
+          <ThemeSwitcher />
+        </header>
+      </div>
 
       {/* View switcher — segmented control, token-styled so it re-skins too. */}
       <div className="flex justify-center border-border px-6 py-3 [border-bottom-width:var(--border-width-thin)]">
@@ -51,8 +59,13 @@ export default function App() {
         </div>
       </div>
 
-      {/* Landing is full-bleed; the others sit in a centered reading column. */}
-      {view === 'landing' ? (
+      {/* Overview and the SaaS demo are full-bleed; the others sit in a centered
+          reading column. */}
+      {view === 'overview' ? (
+        <main>
+          <ProjectOverview onExplore={setView} />
+        </main>
+      ) : view === 'landing' ? (
         <main>
           <LandingPreview />
         </main>
@@ -61,6 +74,8 @@ export default function App() {
           {view === 'components' ? <ThemeShowcase /> : <ThemeTokens />}
         </main>
       )}
+
+      <FloatingControls />
     </div>
   )
 }
