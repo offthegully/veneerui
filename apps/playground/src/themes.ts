@@ -19,6 +19,10 @@
  */
 import { BUILTIN_THEMES, SCHEMA_VERSION, type Theme } from '@veneer/theme';
 
+// Re-export so existing importers (main.tsx) keep their `./themes` entry point;
+// the lists themselves live in theme-ids.ts, which vite.config can also read.
+export { APP_DEFAULT_THEME_ID, APP_ENABLED_THEME_IDS } from './theme-ids';
+
 /** Authored gallery JSON, before app bookkeeping. Mirrors the on-disk theme.json. */
 interface GallerySource {
   name: string;
@@ -99,24 +103,3 @@ for (const t of galleryThemes) byId.set(t.id, t);
  * be enabled. Module-level constant so the ThemeProvider seed is stable.
  */
 export const APP_THEMES: Theme[] = [...byId.values()];
-
-/** Applied on a visitor's first load (and the safe fallback). */
-export const APP_DEFAULT_THEME_ID = 'default-light';
-
-/**
- * The curated set the switcher shows on a first load — eight solid themes that
- * span the axes (clean, serif, warm, mono, structural, dark) without overwhelming.
- * The other six stay in the library and remain one click away in the gallery
- * panel; a returning visitor's own enabled set is preserved. Order here is the
- * switcher order: neutral defaults → light/expressive → dark.
- */
-export const APP_ENABLED_THEME_IDS = [
-  'default-light',
-  'default-dark',
-  'sharp-minimalist',
-  'editorial',
-  'warm-library',
-  'monospaced',
-  'brutalist',
-  'terminal',
-];

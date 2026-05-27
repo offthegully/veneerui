@@ -1,23 +1,21 @@
 import { useState } from 'react'
 import { ThemeSwitcher } from './components/ThemeSwitcher'
 import { ThemeShowcase } from './components/ThemeShowcase'
-import { LandingPreview } from './components/LandingPreview'
 import { ProjectOverview } from './components/ProjectOverview'
 import { ThemeTokens } from './components/ThemeTokens'
 import { PreviewBanner } from './components/PreviewBanner'
 import { FloatingControls } from './components/FloatingControls'
 
-export type View = 'overview' | 'landing' | 'components' | 'tokens'
+export type View = 'overview' | 'components' | 'tokens'
 
-const TABS: { id: View; label: string }[] = [
-  { id: 'overview', label: 'Overview' },
-  { id: 'landing', label: 'SaaS demo' },
-  { id: 'components', label: 'Components' },
-  { id: 'tokens', label: 'What changed' },
-]
+// const TABS: { id: View; label: string }[] = [
+//   { id: 'overview', label: 'Overview' },
+//   { id: 'components', label: 'Components' },
+//   { id: 'tokens', label: 'What changed' },
+// ]
 
 export default function App() {
-  const [view, setView] = useState<View>('overview')
+  const [view] = useState<View>('overview')
 
   return (
     <div className="min-h-svh bg-surface font-sans text-text">
@@ -29,14 +27,13 @@ export default function App() {
         <header className="flex items-center justify-between border-border px-6 py-4 [border-bottom-width:var(--border-width-default)]">
           <div className="flex items-baseline gap-2">
             <span className="font-display text-xl font-bold tracking-tight text-text">Veneer</span>
-            <span className="text-sm text-text-muted">theme runtime</span>
           </div>
           <ThemeSwitcher />
         </header>
       </div>
 
       {/* View switcher — segmented control, token-styled so it re-skins too. */}
-      <div className="flex justify-center border-border px-6 py-3 [border-bottom-width:var(--border-width-thin)]">
+      {/*<div className="flex justify-center border-border px-6 py-3 [border-bottom-width:var(--border-width-thin)]">
         <div className="inline-flex gap-1 rounded-lg bg-surface-sunken p-1">
           {TABS.map((tab) => {
             const active = view === tab.id
@@ -57,17 +54,11 @@ export default function App() {
             )
           })}
         </div>
-      </div>
+      </div>*/}
 
-      {/* Overview and the SaaS demo are full-bleed; the others sit in a centered
-          reading column. */}
       {view === 'overview' ? (
         <main>
-          <ProjectOverview onExplore={setView} />
-        </main>
-      ) : view === 'landing' ? (
-        <main>
-          <LandingPreview />
+          <ProjectOverview />
         </main>
       ) : (
         <main className="mx-auto max-w-4xl px-6 py-12">

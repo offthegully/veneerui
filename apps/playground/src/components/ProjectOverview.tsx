@@ -1,18 +1,14 @@
 /**
- * ProjectOverview — the real Veneer landing page, and the default view. Unlike
- * LandingPreview (a fictional SaaS site used purely as a re-skin target), this
- * page is *about* Veneer: what it is, that it's open source, and where the docs
- * will live. It doubles as the playground — every value is a semantic token, so
- * the page you're reading re-skins live as you switch themes, and the closing
- * CTAs hand off into the demo surfaces.
+ * ProjectOverview — the Veneer landing page and default view. Every visual value
+ * flows from semantic tokens, so the page re-skins live as you switch themes. The
+ * closing CTAs hand off into the playground surfaces.
  *
- * Like the rest of the playground it expresses every visual value through a
- * semantic token utility (color, surface, type, radius, border-width, shadow,
- * gradient, motion) — no hardcoded colors — which the conformance test enforces.
- * Full-bleed: App renders it without the centered container.
+ * No hardcoded colors — the conformance test enforces this. Full-bleed: App
+ * renders it without the centered container.
  */
+import { useState } from 'react';
 import { useTheme } from '@veneer/theme';
-import type { View } from '../App';
+import { GalleryPanel } from './GalleryPanel';
 
 const motion = 'transition-colors duration-[calc(var(--duration-default)*1ms)] ease-default';
 
@@ -73,8 +69,9 @@ function VeneerMark({ className }: { className?: string }) {
   );
 }
 
-export function ProjectOverview({ onExplore }: { onExplore: (view: View) => void }) {
+export function ProjectOverview() {
   const { current } = useTheme();
+  const [galleryOpen, setGalleryOpen] = useState(false);
 
   return (
     // Page background is the theme's surface gradient (a subtle wash for most
@@ -120,10 +117,10 @@ export function ProjectOverview({ onExplore }: { onExplore: (view: View) => void
           </a>
           <button
             type="button"
-            onClick={() => onExplore('components')}
+            onClick={() => setGalleryOpen(true)}
             className={`inline-flex items-center justify-center rounded-md border-border bg-surface px-5 py-2.5 text-sm font-semibold text-text [box-shadow:var(--shadow-sm)] [border-width:var(--border-width-default)] hover:bg-surface-sunken ${motion}`}
           >
-            Explore the playground
+            Browse the themes
           </button>
         </div>
       </header>
@@ -231,32 +228,9 @@ export function ProjectOverview({ onExplore }: { onExplore: (view: View) => void
             See it on real screens
           </h2>
           <p className="max-w-lg text-base text-text-muted">
-            The playground renders the same theme across a full marketing page, a component
-            showcase, and a token inspector. Pick one and switch themes around it.
+            The playground renders the same theme across a component showcase and a token
+            inspector. Pick one and switch themes around it.
           </p>
-          <div className="flex flex-wrap items-center justify-center gap-3">
-            <button
-              type="button"
-              onClick={() => onExplore('landing')}
-              className={`inline-flex items-center justify-center rounded-md bg-primary px-5 py-2.5 text-sm font-semibold text-text-on-primary [box-shadow:var(--shadow-sm)] hover:bg-primary-hover ${motion}`}
-            >
-              SaaS demo
-            </button>
-            <button
-              type="button"
-              onClick={() => onExplore('components')}
-              className={`inline-flex items-center justify-center rounded-md border-border bg-surface px-5 py-2.5 text-sm font-semibold text-text [border-width:var(--border-width-default)] hover:bg-surface-sunken ${motion}`}
-            >
-              Components
-            </button>
-            <button
-              type="button"
-              onClick={() => onExplore('tokens')}
-              className={`inline-flex items-center justify-center rounded-md border-border bg-surface px-5 py-2.5 text-sm font-semibold text-text [border-width:var(--border-width-default)] hover:bg-surface-sunken ${motion}`}
-            >
-              What changed
-            </button>
-          </div>
         </div>
       </section>
 
@@ -281,6 +255,8 @@ export function ProjectOverview({ onExplore }: { onExplore: (view: View) => void
           </a>
         </div>
       </footer>
+
+      {galleryOpen && <GalleryPanel onClose={() => setGalleryOpen(false)} />}
     </div>
   );
 }
