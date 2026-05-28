@@ -38,8 +38,8 @@ restyle freely. The runtime logic still comes from the `@offthegully/veneerui` d
 so there's no duplicated behavior.
 
 Full setup guides:
-[Vite](https://github.com/your-org/veneer/blob/main/docs/integration-vite.md) ·
-[Next.js](https://github.com/your-org/veneer/blob/main/docs/integration-next.md).
+[Vite](https://github.com/offthegully/veneer/blob/main/docs/integration-vite.md) ·
+[Next.js](https://github.com/offthegully/veneer/blob/main/docs/integration-next.md).
 
 ## License
 

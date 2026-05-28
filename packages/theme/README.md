@@ -40,8 +40,8 @@ Anti-flash (apply the saved theme before first paint):
   `app/layout.tsx`'s `<head>`.
 
 Full step-by-step (CLI and manual) for each framework:
-- [Vite guide](https://github.com/your-org/veneer/blob/main/docs/integration-vite.md)
-- [Next.js guide](https://github.com/your-org/veneer/blob/main/docs/integration-next.md)
+- [Vite guide](https://github.com/offthegully/veneer/blob/main/docs/integration-vite.md)
+- [Next.js guide](https://github.com/offthegully/veneer/blob/main/docs/integration-next.md)
 
 ## Entry points
 
@@ -76,7 +76,7 @@ For a showcase, pass `veneer({ shuffleUntilPinned: themes })` (Vite) and
 before first paint, so still flash-free — until the visitor selects one, which pins
 it. `useTheme()` exposes `pinned` and `shuffle()` to build the control. Omit it for
 the ordinary "apply the saved theme" behavior. See the
-[Vite guide](https://github.com/your-org/veneer/blob/main/docs/integration-vite.md).
+[Vite guide](https://github.com/offthegully/veneer/blob/main/docs/integration-vite.md).
 
 ## License
 
