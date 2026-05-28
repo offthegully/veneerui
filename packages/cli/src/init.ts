@@ -6,7 +6,7 @@
  * and the Next <head> script). Idempotent and `--dry-run`-able: re-running is a
  * no-op, and nothing here installs packages or rewrites your component tree.
  */
-import { readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { detect } from './detect';
 import {
@@ -15,6 +15,7 @@ import {
   nextAntiFlashSnippet,
   providerSnippet,
 } from './patch';
+import { agentDocTargets, readAgentGuide, upsertAgentGuide } from './agents';
 
 export interface InitOptions {
   root: string;
@@ -91,6 +92,22 @@ export function runInit(opts: InitOptions): void {
   // 4 — provider (printed, never auto-wrapped).
   log('4. Provider — wrap your app root:');
   indent(log, providerSnippet(det.framework));
+
+  // 5 — agent guide so AI coding tools write themeable components.
+  log('\n5. Agent guide (so AI tools write themeable components)');
+  const guide = readAgentGuide();
+  for (const rel of agentDocTargets(opts.root)) {
+    const abs = join(opts.root, rel);
+    const existing = existsSync(abs) ? readFileSync(abs, 'utf8') : null;
+    const { content, changed } = upsertAgentGuide(existing, guide);
+    const verb = existing == null ? 'create' : 'update';
+    if (!changed) log(`   ✓ ${rel} already has the current Veneer guide`);
+    else if (opts.dryRun) log(`   → would ${verb} ${rel} with the Veneer agent guide`);
+    else {
+      writeFileSync(abs, content);
+      log(`   ✓ ${verb}d ${rel} with the Veneer agent guide`);
+    }
+  }
 
   log('\nNext: `npx veneer add switcher` to copy a theme switcher into ' + det.componentsDir + '.');
 }
