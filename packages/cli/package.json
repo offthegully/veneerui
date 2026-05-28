@@ -1,6 +1,6 @@
 {
   "name": "veneerui",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "CLI to add Veneer UI theming to an existing Vite or Next + Tailwind v4 app (init + add).",
   "license": "MIT",
   "repository": {

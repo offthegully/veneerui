@@ -40,7 +40,7 @@ silently breaks runtime theming. Use the right-hand form:
 
 Why shadows are special: Tailwind v4 bakes the geometry of the named `shadow-*`
 / `text-shadow-*` utilities at build time (only the color is a runtime var), so
-re-theming wouldn't update them — the `[box-shadow:var(...)]` form stays
+re-theming wouldn't update them — the `[box-shadow:var(--shadow-md)]` form stays
 themeable. `drop-shadow-*` is the exception, so its class is fine. Durations are
 unitless numbers in ms, hence the `*1ms` in the calc. Gradient text:
 `bg-clip-text text-transparent bg-(image:--gradient-text)`.
