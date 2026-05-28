@@ -25,6 +25,10 @@ export default defineConfig({
   // shuffleUntilPinned shows a random distinctive theme on each load until the
   // visitor pins one in the switcher.
   plugins: [react(), tailwindcss(), veneer({ shuffleUntilPinned: shufflePool })],
+  preview: {
+    port: 3002,
+    allowedHosts: ['veneerui.dev'],
+  },
   test: {
     environment: 'node',
     include: ['src/**/*.test.ts'],
