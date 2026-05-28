@@ -9,8 +9,8 @@
 export const APP_DEFAULT_THEME_ID = 'default-light';
 
 /**
- * The curated set the switcher shows on a first load — eight solid themes that
- * span the axes (clean, serif, warm, mono, structural, dark) without overwhelming.
+ * The curated set the switcher shows on a first load — seven solid themes that
+ * span the axes (serif, warm, mono, structural, dark) without overwhelming.
  * The other six stay in the library and remain one click away in the gallery
  * panel; a returning visitor's own enabled set is preserved. Order here is the
  * switcher order: neutral defaults → light/expressive → dark.
@@ -18,7 +18,6 @@ export const APP_DEFAULT_THEME_ID = 'default-light';
 export const APP_ENABLED_THEME_IDS = [
   'default-light',
   'default-dark',
-  'sharp-minimalist',
   'editorial',
   'warm-library',
   'monospaced',

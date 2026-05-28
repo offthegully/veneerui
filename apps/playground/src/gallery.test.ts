@@ -31,7 +31,6 @@ describe('gallery themes', () => {
       'monospaced',
       'neon-arcade',
       'neumorphic',
-      'sharp-minimalist',
       'sunset-paper',
       'terminal',
       'warm-library',
