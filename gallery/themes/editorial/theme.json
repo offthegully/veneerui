@@ -1,5 +1,5 @@
 {
-  "$schema": "https://veneer.app/schemas/theme-v1.json",
+  "$schema": "https://veneerui.dev/schemas/theme-v1.json",
   "name": "Editorial",
   "description": "A magazine feel: serif body, a high-contrast Fraunces display face, an enlarged type scale, generous spacing and leading, and a restrained warm-paper palette.",
   "author": { "id": "veneer", "name": "Veneer Team" },

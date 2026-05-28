@@ -12,7 +12,7 @@ switching is instant and nothing about your file can execute — it's pure data.
 
 ```json
 {
-  "$schema": "https://veneer.app/schemas/theme-v1.json",
+  "$schema": "https://veneerui.dev/schemas/theme-v1.json",
   "name": "My Theme",
   "version": "1.0.0",
   "schemaVersion": 1,

@@ -1,5 +1,5 @@
 /**
- * `@veneer/theme/next` — the Next.js (App Router) anti-flash adapter.
+ * `@offthegully/veneerui/next` — the Next.js (App Router) anti-flash adapter.
  *
  * Render `<AntiFlashScript />` inside the `<head>` of `app/layout.tsx`. It emits
  * the same synchronous pre-paint script the Vite plugin injects, so a returning
@@ -7,7 +7,7 @@
  * mismatch (the script writes to the DOM, not to React's tree).
  *
  *   // app/layout.tsx
- *   import { AntiFlashScript } from '@veneer/theme/next'
+ *   import { AntiFlashScript } from '@offthegully/veneerui/next'
  *   export default function RootLayout({ children }) {
  *     return (
  *       <html lang="en">

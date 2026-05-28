@@ -1,5 +1,5 @@
 /**
- * `veneer` CLI entry. Tiny hand-rolled arg parser (zero deps): the first token
+ * `veneerui` CLI entry. Tiny hand-rolled arg parser (zero deps): the first token
  * is the command, the rest are positionals and flags. Dispatches to init / add /
  * list. Every action is documented so the manual path always exists.
  */
@@ -56,18 +56,18 @@ function version(): string {
   }
 }
 
-const HELP = `veneer — add Veneer theming to an existing Vite or Next + Tailwind v4 app
+const HELP = `veneerui — add Veneer theming to an existing Vite or Next + Tailwind v4 app
 
 Usage:
-  veneer init [--dry-run] [--cwd <path>]      Wire Veneer into this project
-  veneer add <component…> [--force] [--dir d] Copy UI components into your project
-  veneer list                                 List available components
-  veneer --version | --help
+  veneerui init [--dry-run] [--cwd <path>]      Wire Veneer into this project
+  veneerui add <component…> [--force] [--dir d] Copy UI components into your project
+  veneerui list                                 List available components
+  veneerui --version | --help
 
 Examples:
-  npx veneer init
-  npx veneer add switcher
-  npx veneer add switcher banner --dir src/ui
+  npx veneerui init
+  npx veneerui add switcher
+  npx veneerui add switcher banner --dir src/ui
 
 Every change init makes is also documented in docs/integration-{vite,next}.md,
 so you can always do it by hand.`;

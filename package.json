@@ -1,5 +1,5 @@
 {
-  "name": "veneer-monorepo",
+  "name": "veneerui-monorepo",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -10,8 +10,8 @@
   "scripts": {
     "gen:theme": "tsx scripts/generate-theme.ts",
     "gen:registry": "tsx scripts/build-registry.ts",
-    "build:theme": "npm run gen:theme && npm run build -w @veneer/theme",
-    "build:cli": "npm run gen:registry && npm run build -w veneer",
+    "build:theme": "npm run gen:theme && npm run build -w @offthegully/veneerui",
+    "build:cli": "npm run gen:registry && npm run build -w veneerui",
     "build": "npm run build:theme && npm run build -w playground && npm run build:cli",
     "dev": "npm run build:theme && npm run dev -w playground",
     "preview": "npm run preview -w playground",

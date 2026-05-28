@@ -1,5 +1,5 @@
 {
-  "name": "@veneer/theme",
+  "name": "@offthegully/veneerui",
   "version": "0.1.0",
   "description": "User-extensible Tailwind v4 theming runtime — tokens, provider, validation, and import pipeline.",
   "license": "MIT",

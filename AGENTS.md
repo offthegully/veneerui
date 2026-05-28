@@ -118,7 +118,7 @@ Use these names — they describe *role*, not appearance. Full list with default
 - **Motion:** `duration-fast` / `-default` / `-slow`; `ease-*`.
 
 To read a token value in JS/TS (e.g. for an inline `style` background swatch),
-use `tokenValue(current, 'color-primary')` from `@veneer/theme` — not a literal.
+use `tokenValue(current, 'color-primary')` from `@offthegully/veneerui` — not a literal.
 
 ---
 
@@ -182,10 +182,10 @@ Design pitfalls to respect (see `docs/authoring-guide.md`):
 
 ## 7. Repo map & where things live
 
-- `packages/theme` — the `@veneer/theme` runtime: `ThemeProvider`, `useTheme`,
+- `packages/theme` — the `@offthegully/veneerui` runtime: `ThemeProvider`, `useTheme`,
   `applyTheme`, `tokenValue`, `defineTheme`, validation, the import pipeline, and
   `TOKEN_SCHEMA`. Public API: `packages/theme/src/index.ts`.
-- `packages/cli` — the `veneer` CLI (`init`, `add`) and the **registry** of
+- `packages/cli` — the `veneerui` CLI (`init`, `add`) and the **registry** of
   copy-into-your-app components (`packages/cli/registry/`). Tailwind v4 doesn't
   scan `node_modules`, so UI is *copied* into a consuming app (shadcn-style), not
   imported.

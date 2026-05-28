@@ -13,7 +13,7 @@
  * ordinary token utilities, so the panel re-skins with the active theme.
  */
 import { useEffect, useId } from 'react';
-import { useTheme, tokenValue, type Theme } from '@veneer/theme';
+import { useTheme, tokenValue, type Theme } from '@offthegully/veneerui';
 
 /** A small mock UI painted entirely from one theme's own resolved tokens. */
 function ThemePreview({ theme }: { theme: Theme }) {
@@ -40,7 +40,7 @@ function ThemePreview({ theme }: { theme: Theme }) {
       <span className="text-xs" style={{ color: v('color-text-muted'), fontFamily: v('font-sans') }}>
         Body copy in this theme's type and palette.
       </span>
-      <div className="mt-1 flex items-center gap-2">
+      <div className="mt-1 flex flex-wrap items-center gap-2">
         <span
           className="px-3 py-1 text-xs font-medium"
           style={{

@@ -1,5 +1,5 @@
 {
-  "$schema": "https://veneer.app/schemas/theme-v1.json",
+  "$schema": "https://veneerui.dev/schemas/theme-v1.json",
   "name": "Monospaced",
   "description": "A plain-text reader: IBM Plex Mono everywhere on warm amber paper, a burnt-amber primary with a moss-green accent, near-square corners, flat hairline elevation, and neutralized tracking. A light, papery counterpart to the dark Terminal theme.",
   "author": { "id": "veneer", "name": "Veneer Team" },

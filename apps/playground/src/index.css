@@ -1,5 +1,5 @@
 @import 'tailwindcss';
-@import '@veneer/theme/tokens.css';
+@import '@offthegully/veneerui/tokens.css';
 
 /*
  * Minimal base layer. All visual surfaces are driven by theme tokens via

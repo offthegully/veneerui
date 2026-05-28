@@ -9,7 +9,7 @@
  * it's the first component to follow the Phase 2 adoption contract.
  */
 import { useEffect, useRef, useState } from 'react';
-import { useTheme, tokenValue, type Theme } from '@veneer/theme';
+import { useTheme, tokenValue, type Theme } from '@offthegully/veneerui';
 import { ImportPanel } from './ImportPanel';
 import { GalleryPanel } from './GalleryPanel';
 

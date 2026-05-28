@@ -6,7 +6,7 @@ export default defineConfig({
   target: 'node20',
   clean: true,
   // Zero runtime deps — everything bundles. Shebang makes dist/cli.js executable
-  // via the `veneer` bin.
+  // via the `veneerui` bin.
   banner: { js: '#!/usr/bin/env node' },
   dts: false,
 });

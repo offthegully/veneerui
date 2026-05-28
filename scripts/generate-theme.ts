@@ -1,10 +1,10 @@
 /**
  * Generates everything downstream of TOKEN_SCHEMA so nothing drifts:
  *   - packages/theme/tokens.generated.css  (@theme + :root defaults; shipped as
- *                                            @veneer/theme/tokens.css)
+ *                                            @offthegully/veneerui/tokens.css)
  *   - packages/theme/theme-v1.json          (published JSON Schema for $schema
  *                                            autocomplete; shipped as
- *                                            @veneer/theme/theme-v1.json)
+ *                                            @offthegully/veneerui/theme-v1.json)
  *   - docs/schema-reference.md              (human reference, grouped by category)
  *
  * Run: `npm run gen:theme`. CI re-runs it and fails if the working tree changed,
@@ -63,7 +63,7 @@ function buildJsonSchema(): string {
 
   const schema = {
     $schema: 'http://json-schema.org/draft-07/schema#',
-    $id: 'https://veneer.app/schemas/theme-v1.json',
+    $id: 'https://veneerui.dev/schemas/theme-v1.json',
     title: 'Veneer Theme',
     description: `Theme document targeting TOKEN_SCHEMA generation ${SCHEMA_VERSION}.`,
     type: 'object',

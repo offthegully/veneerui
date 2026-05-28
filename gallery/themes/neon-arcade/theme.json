@@ -1,5 +1,5 @@
 {
-  "$schema": "https://veneer.app/schemas/theme-v1.json",
+  "$schema": "https://veneerui.dev/schemas/theme-v1.json",
   "name": "Neon Arcade",
   "description": "Synthwave on near-black: hot-magenta and cyan neon, glowing text, gradient headlines, and an Archivo Black display face. Leans on text-shadow-glow and the gradient set.",
   "author": { "id": "veneer", "name": "Veneer Team" },

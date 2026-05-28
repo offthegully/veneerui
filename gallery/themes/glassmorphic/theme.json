@@ -1,5 +1,5 @@
 {
-  "$schema": "https://veneer.app/schemas/theme-v1.json",
+  "$schema": "https://veneerui.dev/schemas/theme-v1.json",
   "name": "Glassmorphic",
   "description": "Frosted glass over a deep violet base: translucent raised surfaces, hairline white borders, heavy backdrop blur, a violet→fuchsia gradient. Best with blurred panels.",
   "author": { "id": "veneer", "name": "Veneer Team" },

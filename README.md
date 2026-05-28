@@ -76,12 +76,12 @@ Veneer is a **drop-in add-on, not a scaffolder** — keep your own Vite/Next +
 Tailwind v4 project and add Veneer on top, the way you'd add shadcn/ui.
 
 ```sh
-npm i @veneer/theme
-npx veneer init            # @import the tokens, wire the anti-flash, print the provider step
-npx veneer add switcher    # copy a ThemeSwitcher into your components
+npm i @offthegully/veneerui
+npx veneerui init            # @import the tokens, wire the anti-flash, print the provider step
+npx veneerui add switcher    # copy a ThemeSwitcher into your components
 ```
 
-The one required interlock is a line of CSS — `@import "@veneer/theme/tokens.css";`
+The one required interlock is a line of CSS — `@import "@offthegully/veneerui/tokens.css";`
 after `@import "tailwindcss";` — which makes Tailwind v4 generate the token
 utilities Veneer overrides at runtime. The runtime (`ThemeProvider`, `useTheme`,
 validation, import pipeline) is a normal dependency; UI components are **copied
@@ -91,7 +91,7 @@ To ship **your own** themes instead of the built-ins, author them with
 `defineTheme` and pass them in:
 
 ```tsx
-import { ThemeProvider, defineTheme } from '@veneer/theme'
+import { ThemeProvider, defineTheme } from '@offthegully/veneerui'
 
 const themes = [
   defineTheme({ id: 'brand', name: 'Brand', tokens: { 'color-primary': '#5b21b6', /* … */ } }),
@@ -128,9 +128,9 @@ This is an npm **workspace** monorepo (`packages/theme`, `packages/cli`,
 **Prerequisites:** Node 20+ and npm.
 
 ```sh
-git clone <repo-url> veneer && cd veneer
+git clone <repo-url> veneerui && cd veneerui
 npm install
-npm run dev          # builds @veneer/theme, then runs the playground at http://localhost:5173
+npm run dev          # builds @offthegully/veneerui, then runs the playground at http://localhost:5173
 ```
 
 The playground is the dev harness: it ships the gallery themes with the switcher,
@@ -139,7 +139,7 @@ themes** is how you preview a theme you're working on.
 
 | Command | What it does |
 |---|---|
-| `npm run dev` | Build `@veneer/theme`, then run the playground dev server |
+| `npm run dev` | Build `@offthegully/veneerui`, then run the playground dev server |
 | `npm run build` | Generate artifacts → build the package, playground, and CLI |
 | `npm run gen:theme` | Regenerate the tokens CSS / JSON Schema / token reference from `TOKEN_SCHEMA` |
 | `npm run lint` | ESLint across workspaces (incl. the `veneer/no-hardcoded-colors` rule) |

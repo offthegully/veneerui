@@ -45,7 +45,7 @@ Copy the `theme.json` closest to what you want and edit it — anything you omit
 falls back to its default, so you only change what differs. See the
 [authoring guide](../docs/authoring-guide.md)
 for how to pick a coherent palette and the [token reference](../docs/schema-reference.md)
-for every token you can set. Add `"$schema": "https://veneer.app/schemas/theme-v1.json"`
+for every token you can set. Add `"$schema": "https://veneerui.dev/schemas/theme-v1.json"`
 to the top of your file for editor autocomplete and inline validation.
 
 ## Contributing

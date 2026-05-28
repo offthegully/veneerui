@@ -1,5 +1,5 @@
 /**
- * `@veneer/theme/vite` — a Vite plugin that injects the anti-flash script into
+ * `@offthegully/veneerui/vite` — a Vite plugin that injects the anti-flash script into
  * index.html, so a consumer never has to hand-edit their HTML. Add it to
  * `plugins` in vite.config and the saved theme applies before first paint.
  *

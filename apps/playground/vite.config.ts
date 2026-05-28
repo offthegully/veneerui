@@ -4,7 +4,7 @@ import { fileURLToPath } from 'node:url'
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
-import { veneer } from '@veneer/theme/vite'
+import { veneer } from '@offthegully/veneerui/vite'
 import { APP_FIRST_VISIT_THEME_IDS } from './src/theme-ids'
 
 // Read each shuffle candidate's tokens straight off disk (every id in the pool is

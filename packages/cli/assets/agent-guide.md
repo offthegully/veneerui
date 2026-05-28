@@ -68,7 +68,7 @@ unitless numbers in ms, hence the `*1ms` in the calc. Gradient text:
   `-snappy` / `-smooth` / `-bounce`.
 
 Read a token value in JS with `tokenValue(current, 'color-primary')` from
-`@veneer/theme` (e.g. for a `style` swatch) — never a literal.
+`@offthegully/veneerui` (e.g. for a `style` swatch) — never a literal.
 
 ### Component patterns
 
@@ -91,10 +91,10 @@ Read a token value in JS with `tokenValue(current, 'color-primary')` from
 
 ### Setup & authoring
 
-- Components added with `npx veneer add <name>` (e.g. `switcher`) are copied into
-  this project and import their logic from `@veneer/theme` — you own and restyle
+- Components added with `npx veneerui add <name>` (e.g. `switcher`) are copied into
+  this project and import their logic from `@offthegully/veneerui` — you own and restyle
   the markup, keeping the token rules above.
-- Your app root is wrapped in `<ThemeProvider>` (see `npx veneer init` output);
+- Your app root is wrapped in `<ThemeProvider>` (see `npx veneerui init` output);
   read/switch the active theme with `useTheme()`.
 - To ship your own theme, use `defineTheme({ id, name, tokens: { /* ... */ } })`.
   A theme is inert data: it can only set known tokens, can't run code, and may

@@ -1,11 +1,11 @@
 {
-  "name": "veneer",
+  "name": "veneerui",
   "version": "0.1.0",
-  "description": "CLI to add Veneer theming to an existing Vite or Next + Tailwind v4 app (init + add).",
+  "description": "CLI to add Veneer UI theming to an existing Vite or Next + Tailwind v4 app (init + add).",
   "license": "MIT",
   "type": "module",
   "bin": {
-    "veneer": "./dist/cli.js"
+    "veneerui": "./dist/cli.js"
   },
   "files": [
     "dist",

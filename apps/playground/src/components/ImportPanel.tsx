@@ -17,7 +17,7 @@ import {
   fetchTheme,
   isFetchableUrl,
   type ImportOutcome,
-} from '@veneer/theme';
+} from '@offthegully/veneerui';
 
 /**
  * Mounted only while open (see ThemeSwitcher), so initial state is the reset —

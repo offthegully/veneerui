@@ -1,5 +1,5 @@
 {
-  "$schema": "https://veneer.app/schemas/theme-v1.json",
+  "$schema": "https://veneerui.dev/schemas/theme-v1.json",
   "name": "Warm Library",
   "description": "A cozy reading room: EB Garamond for everything (chrome included), antique-cream paper, a muted-terracotta primary with a sage accent, an enlarged type scale, and generous leading.",
   "author": { "id": "veneer", "name": "Veneer Team" },

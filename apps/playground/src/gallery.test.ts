@@ -8,8 +8,8 @@
  * fs), so it runs in the plain `node` test env.
  */
 import { describe, expect, it } from 'vitest';
-import { validateTheme } from '@veneer/theme';
-import { nodeCheckValue } from '@veneer/theme/node';
+import { validateTheme } from '@offthegully/veneerui';
+import { nodeCheckValue } from '@offthegully/veneerui/node';
 
 const themes = import.meta.glob<unknown>('../../../gallery/themes/*/theme.json', {
   import: 'default',
@@ -41,7 +41,7 @@ describe('gallery themes', () => {
   for (const { slug, json } of entries) {
     describe(slug, () => {
       it('references the published $schema', () => {
-        expect(json.$schema).toBe('https://veneer.app/schemas/theme-v1.json');
+        expect(json.$schema).toBe('https://veneerui.dev/schemas/theme-v1.json');
       });
 
       it('validates with no errors and no dropped tokens', () => {

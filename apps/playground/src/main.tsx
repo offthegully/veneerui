@@ -18,7 +18,7 @@ import '@fontsource/ibm-plex-mono/400-italic.css'
 import './fonts/ms-sans-serif.css' // Windows 95 UI face (self-hosted, see src/fonts/)
 import './index.css'
 import App from './App.tsx'
-import { ThemeProvider } from '@veneer/theme'
+import { ThemeProvider } from '@offthegully/veneerui'
 import {
   APP_THEMES,
   APP_DEFAULT_THEME_ID,

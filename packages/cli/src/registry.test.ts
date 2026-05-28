@@ -25,9 +25,9 @@ describe('registry', () => {
     expect(() => resolveWithDeps(['nope'], components)).toThrow(/unknown/);
   });
 
-  it('copy-in sources import their logic from @veneer/theme, not relative runtime', () => {
+  it('copy-in sources import their logic from @offthegully/veneerui, not relative runtime', () => {
     const switcher = readComponentSource('ThemeSwitcher.tsx');
-    expect(switcher).toContain("from '@veneer/theme'");
+    expect(switcher).toContain("from '@offthegully/veneerui'");
     // sibling component imports stay relative so they land working together
     expect(switcher).toContain("from './ImportPanel'");
   });

@@ -21,7 +21,7 @@
     "@fontsource-variable/source-serif-4": "^5.2.9",
     "@fontsource/archivo-black": "^5.2.8",
     "@fontsource/ibm-plex-mono": "^5.2.7",
-    "@veneer/theme": "*",
+    "@offthegully/veneerui": "*",
     "react": "^19.2.6",
     "react-dom": "^19.2.6"
   },

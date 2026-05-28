@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://veneer.app/schemas/theme-v1.json",
+  "$id": "https://veneerui.dev/schemas/theme-v1.json",
   "title": "Veneer Theme",
   "description": "Theme document targeting TOKEN_SCHEMA generation 1.",
   "type": "object",

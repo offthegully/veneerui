@@ -10,7 +10,7 @@
  * whole page with zero component re-renders. Full-bleed: App renders this without
  * the centered container, so each band manages its own max-width.
  */
-import { useTheme } from '@veneer/theme';
+import { useTheme } from '@offthegully/veneerui';
 
 const motion = 'transition-colors duration-[calc(var(--duration-default)*1ms)] ease-default';
 

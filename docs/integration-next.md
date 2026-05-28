@@ -11,12 +11,12 @@ files are too project-shaped to patch blindly).
 ## The fast path (CLI)
 
 ```sh
-npm i @veneer/theme
-npx veneer init            # adds the token @import, prints the head + provider steps
-npx veneer add switcher    # copies a ThemeSwitcher into src/components
+npm i @offthegully/veneerui
+npx veneerui init            # adds the token @import, prints the head + provider steps
+npx veneerui add switcher    # copies a ThemeSwitcher into src/components
 ```
 
-`veneer init` detects Next, adds `@import "@veneer/theme/tokens.css";` to your
+`veneerui init` detects Next, adds `@import "@offthegully/veneerui/tokens.css";` to your
 global stylesheet, and prints the two snippets below for you to paste.
 
 ## The manual path
@@ -24,7 +24,7 @@ global stylesheet, and prints the two snippets below for you to paste.
 ### 1. Install
 
 ```sh
-npm i @veneer/theme
+npm i @offthegully/veneerui
 ```
 
 ### 2. Import the tokens into your Tailwind stylesheet
@@ -33,7 +33,7 @@ In `app/globals.css` (or wherever you import Tailwind):
 
 ```css
 @import "tailwindcss";
-@import "@veneer/theme/tokens.css";
+@import "@offthegully/veneerui/tokens.css";
 ```
 
 This makes Tailwind generate the token utilities; Veneer's runtime overrides the
@@ -46,7 +46,7 @@ applying the saved theme before first paint:
 
 ```tsx
 // app/layout.tsx
-import { AntiFlashScript } from '@veneer/theme/next'
+import { AntiFlashScript } from '@offthegully/veneerui/next'
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -69,7 +69,7 @@ layout:
 ```tsx
 // app/providers.tsx
 'use client'
-import { ThemeProvider } from '@veneer/theme'
+import { ThemeProvider } from '@offthegully/veneerui'
 
 export function Providers({ children }: { children: React.ReactNode }) {
   return <ThemeProvider>{children}</ThemeProvider>
@@ -85,7 +85,7 @@ import { Providers } from './providers'
 
 ### 5. (Optional) Drop the agent guide so AI tools follow the token rules
 
-`veneer init` also writes a Veneer section into your `AGENTS.md` / `CLAUDE.md` so
+`veneerui init` also writes a Veneer section into your `AGENTS.md` / `CLAUDE.md` so
 Cursor, Claude Code, Copilot, and the rest follow the same "drive everything
 from tokens, never hardcode" contract when they generate components. The section
 is delimited by `<!-- veneer:guide:start -->` … `<!-- veneer:guide:end -->`
@@ -110,7 +110,7 @@ set, author them with `defineTheme` (it fills in `schemaVersion`, `source`,
 
 ```tsx
 // app/themes.ts
-import { defineTheme } from '@veneer/theme'
+import { defineTheme } from '@offthegully/veneerui'
 
 export const themes = [
   defineTheme({ id: 'brand', name: 'Brand', tokens: { 'color-primary': '#5b21b6', /* ... */ } }),
@@ -121,7 +121,7 @@ export const themes = [
 ```tsx
 // app/providers.tsx
 'use client'
-import { ThemeProvider } from '@veneer/theme'
+import { ThemeProvider } from '@offthegully/veneerui'
 import { themes } from './themes'
 
 export function Providers({ children }: { children: React.ReactNode }) {
@@ -142,7 +142,7 @@ to `<AntiFlashScript>` so its tokens paint before hydration:
 
 ```tsx
 // app/layout.tsx
-import { AntiFlashScript } from '@veneer/theme/next'
+import { AntiFlashScript } from '@offthegully/veneerui/next'
 import { themes } from './themes'
 
 <head><AntiFlashScript defaultTheme={themes[0]} /></head>
@@ -163,7 +163,7 @@ before paint, flash-free) and the provider's `shuffleIds`:
 
 ```tsx
 // app/layout.tsx (head)
-import { AntiFlashScript } from '@veneer/theme/next'
+import { AntiFlashScript } from '@offthegully/veneerui/next'
 import { themes } from './themes'
 
 <head><AntiFlashScript shuffleUntilPinned={themes} /></head>
@@ -185,6 +185,6 @@ shuffle; `useTheme().shuffle()` re-rolls and returns to the unpinned state. Omit
 Same as Vite: style with semantic token utilities (`bg-surface`, `text-text`, …),
 ship a default theme as your brand, let users import/author others. The package
 API is documented in the [Vite guide](./integration-vite.md#api); only the
-anti-flash adapter differs (`@veneer/theme/next` here vs `@veneer/theme/vite`
+anti-flash adapter differs (`@offthegully/veneerui/next` here vs `@offthegully/veneerui/vite`
 there). See the [authoring guide](./authoring-guide.md) and
 [token reference](./schema-reference.md).

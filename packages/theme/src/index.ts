@@ -1,11 +1,11 @@
 /**
- * @veneer/theme — public API.
+ * @offthegully/veneerui — public API.
  *
  * The runtime promoted to a package boundary: provider + hook, the DOM apply
  * step, the isomorphic validator (browser value-checker only — the Node one
- * lives at `@veneer/theme/node`), the import pipeline, the token schema, the
+ * lives at `@offthegully/veneerui/node`), the import pipeline, the token schema, the
  * built-in themes, and the anti-flash helper. Tokens ship separately as
- * `@veneer/theme/tokens.css`; the Vite anti-flash plugin as `@veneer/theme/vite`.
+ * `@offthegully/veneerui/tokens.css`; the Vite anti-flash plugin as `@offthegully/veneerui/vite`.
  */
 export { ThemeProvider } from './ThemeProvider';
 export { useTheme, type ThemeContextValue } from './theme-context';

@@ -1,5 +1,5 @@
 {
-  "$schema": "https://veneer.app/schemas/theme-v1.json",
+  "$schema": "https://veneerui.dev/schemas/theme-v1.json",
   "name": "High Contrast",
   "description": "An accessibility theme: pure black on white, 2px borders everywhere, sharp corners, enlarged text, and rings instead of soft shadows. Also proves border-width and radius are real theme axes.",
   "author": { "id": "veneer", "name": "Veneer Team" },

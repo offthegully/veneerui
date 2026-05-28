@@ -7,7 +7,7 @@
  * renders it without the centered container.
  */
 import { useState } from 'react';
-import { useTheme } from '@veneer/theme';
+import { useTheme } from '@offthegully/veneerui';
 import { GalleryPanel } from './GalleryPanel';
 
 const motion = 'transition-colors duration-[calc(var(--duration-default)*1ms)] ease-default';

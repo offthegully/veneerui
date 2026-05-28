@@ -1,5 +1,5 @@
 /**
- * `veneer init` — wire Veneer into an existing Vite or Next + Tailwind v4 app.
+ * `veneerui init` — wire Veneer into an existing Vite or Next + Tailwind v4 app.
  * It does the two deterministic, low-risk edits automatically (the token
  * @import, and on Vite the anti-flash plugin) and prints precise snippets for
  * the steps that are too project-shaped to patch blindly (the provider wrapper,
@@ -30,7 +30,7 @@ export function runInit(opts: InitOptions): void {
 
   log(`Veneer init${dry}`);
   log(`  framework: ${det.framework}`);
-  log(`  @veneer/theme installed: ${det.hasVeneerTheme ? 'yes' : 'no'}`);
+  log(`  @offthegully/veneerui installed: ${det.hasVeneerTheme ? 'yes' : 'no'}`);
   log(`  tailwindcss present: ${det.hasTailwind ? 'yes' : 'no'}\n`);
 
   if (det.framework === 'unknown') {
@@ -41,8 +41,8 @@ export function runInit(opts: InitOptions): void {
 
   // 1 — dependencies (we never auto-install; we instruct).
   log('1. Dependencies');
-  if (!det.hasVeneerTheme) log('   → run: npm i @veneer/theme');
-  else log('   ✓ @veneer/theme already a dependency');
+  if (!det.hasVeneerTheme) log('   → run: npm i @offthegully/veneerui');
+  else log('   ✓ @offthegully/veneerui already a dependency');
   if (!det.hasTailwind) log('   ! Tailwind v4 not found — Veneer requires it (npm i tailwindcss @tailwindcss/vite).');
 
   // 2 — token @import in the global stylesheet.
@@ -51,15 +51,15 @@ export function runInit(opts: InitOptions): void {
     const abs = join(opts.root, det.globalCssPath);
     const before = readFileSync(abs, 'utf8');
     const { content, changed } = addTokensImport(before);
-    if (!changed) log(`   ✓ ${det.globalCssPath} already imports @veneer/theme/tokens.css`);
+    if (!changed) log(`   ✓ ${det.globalCssPath} already imports @offthegully/veneerui/tokens.css`);
     else if (opts.dryRun) log(`   → would add the @import to ${det.globalCssPath}`);
     else {
       writeFileSync(abs, content);
-      log(`   ✓ added @import "@veneer/theme/tokens.css" to ${det.globalCssPath}`);
+      log(`   ✓ added @import "@offthegully/veneerui/tokens.css" to ${det.globalCssPath}`);
     }
   } else {
     log('   ! No Tailwind stylesheet found. Add this to your global CSS, after the');
-    log('     tailwindcss import:  @import "@veneer/theme/tokens.css";');
+    log('     tailwindcss import:  @import "@offthegully/veneerui/tokens.css";');
   }
 
   // 3 — anti-flash.
@@ -69,11 +69,11 @@ export function runInit(opts: InitOptions): void {
       const abs = join(opts.root, det.viteConfigPath);
       const before = readFileSync(abs, 'utf8');
       const { content, changed, reason } = addViteAntiFlash(before);
-      if (!changed && content === before && before.includes('@veneer/theme/vite')) {
+      if (!changed && content === before && before.includes('@offthegully/veneerui/vite')) {
         log(`   ✓ ${det.viteConfigPath} already uses the veneer() plugin`);
       } else if (!changed) {
         log(`   ! Couldn't safely edit ${det.viteConfigPath} (${reason}). Add manually:`);
-        log("       import { veneer } from '@veneer/theme/vite'");
+        log("       import { veneer } from '@offthegully/veneerui/vite'");
         log('       plugins: [react(), tailwindcss(), veneer()]');
       } else if (opts.dryRun) {
         log(`   → would add the veneer() plugin to ${det.viteConfigPath}`);
@@ -82,7 +82,7 @@ export function runInit(opts: InitOptions): void {
         log(`   ✓ added the veneer() plugin to ${det.viteConfigPath}`);
       }
     } else {
-      log('   ! No vite config found. Add the veneer() plugin from @veneer/theme/vite.');
+      log('   ! No vite config found. Add the veneer() plugin from @offthegully/veneerui/vite.');
     }
   } else {
     log('   → Next: render <AntiFlashScript/> in app/layout.tsx <head>:');
@@ -109,7 +109,7 @@ export function runInit(opts: InitOptions): void {
     }
   }
 
-  log('\nNext: `npx veneer add switcher` to copy a theme switcher into ' + det.componentsDir + '.');
+  log('\nNext: `npx veneerui add switcher` to copy a theme switcher into ' + det.componentsDir + '.');
 }
 
 function indent(log: (s: string) => void, block: string): void {

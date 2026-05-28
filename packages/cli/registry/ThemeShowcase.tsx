@@ -9,7 +9,7 @@
  * tokens are unitless numbers, so interactive elements consume them via
  * `duration-[calc(var(--duration-default)*1ms)]`.
  */
-import { useTheme, tokenValue } from '@veneer/theme';
+import { useTheme, tokenValue } from '@offthegully/veneerui';
 
 const motion = 'transition-colors duration-[calc(var(--duration-default)*1ms)] ease-default';
 

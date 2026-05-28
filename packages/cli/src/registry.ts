@@ -33,7 +33,7 @@ export function resolveWithDeps(names: string[], components: RegistryComponent[]
   const visit = (name: string) => {
     if (out.has(name)) return;
     const c = byName.get(name);
-    if (!c) throw new Error(`unknown component "${name}" (run \`veneer list\`)`);
+    if (!c) throw new Error(`unknown component "${name}" (run \`veneerui list\`)`);
     out.set(name, c);
     c.dependencies.forEach(visit);
   };

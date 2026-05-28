@@ -17,7 +17,7 @@
  * The result is one entry per id; passed to <ThemeProvider themes={...}> they
  * become the non-deletable app tier.
  */
-import { BUILTIN_THEMES, SCHEMA_VERSION, type Theme } from '@veneer/theme';
+import { BUILTIN_THEMES, SCHEMA_VERSION, type Theme } from '@offthegully/veneerui';
 
 // Re-export so existing importers (main.tsx) keep their `./themes` entry point;
 // the lists themselves live in theme-ids.ts, which vite.config can also read.

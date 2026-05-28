@@ -1,7 +1,7 @@
 /**
- * `veneer add <component…>` — copy registry components (and their registry deps)
+ * `veneerui add <component…>` — copy registry components (and their registry deps)
  * into the consumer's project, shadcn-style. The components import their logic
- * from `@veneer/theme`; only sibling components stay relative, so they land
+ * from `@offthegully/veneerui`; only sibling components stay relative, so they land
  * working and the consumer owns/restyles the markup.
  */
 import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
@@ -20,7 +20,7 @@ export interface AddOptions {
 export function runAdd(names: string[], opts: AddOptions): void {
   const log = opts.log ?? console.log;
   if (names.length === 0) {
-    throw new Error('specify at least one component, e.g. `veneer add switcher`');
+    throw new Error('specify at least one component, e.g. `veneerui add switcher`');
   }
 
   const components = loadManifest();
@@ -48,5 +48,5 @@ export function runAdd(names: string[], opts: AddOptions): void {
     log(`✓ ${destRel}`);
   }
 
-  log('\nThese import from "@veneer/theme" — ensure it is installed (`npm i @veneer/theme`).');
+  log('\nThese import from "@offthegully/veneerui" — ensure it is installed (`npm i @offthegully/veneerui`).');
 }

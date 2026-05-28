@@ -1,5 +1,5 @@
 {
-  "$schema": "https://veneer.app/schemas/theme-v1.json",
+  "$schema": "https://veneerui.dev/schemas/theme-v1.json",
   "name": "Brutalist",
   "description": "Thick black borders, zero radii, hard offset shadows with no blur, a heavy display face, tight tracking, and snappy linear motion. Loud on purpose.",
   "author": { "id": "veneer", "name": "Veneer Team" },

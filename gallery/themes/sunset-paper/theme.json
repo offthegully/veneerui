@@ -1,5 +1,5 @@
 {
-  "$schema": "https://veneer.app/schemas/theme-v1.json",
+  "$schema": "https://veneerui.dev/schemas/theme-v1.json",
   "name": "Sunset Paper",
   "description": "Warm and friendly: cream paper surfaces, a sunset orange→raspberry gradient, rounded corners, soft shadows, a Fraunces display face, and a playful overshoot easing.",
   "author": { "id": "veneer", "name": "Veneer Team" },

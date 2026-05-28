@@ -13,14 +13,14 @@ export interface PatchResult {
   reason?: string;
 }
 
-export const TOKENS_IMPORT = '@import "@veneer/theme/tokens.css";';
+export const TOKENS_IMPORT = '@import "@offthegully/veneerui/tokens.css";';
 
 /**
  * Add the token @import to a Tailwind v4 global stylesheet, right after the
  * `@import "tailwindcss";` line (or at the top if that's absent).
  */
 export function addTokensImport(css: string): PatchResult {
-  if (css.includes('@veneer/theme/tokens.css')) return { content: css, changed: false };
+  if (css.includes('@offthegully/veneerui/tokens.css')) return { content: css, changed: false };
   const lines = css.split('\n');
   const twIdx = lines.findIndex((l) => /@import\s+["']tailwindcss["']/.test(l));
   if (twIdx >= 0) {
@@ -35,7 +35,7 @@ export function addTokensImport(css: string): PatchResult {
  * last existing import, and `veneer()` at the front of the `plugins: [` array.
  */
 export function addViteAntiFlash(config: string): PatchResult {
-  if (config.includes('@veneer/theme/vite')) return { content: config, changed: false };
+  if (config.includes('@offthegully/veneerui/vite')) return { content: config, changed: false };
 
   const importRe = /^import .*$/gm;
   let last: RegExpExecArray | null = null;
@@ -50,7 +50,7 @@ export function addViteAntiFlash(config: string): PatchResult {
 
   const insertAt = last.index + last[0].length;
   let out =
-    config.slice(0, insertAt) + `\nimport { veneer } from '@veneer/theme/vite'` + config.slice(insertAt);
+    config.slice(0, insertAt) + `\nimport { veneer } from '@offthegully/veneerui/vite'` + config.slice(insertAt);
   out = out.replace(/plugins:\s*\[/, (s) => `${s}veneer(), `);
   return { content: out, changed: true };
 }
@@ -58,7 +58,7 @@ export function addViteAntiFlash(config: string): PatchResult {
 /** The Next.js <head> anti-flash snippet (printed by `init`, not auto-patched). */
 export function nextAntiFlashSnippet(): string {
   return [
-    "import { AntiFlashScript } from '@veneer/theme/next'",
+    "import { AntiFlashScript } from '@offthegully/veneerui/next'",
     '',
     '// in app/layout.tsx, inside <html>:',
     '<head>',
@@ -82,7 +82,7 @@ function customThemesHint(framework: 'vite' | 'next'): string[] {
     '// To ship your own themes instead of the built-ins, define them once and',
     '// pass them in — then pass the same default to the anti-flash wiring so a',
     '// first-ever visit paints your default with no flash:',
-    "//   import { defineTheme } from '@veneer/theme'",
+    "//   import { defineTheme } from '@offthegully/veneerui'",
     "//   const themes = [defineTheme({ id: 'brand', name: 'Brand', tokens: { /* ... */ } })]",
     '//   <ThemeProvider themes={themes} defaultThemeId="brand">',
     antiFlash,
@@ -95,7 +95,7 @@ export function providerSnippet(framework: 'vite' | 'next'): string {
     return [
       '// app/providers.tsx',
       "'use client'",
-      "import { ThemeProvider } from '@veneer/theme'",
+      "import { ThemeProvider } from '@offthegully/veneerui'",
       'export function Providers({ children }: { children: React.ReactNode }) {',
       '  return <ThemeProvider>{children}</ThemeProvider>',
       '}',
@@ -106,7 +106,7 @@ export function providerSnippet(framework: 'vite' | 'next'): string {
   }
   return [
     '// src/main.tsx',
-    "import { ThemeProvider } from '@veneer/theme'",
+    "import { ThemeProvider } from '@offthegully/veneerui'",
     '',
     'createRoot(document.getElementById("root")!).render(',
     '  <StrictMode>',

@@ -1,5 +1,5 @@
 {
-  "$schema": "https://veneer.app/schemas/theme-v1.json",
+  "$schema": "https://veneerui.dev/schemas/theme-v1.json",
   "name": "Windows 95",
   "description": "Battleship-gray system UI: chiseled outset bevels instead of soft shadows, hard square corners, the navy→cyan title-bar gradient, a teal accent, the system font, and zero transition time. Depth comes from light and dark edges, not blur.",
   "author": { "id": "veneer", "name": "Veneer Team" },

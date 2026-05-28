@@ -10,7 +10,7 @@
  * reflect the *currently applied* theme's resolved values (the same values the
  * page around them already shows); the chrome uses ordinary token utilities.
  */
-import { useTheme, tokenValue, type Theme } from '@veneer/theme';
+import { useTheme, tokenValue, type Theme } from '@offthegully/veneerui';
 
 type Kind = 'color' | 'font' | 'radius' | 'border' | 'shadow' | 'motion';
 

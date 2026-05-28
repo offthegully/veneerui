@@ -10,15 +10,15 @@ does the wiring for you, or do the four steps by hand.
 ## The fast path (CLI)
 
 ```sh
-npm i @veneer/theme
-npx veneer init            # patches your CSS + vite.config, prints the provider step
-npx veneer add switcher    # copies a ThemeSwitcher into src/components
+npm i @offthegully/veneerui
+npx veneerui init            # patches your CSS + vite.config, prints the provider step
+npx veneerui add switcher    # copies a ThemeSwitcher into src/components
 ```
 
-`veneer init` is idempotent and supports `--dry-run`. It:
+`veneerui init` is idempotent and supports `--dry-run`. It:
 
-1. confirms `@veneer/theme` and `tailwindcss` are present (it never installs for you),
-2. adds `@import "@veneer/theme/tokens.css";` to your global stylesheet,
+1. confirms `@offthegully/veneerui` and `tailwindcss` are present (it never installs for you),
+2. adds `@import "@offthegully/veneerui/tokens.css";` to your global stylesheet,
 3. adds the `veneer()` anti-flash plugin to `vite.config.ts`,
 4. prints the `<ThemeProvider>` wrapper to add to `src/main.tsx` (it doesn't edit
    your entry file — wrapping the root is the one step you do by hand).
@@ -30,7 +30,7 @@ Then wrap your app root as printed, and you're done.
 ### 1. Install
 
 ```sh
-npm i @veneer/theme
+npm i @offthegully/veneerui
 ```
 
 ### 2. Import the tokens into your Tailwind stylesheet
@@ -40,7 +40,7 @@ Veneer tokens right after it:
 
 ```css
 @import "tailwindcss";
-@import "@veneer/theme/tokens.css";
+@import "@offthegully/veneerui/tokens.css";
 ```
 
 This is the whole interlock. The `@theme` block in `tokens.css` makes Tailwind
@@ -57,7 +57,7 @@ default), add the plugin to your Vite config:
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
-import { veneer } from '@veneer/theme/vite'
+import { veneer } from '@offthegully/veneerui/vite'
 
 export default defineConfig({
   plugins: [react(), tailwindcss(), veneer()],
@@ -71,7 +71,7 @@ HTML yourself.
 
 ```tsx
 // src/main.tsx
-import { ThemeProvider } from '@veneer/theme'
+import { ThemeProvider } from '@offthegully/veneerui'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
@@ -84,7 +84,7 @@ createRoot(document.getElementById('root')!).render(
 
 ### 5. (Optional) Drop the agent guide so AI tools follow the token rules
 
-`veneer init` also writes a Veneer section into your `AGENTS.md` / `CLAUDE.md` so
+`veneerui init` also writes a Veneer section into your `AGENTS.md` / `CLAUDE.md` so
 Cursor, Claude Code, Copilot, and the rest follow the same "drive everything
 from tokens, never hardcode" contract when they generate components. The section
 is delimited by `<!-- veneer:guide:start -->` … `<!-- veneer:guide:end -->`
@@ -92,7 +92,7 @@ markers and re-running `init` re-syncs it in place without touching anything you
 wrote outside the markers. To do this by hand, copy the guide body from
 `packages/cli/assets/agent-guide.md` into your project's `AGENTS.md`.
 
-That's it. Add a switcher with `npx veneer add switcher`, or build your own UI
+That's it. Add a switcher with `npx veneerui add switcher`, or build your own UI
 against the [`useTheme()`](#api) hook.
 
 ## Using themes
@@ -115,7 +115,7 @@ part) and pass them to the provider:
 
 ```tsx
 // src/themes.ts — keep this a module-level constant
-import { defineTheme } from '@veneer/theme'
+import { defineTheme } from '@offthegully/veneerui'
 
 export const themes = [
   defineTheme({ id: 'brand', name: 'Brand', tokens: { 'color-primary': '#5b21b6', /* ... */ } }),
@@ -125,7 +125,7 @@ export const themes = [
 
 ```tsx
 // src/main.tsx
-import { ThemeProvider } from '@veneer/theme'
+import { ThemeProvider } from '@offthegully/veneerui'
 import { themes } from './themes'
 
 <ThemeProvider themes={themes} defaultThemeId="brand">
@@ -144,7 +144,7 @@ immediately:
 
 ```ts
 // vite.config.ts
-import { veneer } from '@veneer/theme/vite'
+import { veneer } from '@offthegully/veneerui/vite'
 import { themes } from './src/themes'
 
 export default defineConfig({
@@ -167,7 +167,7 @@ of themes and applies a random one before first paint.
 
 ```ts
 // vite.config.ts
-import { veneer } from '@veneer/theme/vite'
+import { veneer } from '@offthegully/veneerui/vite'
 import { themes } from './src/themes'
 
 export default defineConfig({
@@ -190,11 +190,11 @@ entirely for the ordinary behavior (apply the saved theme, no shuffling).
 
 ## API
 
-`@veneer/theme` exports the runtime: `ThemeProvider`, `useTheme()` (which returns
+`@offthegully/veneerui` exports the runtime: `ThemeProvider`, `useTheme()` (which returns
 `current`, `enabledThemes`, `setCurrent`, the import/preview actions, and — for the
 shuffle feature — `pinned` and `shuffle()`), `applyTheme`, `defineTheme`,
 `validateTheme`, `parseAndValidate` / `fetchTheme` / `isFetchableUrl`, `tokenValue`,
 `TOKEN_SCHEMA`, `BUILTIN_THEMES`, `getAntiFlashScript`, and the `Theme` /
-`ThemeLibrary` types. Subpaths: `@veneer/theme/tokens.css` (the `@theme` block),
-`@veneer/theme/vite` (this plugin), `@veneer/theme/next` (the Next adapter),
-`@veneer/theme/node` (the `css-tree` value checker for CI).
+`ThemeLibrary` types. Subpaths: `@offthegully/veneerui/tokens.css` (the `@theme` block),
+`@offthegully/veneerui/vite` (this plugin), `@offthegully/veneerui/next` (the Next adapter),
+`@offthegully/veneerui/node` (the `css-tree` value checker for CI).

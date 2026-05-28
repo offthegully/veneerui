@@ -10,7 +10,7 @@
  * on documentElement for the current theme. Keep the three in sync.
  *
  * Adapters that consume this:
- *   - Vite:  `@veneer/theme/vite` injects it into index.html (head-prepend).
+ *   - Vite:  `@offthegully/veneerui/vite` injects it into index.html (head-prepend).
  *   - Next:  render `<AntiFlashScript />` in app/layout.tsx's <head>.
  *   - Manual: `<script>{getAntiFlashScript()}</script>` in your document head.
  */

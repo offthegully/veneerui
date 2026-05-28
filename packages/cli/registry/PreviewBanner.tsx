@@ -7,7 +7,7 @@
  * Token-styled like everything else, so the banner itself re-skins under the
  * previewed theme — you're seeing exactly what saving would give you.
  */
-import { useTheme } from '@veneer/theme';
+import { useTheme } from '@offthegully/veneerui';
 
 export function PreviewBanner() {
   const { preview, commitPreview, cancelPreview } = useTheme();

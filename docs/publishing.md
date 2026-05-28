@@ -4,14 +4,14 @@ Veneer publishes **two** packages from this monorepo:
 
 | Package | Dir | What it is |
 |---|---|---|
-| `@veneer/theme` | `packages/theme` | the runtime + tokens (a dependency apps install) |
-| `veneer` | `packages/cli` | the `init`/`add` CLI (run via `npx veneer`) |
+| `@offthegully/veneerui` | `packages/theme` | the runtime + tokens (a dependency apps install) |
+| `veneerui` | `packages/cli` | the `init`/`add` CLI (run via `npx veneerui`) |
 
-> The package names assume the `@veneer` npm scope and the unscoped `veneer` name
-> are available/owned. Verify (or rename) before the first publish. Also replace
-> the `your-org/veneer` placeholder links in each package's `README.md` with the
-> real repo URL, and add a `"repository"` field to both `package.json`s — npm
-> renders the README as the package's landing page.
+> The package names assume the `@offthegully` npm scope (owned) and the unscoped
+> `veneerui` name are available. Verify the unscoped name before the first publish.
+> Also replace the `your-org/veneer` placeholder links in each package's
+> `README.md` with the real repo URL, and add a `"repository"` field to both
+> `package.json`s — npm renders the README as the package's landing page.
 
 ## Before publishing
 
@@ -24,18 +24,18 @@ npm test && npm run typecheck && npm run lint
 npm run build                               # builds package + playground + CLI
 ```
 
-`@veneer/theme` ships `dist/`, `tokens.generated.css`, and `theme-v1.json` (its
-`files` allowlist); `veneer` ships `dist/` and `registry/`. Confirm with
-`npm pack --dry-run -w @veneer/theme` and `-w veneer`.
+`@offthegully/veneerui` ships `dist/`, `tokens.generated.css`, and `theme-v1.json` (its
+`files` allowlist); `veneerui` ships `dist/` and `registry/`. Confirm with
+`npm pack --dry-run -w @offthegully/veneerui` and `-w veneerui`.
 
 ## Publishing
 
 ```sh
-npm publish -w @veneer/theme --access public
-npm publish -w veneer        --access public
+npm publish -w @offthegully/veneerui --access public
+npm publish -w veneerui      --access public
 ```
 
-Publish `@veneer/theme` first — the CLI's copy-in components and the integration
+Publish `@offthegully/veneerui` first — the CLI's copy-in components and the integration
 docs reference it.
 
 ## Versioning
@@ -56,9 +56,9 @@ docs reference it.
 
 ## Hosting the JSON Schema
 
-Themes reference `"$schema": "https://veneer.app/schemas/theme-v1.json"` for
+Themes reference `"$schema": "https://veneerui.dev/schemas/theme-v1.json"` for
 editor autocomplete and inline validation. Serve the generated
 `packages/theme/theme-v1.json` at that URL (it's also shipped in the package as
-`@veneer/theme/theme-v1.json`, so a host can pull it straight from the registry).
+`@offthegully/veneerui/theme-v1.json`, so a host can pull it straight from the registry).
 Until it's hosted, editors that can't fetch the URL simply skip autocomplete —
 validation in the app and in CI is independent of it.

@@ -78,7 +78,7 @@ export function detect(root: string): Detection {
   return {
     framework,
     root,
-    hasVeneerTheme: '@veneer/theme' in allDeps,
+    hasVeneerTheme: '@offthegully/veneerui' in allDeps,
     hasTailwind: 'tailwindcss' in allDeps,
     viteConfigPath: framework === 'vite' ? firstExisting(root, VITE_CONFIGS) : undefined,
     globalCssPath: findGlobalCss(root, cssCandidates),

@@ -1,16 +1,16 @@
 /**
- * Generates the `veneer` CLI's copy-in registry from the playground's component
+ * Generates the `veneerui` CLI's copy-in registry from the playground's component
  * source, so the components a consumer copies in are byte-for-byte the ones the
  * live demo runs — they can never drift. Run via `npm run gen:registry`.
  *
  * Each registry entry is the verbatim .tsx plus a manifest describing it:
- *   - name          the slug used in `veneer add <name>`
+ *   - name          the slug used in `veneerui add <name>`
  *   - file          the filename written into the consumer's components dir
- *   - description   shown by `veneer list`
+ *   - description   shown by `veneerui list`
  *   - dependencies  other registry slugs it imports (inferred from `./Sibling`
  *                   imports), so `add` can pull them in transitively
  *
- * The components already import their logic from `@veneer/theme`; only sibling
+ * The components already import their logic from `@offthegully/veneerui`; only sibling
  * imports stay relative, which is exactly what we want when copying them into a
  * consumer's project.
  */

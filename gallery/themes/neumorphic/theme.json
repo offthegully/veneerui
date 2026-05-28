@@ -1,5 +1,5 @@
 {
-  "$schema": "https://veneer.app/schemas/theme-v1.json",
+  "$schema": "https://veneerui.dev/schemas/theme-v1.json",
   "name": "Neumorphic",
   "description": "Soft UI: one low-contrast surface color everywhere, shape carved purely with paired light/dark shadows, big radii, slow smooth easing. The shadows do all the work.",
   "author": { "id": "veneer", "name": "Veneer Team" },

@@ -18,7 +18,7 @@ import type { PatchResult } from './patch';
 export const GUIDE_START = '<!-- veneer:guide:start -->';
 export const GUIDE_END = '<!-- veneer:guide:end -->';
 const GUIDE_NOTE =
-  '<!-- Managed by `veneer init` — edits between these markers are overwritten on re-run. -->';
+  '<!-- Managed by `veneerui init` — edits between these markers are overwritten on re-run. -->';
 
 /** Doc files we target, in priority order. */
 const AGENT_DOC_NAMES = ['AGENTS.md', 'CLAUDE.md'] as const;

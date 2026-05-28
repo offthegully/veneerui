@@ -13,7 +13,7 @@
  * ordinary token utilities, so the panel re-skins with the active theme.
  */
 import { useEffect, useId } from 'react';
-import { useTheme, tokenValue, type Theme } from '@veneer/theme';
+import { useTheme, tokenValue, type Theme } from '@offthegully/veneerui';
 
 /** A small mock UI painted entirely from one theme's own resolved tokens. */
 function ThemePreview({ theme }: { theme: Theme }) {

@@ -22,7 +22,7 @@ import {
   findClassColorViolations,
   findBareColorLiterals,
 } from '../eslint-rules/detect-hardcoded-colors.js';
-import { applyTheme, BUILTIN_THEMES, type Theme } from '@veneer/theme';
+import { applyTheme, BUILTIN_THEMES, type Theme } from '@offthegully/veneerui';
 
 /**
  * Every non-test source file under the playground's src, as raw text — this is
