@@ -82,6 +82,16 @@ createRoot(document.getElementById('root')!).render(
 )
 ```
 
+### 5. (Optional) Drop the agent guide so AI tools follow the token rules
+
+`veneer init` also writes a Veneer section into your `AGENTS.md` / `CLAUDE.md` so
+Cursor, Claude Code, Copilot, and the rest follow the same "drive everything
+from tokens, never hardcode" contract when they generate components. The section
+is delimited by `<!-- veneer:guide:start -->` … `<!-- veneer:guide:end -->`
+markers and re-running `init` re-syncs it in place without touching anything you
+wrote outside the markers. To do this by hand, copy the guide body from
+`packages/cli/assets/agent-guide.md` into your project's `AGENTS.md`.
+
 That's it. Add a switcher with `npx veneer add switcher`, or build your own UI
 against the [`useTheme()`](#api) hook.
 

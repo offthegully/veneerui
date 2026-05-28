@@ -83,6 +83,16 @@ import { Providers } from './providers'
 <body><Providers>{children}</Providers></body>
 ```
 
+### 5. (Optional) Drop the agent guide so AI tools follow the token rules
+
+`veneer init` also writes a Veneer section into your `AGENTS.md` / `CLAUDE.md` so
+Cursor, Claude Code, Copilot, and the rest follow the same "drive everything
+from tokens, never hardcode" contract when they generate components. The section
+is delimited by `<!-- veneer:guide:start -->` … `<!-- veneer:guide:end -->`
+markers and re-running `init` re-syncs it in place without touching anything you
+wrote outside the markers. To do this by hand, copy the guide body from
+`packages/cli/assets/agent-guide.md` into your project's `AGENTS.md`.
+
 ## Why there's no flash and no hydration mismatch
 
 On the server there is no `localStorage`, so Next renders with the schema

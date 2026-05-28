@@ -9,7 +9,8 @@
   },
   "files": [
     "dist",
-    "registry"
+    "registry",
+    "assets"
   ],
   "scripts": {
     "build": "tsup",
