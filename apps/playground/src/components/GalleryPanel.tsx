@@ -40,7 +40,7 @@ function ThemePreview({ theme }: { theme: Theme }) {
       <span className="text-xs" style={{ color: v('color-text-muted'), fontFamily: v('font-sans') }}>
         Body copy in this theme's type and palette.
       </span>
-      <div className="mt-1 flex items-center gap-2">
+      <div className="mt-1 flex flex-wrap items-center gap-2">
         <span
           className="px-3 py-1 text-xs font-medium"
           style={{
