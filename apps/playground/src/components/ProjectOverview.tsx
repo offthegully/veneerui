@@ -182,7 +182,7 @@ export function ProjectOverview() {
       {/* Open source band */}
       <section className="bg-surface-sunken">
         <div className="mx-auto max-w-6xl px-6 py-20">
-          <div className="relative overflow-hidden rounded-2xl p-10 sm:p-16 bg-(image:--gradient-primary) [box-shadow:var(--shadow-xl)]">
+          <div className="relative overflow-hidden rounded-2xl p-6 sm:p-16 bg-(image:--gradient-primary) [box-shadow:var(--shadow-xl)]">
             <div className="max-w-2xl">
               <h2 className="font-display text-4xl font-black tracking-tight text-text-on-primary">
                 Open source, themes welcome
@@ -197,12 +197,15 @@ export function ProjectOverview() {
                   href={GITHUB_URL}
                   target="_blank"
                   rel="noreferrer"
-                  className={`inline-flex items-center gap-2 rounded-md bg-surface px-5 py-2.5 text-sm font-semibold text-text [box-shadow:var(--shadow-md)] hover:bg-surface-raised hover:[box-shadow:var(--shadow-lg)] ${interactive}`}
+                  className={`inline-flex w-full items-center justify-center gap-2 rounded-md bg-surface px-5 py-2.5 text-sm font-semibold text-text [box-shadow:var(--shadow-md)] hover:bg-surface-raised hover:[box-shadow:var(--shadow-lg)] sm:w-auto ${interactive}`}
                 >
-                  <svg viewBox="0 0 24 24" className="size-4" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" className="size-4 shrink-0" aria-hidden="true">
                     <path d={GITHUB_PATH} fill="currentColor" />
                   </svg>
-                  github.com/offthegully/veneer
+                  {/* The URL's pixel width tracks the active theme font (mono/serif themes
+                      run far wider than sans), so break-all lets it wrap centered instead
+                      of overflowing the button on narrow screens. */}
+                  <span className="break-all text-center">github.com/offthegully/veneer</span>
                 </a>
               </div>
             </div>
