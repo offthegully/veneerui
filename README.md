@@ -21,12 +21,10 @@ lives in their browser's `localStorage`.
 The same UI, re-skinned entirely by switching the theme — no component changes,
 no reload.
 
-| | |
-|---|---|
-| ![Sharp Minimalist theme](./docs/assets/cards-sharp-minimalist.png) | ![Brutalist theme](./docs/assets/cards-brutalist.png) |
-| **Sharp Minimalist** — hairline borders, tight radii, one indigo accent | **Brutalist** — thick black borders, hard offset shadows |
-| ![Glassmorphic theme](./docs/assets/cards-glassmorphic.png) | ![Neon Arcade theme](./docs/assets/cards-neon.png) |
-| **Glassmorphic** — frosted translucent panels on violet | **Neon Arcade** — magenta/cyan glow on near-black |
+| | | |
+|---|---|---|
+| ![Brutalist theme](./docs/assets/cards-brutalist.png) | ![Glassmorphic theme](./docs/assets/cards-glassmorphic.png) | ![Neon Arcade theme](./docs/assets/cards-neon.png) |
+| **Brutalist** — thick black borders, hard offset shadows | **Glassmorphic** — frosted translucent panels on violet | **Neon Arcade** — magenta/cyan glow on near-black |
 
 Users browse a built-in gallery, or drop a `theme.json` / paste a URL — every
 theme is validated and previewed live before they keep it:

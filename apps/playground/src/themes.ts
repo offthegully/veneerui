@@ -70,7 +70,6 @@ function normalizeGallery(slug: string, src: GallerySource): Theme {
 
 /** Deliberate gallery-panel order: light/neutral → expressive → dark/effect. */
 const GALLERY_ORDER = [
-  'sharp-minimalist',
   'editorial',
   'warm-library',
   'sunset-paper',
@@ -102,7 +101,7 @@ for (const t of defaults) byId.set(t.id, t);
 for (const t of galleryThemes) byId.set(t.id, t);
 
 /**
- * The full app theme set: 2 package defaults + 12 gallery themes = 14. This is
+ * The full app theme set: 2 package defaults + 11 gallery themes = 13. This is
  * the whole *library* — every entry shows in the "Browse gallery" panel and can
  * be enabled. Module-level constant so the ThemeProvider seed is stable.
  */

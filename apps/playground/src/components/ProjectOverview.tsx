@@ -155,7 +155,7 @@ export function ProjectOverview() {
       {/* Features */}
       <section className="mx-auto max-w-6xl px-6 py-20">
         <div className="mx-auto max-w-2xl text-center">
-          <h2 className="font-display text-4xl font-bold tracking-tight">What makes it different</h2>
+          <h2 className="font-display text-3xl sm:text-4xl font-bold tracking-tight">What makes it different</h2>
           <p className="mt-3 text-base text-text-muted">
             A theming runtime built around two ideas: one token set drives everything, and themes
             are data you can trust.
@@ -184,7 +184,7 @@ export function ProjectOverview() {
         <div className="mx-auto max-w-6xl px-6 py-20">
           <div className="relative overflow-hidden rounded-2xl p-10 sm:p-16 bg-(image:--gradient-primary) [box-shadow:var(--shadow-xl)]">
             <div className="max-w-2xl">
-              <h2 className="font-display text-4xl font-black tracking-tight text-text-on-primary">
+              <h2 className="font-display text-3xl sm:text-4xl font-black tracking-tight text-text-on-primary">
                 Open source, themes welcome
               </h2>
               <p className="mt-4 text-base leading-relaxed text-text-on-primary opacity-90">
@@ -213,7 +213,7 @@ export function ProjectOverview() {
       {/* Docs — exist in the repo, not hosted yet */}
       <section className="mx-auto max-w-6xl px-6 py-20">
         <div className="mx-auto max-w-2xl text-center">
-          <h2 className="font-display text-4xl font-bold tracking-tight">Documentation</h2>
+          <h2 className="font-display text-3xl sm:text-4xl font-bold tracking-tight">Documentation</h2>
           <p className="mt-3 text-base text-text-muted">
             A hosted docs site is on the way. Until then, the guides live alongside the source.
           </p>
@@ -240,7 +240,7 @@ export function ProjectOverview() {
       {/* Closing CTA — hand off into the playground surfaces */}
       <section className="mx-auto max-w-6xl px-6 pb-20">
         <div className={`flex flex-col items-center gap-6 rounded-2xl border-border bg-surface-raised px-6 py-14 text-center backdrop-blur-md [box-shadow:var(--shadow-lg)] [border-width:var(--border-width-default)] hover:[box-shadow:var(--shadow-xl)] ${card}`}>
-          <h2 className="max-w-2xl font-display text-4xl font-black tracking-tight text-text">
+          <h2 className="max-w-2xl font-display text-3xl sm:text-4xl font-black tracking-tight text-text">
             See it on real screens
           </h2>
           <p className="max-w-lg text-base text-text-muted">

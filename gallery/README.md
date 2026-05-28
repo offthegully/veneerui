@@ -15,7 +15,6 @@ fully-realized example of a different design language, not a stub.
 
 | Theme | Slug | Style |
 |---|---|---|
-| Sharp Minimalist | `sharp-minimalist` | Near-black on white, single indigo, tight radii, Inter |
 | Editorial | `editorial` | Serif display, enlarged scale, magazine rhythm |
 | Warm Library | `warm-library` | EB Garamond throughout, cream paper, terracotta + sage |
 | Sunset Paper | `sunset-paper` | Warm cream paper, sunset gradient, playful motion |
