@@ -42,7 +42,7 @@ const FEATURES = [
   },
   {
     title: 'No lock-in',
-    body: 'Your library lives in the browser. Export a theme as plain JSON and take it anywhere Veneer runs.',
+    body: 'Your library lives in the browser. Export a theme as plain JSON and take it anywhere VeneerUI runs.',
     path: 'M12 16V4m0 0L7 9m5-5l5 5M4 17v2a1 1 0 001 1h14a1 1 0 001-1v-2',
   },
 ];
@@ -131,7 +131,7 @@ export function LandingPreview() {
                 <path d="M4 4h7v7H4zM13 13h7v7h-7z" fill="currentColor" />
               </svg>
             </span>
-            <span className="font-display text-lg font-bold tracking-tight">Veneer</span>
+            <span className="font-display text-lg font-bold tracking-tight">Veneer<span className="text-primary">UI</span></span>
           </div>
           <div className="hidden items-center gap-7 text-sm text-text-muted sm:flex">
             <a href="#" className={`hover:text-text ${motion}`}>Product</a>
@@ -165,7 +165,7 @@ export function LandingPreview() {
           </span>
         </h1>
         <p className="mx-auto mt-5 max-w-xl text-lg leading-relaxed text-text-muted">
-          Veneer turns your design system into themes anyone can swap. This entire page is rendered
+          VeneerUI turns your design system into themes anyone can swap. This entire page is rendered
           from the <span className="font-medium text-text">{current.name}</span> theme — change it
           in the top-right and watch every pixel follow.
         </p>
@@ -357,7 +357,7 @@ export function LandingPreview() {
                 <path d="M4 4h7v7H4zM13 13h7v7h-7z" fill="currentColor" />
               </svg>
             </span>
-            <span className="font-display font-bold text-text">Veneer</span>
+            <span className="font-display font-bold text-text">Veneer<span className="text-primary">UI</span></span>
           </div>
           <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
             <a href="#" className={`hover:text-text ${motion}`}>Privacy</a>
@@ -365,7 +365,7 @@ export function LandingPreview() {
             <a href="#" className={`hover:text-text ${motion}`}>Status</a>
             <a href="#" className={`hover:text-text ${motion}`}>Contact</a>
           </div>
-          <span className="text-text-subtle">© 2026 Veneer, Inc.</span>
+          <span className="text-text-subtle">© 2026 VeneerUI, Inc.</span>
         </div>
       </footer>
     </div>

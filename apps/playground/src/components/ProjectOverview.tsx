@@ -27,7 +27,7 @@ const card =
   'duration-[calc(var(--duration-default)*1ms)] ease-default ' +
   'hover:-translate-y-0.5 hover:border-border-strong';
 
-const GITHUB_URL = 'https://github.com/offthegully/veneer';
+const GITHUB_URL = 'https://github.com/offthegully/veneerui';
 
 /** GitHub mark, drawn in currentColor so it inherits the surrounding token color. */
 const GITHUB_PATH =
@@ -70,7 +70,7 @@ const DOCS_BASE = 'https://github.com/offthegully/veneerui/blob/main/docs';
 
 const DOCS = [
   { title: 'Authoring guide', blurb: 'Pick a coherent palette and surface ladder.', href: `${DOCS_BASE}/authoring-guide.md` },
-  { title: 'Vite integration', blurb: 'Add Veneer to a Vite + React + Tailwind v4 app.', href: `${DOCS_BASE}/integration-vite.md` },
+  { title: 'Vite integration', blurb: 'Add VeneerUI to a Vite + React + Tailwind v4 app.', href: `${DOCS_BASE}/integration-vite.md` },
   { title: 'Next integration', blurb: 'Wire it into a Next App Router project.', href: `${DOCS_BASE}/integration-next.md` },
   { title: 'Token reference', blurb: 'Every token you can set, with defaults.', href: `${DOCS_BASE}/schema-reference.md` },
 ];
@@ -99,7 +99,7 @@ export function ProjectOverview() {
         </span>
         <div className="mt-7 flex items-center justify-center gap-3">
           <VeneerMark className="size-11" />
-          <span className="font-display text-5xl font-black tracking-tighter">Veneer</span>
+          <span className="font-display text-5xl font-black tracking-tighter">veneer<span className="text-primary">ui</span></span>
         </div>
         {/* text-balance evens out the wrap so wide/heavy display faces (Archivo
             Black, Orbitron, mono) don't fall into lopsided 5–6 line stacks on
@@ -193,7 +193,7 @@ export function ProjectOverview() {
                   copy dipped to low contrast on the lighter end of several themes'
                   primary gradients. The heading above already runs at full strength. */}
               <p className="mt-4 text-base leading-relaxed text-text-on-primary">
-                Veneer is MIT-licensed and developed in the open. The gallery is a growing set of
+                VeneerUI is MIT-licensed and developed in the open. The gallery is a growing set of
                 community themes — each one is a plain JSON file and a starting template for your
                 own. Read the code, file an issue, or contribute a theme.
               </p>
@@ -265,7 +265,7 @@ export function ProjectOverview() {
         <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-6 py-8 text-sm text-text-muted sm:flex-row">
           <div className="flex items-center gap-2">
             <VeneerMark className="size-6" size="sm" />
-            <span className="font-display font-bold text-text">Veneer</span>
+            <span className="font-display font-bold text-text">veneer<span className="text-primary">ui</span></span>
             <span className="text-text-subtle">· MIT licensed</span>
           </div>
           <a

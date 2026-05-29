@@ -1,5 +1,4 @@
-import { useEffect, useState } from 'react'
-import { useTheme } from '@offthegully/veneerui'
+import { useState } from 'react'
 import { ThemeSwitcher } from './components/ThemeSwitcher'
 import { ThemeShowcase } from './components/ThemeShowcase'
 import { ProjectOverview } from './components/ProjectOverview'
@@ -15,36 +14,8 @@ export type View = 'overview' | 'components' | 'tokens'
 //   { id: 'tokens', label: 'What changed' },
 // ]
 
-/** True when the active theme's surface color is perceptually dark. */
-function useSurfaceIsDark() {
-  const { current } = useTheme()
-  const [isDark, setIsDark] = useState(false)
-
-  useEffect(() => {
-    const raw = getComputedStyle(document.documentElement)
-      .getPropertyValue('--color-surface')
-      .trim()
-    // Parse r/g/b from any valid CSS color string rendered by the browser.
-    const tmp = document.createElement('div')
-    tmp.style.color = raw
-    document.body.appendChild(tmp)
-    const resolved = getComputedStyle(tmp).color
-    document.body.removeChild(tmp)
-    const m = resolved.match(/[\d.]+/g)
-    if (m && m.length >= 3) {
-      const [r, g, b] = m.map(Number)
-      // Relative luminance (WCAG formula), dark if below 0.18
-      const lum = (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255
-      setIsDark(lum < 0.18)
-    }
-  }, [current])
-
-  return isDark
-}
-
 export default function App() {
   const [view] = useState<View>('overview')
-  const surfaceIsDark = useSurfaceIsDark()
 
   return (
     <div className="min-h-svh bg-surface font-sans text-text">
@@ -54,24 +25,9 @@ export default function App() {
       <div className="sticky top-0 z-40 bg-surface">
         <PreviewBanner />
         <header className="flex items-center justify-between border-border px-6 py-4 [border-bottom-width:var(--border-width-default)]">
-          <div className="flex items-center">
-            {surfaceIsDark ? (
-              <img
-                src="/veneer-lockup-horizontal-dark.png"
-                srcSet="/veneer-lockup-horizontal-dark-2x.png 2x"
-                alt="Veneer"
-                className="h-7"
-                draggable={false}
-              />
-            ) : (
-              <img
-                src="/veneer-lockup-horizontal-light.png"
-                srcSet="/veneer-lockup-horizontal-light-2x.png 2x"
-                alt="Veneer"
-                className="h-7"
-                draggable={false}
-              />
-            )}
+          <div className="flex items-center gap-2">
+            <img src="/veneer-mark-32.png" alt="" className="size-7 rounded" aria-hidden="true" draggable={false} />
+            <span className="font-display text-lg font-bold tracking-tight text-text">veneer<span className="text-primary">ui</span></span>
           </div>
           <ThemeSwitcher />
         </header>
