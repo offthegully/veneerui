@@ -1,4 +1,5 @@
-# Veneer
+<img width="1521" height="280" alt="veneer-lockup-horizontal-light" src="https://github.com/user-attachments/assets/f3d0b637-8e14-4552-83a3-8438dd843968" />
+
 
 **A user-extensible theming system for Tailwind CSS v4.** The whole visual
 surface of an app — color, type, spacing, borders, radii, shadows, blur, and
