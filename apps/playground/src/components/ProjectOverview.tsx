@@ -66,12 +66,13 @@ const FEATURES = [
   },
 ];
 
-/** Docs exist as markdown in the repo but aren't hosted yet — shown, not linked. */
+const DOCS_BASE = 'https://github.com/offthegully/veneerui/blob/main/docs';
+
 const DOCS = [
-  { title: 'Authoring guide', blurb: 'Pick a coherent palette and surface ladder.' },
-  { title: 'Vite integration', blurb: 'Add Veneer to a Vite + React + Tailwind v4 app.' },
-  { title: 'Next integration', blurb: 'Wire it into a Next App Router project.' },
-  { title: 'Token reference', blurb: 'Every token you can set, with defaults.' },
+  { title: 'Authoring guide', blurb: 'Pick a coherent palette and surface ladder.', href: `${DOCS_BASE}/authoring-guide.md` },
+  { title: 'Vite integration', blurb: 'Add Veneer to a Vite + React + Tailwind v4 app.', href: `${DOCS_BASE}/integration-vite.md` },
+  { title: 'Next integration', blurb: 'Wire it into a Next App Router project.', href: `${DOCS_BASE}/integration-next.md` },
+  { title: 'Token reference', blurb: 'Every token you can set, with defaults.', href: `${DOCS_BASE}/schema-reference.md` },
 ];
 
 function VeneerMark({ className, size = 'md' }: { className?: string; size?: 'sm' | 'md' }) {
@@ -210,29 +211,31 @@ export function ProjectOverview() {
         </div>
       </section>
 
-      {/* Docs — exist in the repo, not hosted yet */}
+      {/* Docs */}
       <section className="mx-auto max-w-6xl px-6 py-20">
         <div className="mx-auto max-w-2xl text-center">
           <h2 className="font-display text-3xl sm:text-4xl font-bold tracking-tight">Documentation</h2>
           <p className="mt-3 text-base text-text-muted">
-            A hosted docs site is on the way. Until then, the guides live alongside the source.
+            The guides live in the repo — click any card to read them on GitHub.
           </p>
         </div>
         <div className="mt-12 grid gap-5 sm:grid-cols-2">
           {DOCS.map((doc) => (
-            <div
+            <a
               key={doc.title}
-              aria-disabled="true"
-              className="flex items-start justify-between gap-4 rounded-xl border-border bg-surface-raised p-6 opacity-60 [border-width:var(--border-width-default)]"
+              href={doc.href}
+              target="_blank"
+              rel="noreferrer"
+              className={`flex items-start justify-between gap-4 rounded-xl border-border bg-surface-raised p-6 [border-width:var(--border-width-default)] ${card}`}
             >
               <div>
                 <h3 className="text-lg font-bold text-text">{doc.title}</h3>
                 <p className="mt-1 text-sm leading-relaxed text-text-muted">{doc.blurb}</p>
               </div>
-              <span className="shrink-0 rounded-full bg-surface-sunken px-3 py-1 text-xs font-medium text-text-subtle">
-                Coming soon
-              </span>
-            </div>
+              <svg viewBox="0 0 24 24" className="mt-0.5 size-4 shrink-0 text-text-subtle transition-transform group-hover:translate-x-0.5" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M7 17L17 7M17 7H7M17 7v10" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </a>
           ))}
         </div>
       </section>
