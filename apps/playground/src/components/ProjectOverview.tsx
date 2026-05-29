@@ -74,14 +74,11 @@ const DOCS = [
   { title: 'Token reference', blurb: 'Every token you can set, with defaults.' },
 ];
 
-function VeneerMark({ className }: { className?: string }) {
-  return (
-    <span className={`inline-flex items-center justify-center rounded-md bg-primary text-text-on-primary ${className ?? ''}`}>
-      <svg viewBox="0 0 24 24" className="size-1/2" aria-hidden="true">
-        <path d="M4 4h7v7H4zM13 13h7v7h-7z" fill="currentColor" />
-      </svg>
-    </span>
-  );
+function VeneerMark({ className, size = 'md' }: { className?: string; size?: 'sm' | 'md' }) {
+  if (size === 'sm') {
+    return <img src="/veneer-mark-32.png" alt="" className={`rounded ${className ?? ''}`} aria-hidden="true" draggable={false} />;
+  }
+  return <img src="/veneer-appicon-180.png" alt="" className={`rounded-md ${className ?? ''}`} aria-hidden="true" draggable={false} />;
 }
 
 export function ProjectOverview() {
@@ -257,7 +254,7 @@ export function ProjectOverview() {
       <footer className="border-border [border-top-width:var(--border-width-default)]">
         <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-6 py-8 text-sm text-text-muted sm:flex-row">
           <div className="flex items-center gap-2">
-            <VeneerMark className="size-6" />
+            <VeneerMark className="size-6" size="sm" />
             <span className="font-display font-bold text-text">Veneer</span>
             <span className="text-text-subtle">· MIT licensed</span>
           </div>
