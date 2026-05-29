@@ -141,7 +141,7 @@
         },
         "color-text-muted": {
           "type": "string",
-          "description": "Secondary text (color, default: #6b7280)"
+          "description": "Secondary text (color, default: #4b5563)"
         },
         "color-text-subtle": {
           "type": "string",

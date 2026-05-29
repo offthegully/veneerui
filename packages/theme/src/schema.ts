@@ -55,7 +55,7 @@ export const TOKEN_SCHEMA: TokenDef[] = [
 
   // ── Text ─────────────────────────────────────────────────────────────────────
   def('color-text', 'color', 'Text', 'theme', '#111827', 'Body text color', true), // required: minimally coherent theme
-  def('color-text-muted', 'color', 'Text', 'theme', '#6b7280', 'Secondary text'),
+  def('color-text-muted', 'color', 'Text', 'theme', '#4b5563', 'Secondary text'),
   def('color-text-subtle', 'color', 'Text', 'theme', '#9ca3af', 'Tertiary / placeholder text'),
   def('color-text-inverse', 'color', 'Text', 'theme', '#f9fafb', 'Text on inverse surfaces'),
   def('color-text-on-primary', 'color', 'Text', 'theme', '#ffffff', 'Text rendered on primary fills'),

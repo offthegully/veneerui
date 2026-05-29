@@ -1,8 +1,14 @@
 /**
  * FloatingControls — the always-reachable cluster fixed to the bottom-right
  * corner so you can re-skin (and jump back to the top) no matter how far you've
- * scrolled. It pairs a floating ThemeSwitcher with a "back to top" button that
- * only appears once there's somewhere to scroll back to.
+ * scrolled. It pairs a floating ThemeSwitcher with a "back to top" button.
+ *
+ * Both fade in only once the user has scrolled past the first screen. At the very
+ * top the sticky header switcher is the way to re-skin; keeping the floating
+ * cluster hidden there stops the bottom-corner pill from landing on top of the
+ * hero copy on short (mobile) viewports — where, at scroll 0, `bottom-4` sits
+ * right over the hero text. Once scrolled, it floats over lower, less critical
+ * content.
  *
  * Token-styled like everything else, so it re-skins with the active theme. Sits
  * at z-40 — below the import/gallery modals (z-50), which should cover it.
@@ -44,7 +50,15 @@ export function FloatingControls() {
           <path d="M10 15V5m0 0l-4 4m4-4l4 4" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
       </button>
-      <ThemeSwitcher variant="floating" />
+      {/* Hidden at the top (use the sticky header switcher there) so it never
+          overlaps the hero; fades in alongside the back-to-top button. */}
+      <div
+        className={`transition-all ${
+          scrolled ? 'opacity-100' : 'pointer-events-none translate-y-2 opacity-0'
+        }`}
+      >
+        <ThemeSwitcher variant="floating" />
+      </div>
     </div>
   );
 }

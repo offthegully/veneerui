@@ -101,13 +101,17 @@ export function ProjectOverview() {
           <VeneerMark className="size-11" />
           <span className="font-display text-5xl font-black tracking-tighter">Veneer</span>
         </div>
-        <h1 className="mx-auto mt-6 max-w-3xl font-display text-5xl leading-tight font-black tracking-tighter sm:text-6xl">
+        {/* text-balance evens out the wrap so wide/heavy display faces (Archivo
+            Black, Orbitron, mono) don't fall into lopsided 5–6 line stacks on
+            mobile; the non-breaking space keeps "CSS v4" together so "v4" never
+            orphans onto its own line. */}
+        <h1 className="mx-auto mt-6 max-w-3xl text-balance font-display text-5xl leading-tight font-black tracking-tighter sm:text-6xl">
           A user-extensible theming system for{' '}
           {/* pr/-mr pair: background-clip:text plus the negative tracking trims the
               last glyph's edge; padding gives the clip room, the negative margin
               cancels the width change so the centered line doesn't shift. */}
           <span className="bg-clip-text text-transparent bg-(image:--gradient-text) pr-[0.12em] mr-[-0.12em]">
-            Tailwind CSS v4
+            Tailwind CSS&nbsp;v4
           </span>
         </h1>
         <p className="mx-auto mt-5 max-w-2xl text-lg leading-relaxed text-text-muted">
@@ -185,7 +189,10 @@ export function ProjectOverview() {
               <h2 className="font-display text-3xl sm:text-4xl font-black tracking-tight text-text-on-primary">
                 Open source, themes welcome
               </h2>
-              <p className="mt-4 text-base leading-relaxed text-text-on-primary opacity-90">
+              {/* Full-strength on-primary (no opacity knock-down): at 90% this body
+                  copy dipped to low contrast on the lighter end of several themes'
+                  primary gradients. The heading above already runs at full strength. */}
+              <p className="mt-4 text-base leading-relaxed text-text-on-primary">
                 Veneer is MIT-licensed and developed in the open. The gallery is a growing set of
                 community themes — each one is a plain JSON file and a starting template for your
                 own. Read the code, file an issue, or contribute a theme.

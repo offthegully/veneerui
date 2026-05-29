@@ -37,7 +37,7 @@ Schema generation **1** · **112** tokens. Set any of these in a theme's `tokens
 | Token | Type | Default | Required | Description |
 |---|---|---|---|---|
 | `color-text` | color | `#111827` | yes | Body text color |
-| `color-text-muted` | color | `#6b7280` |  | Secondary text |
+| `color-text-muted` | color | `#4b5563` |  | Secondary text |
 | `color-text-subtle` | color | `#9ca3af` |  | Tertiary / placeholder text |
 | `color-text-inverse` | color | `#f9fafb` |  | Text on inverse surfaces |
 | `color-text-on-primary` | color | `#ffffff` |  | Text rendered on primary fills |
