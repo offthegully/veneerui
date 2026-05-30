@@ -7,9 +7,8 @@ explaining the design choices.
 These are also **the starting templates for authoring your own** — every one is a
 fully-realized example of a different design language, not a stub.
 
-> This directory is structured to become a standalone public GitHub repo in
-> Phase 4, where browsing and PR-based contribution land. For now it ships inside
-> the app repo as the seed set.
+> Today these ship inside the app repo as the seed set. When the gallery moves to
+> its own public repo, each `theme.json` will also be importable by its raw URL.
 
 ## Themes
 
@@ -32,8 +31,7 @@ fully-realized example of a different design language, not a stub.
 1. Open the app and click the theme switcher → **Manage themes**.
 2. Either:
    - **Download** a `theme.json` and drop it into the import panel, or
-   - **Copy its raw URL** (the `raw.githubusercontent.com` link once this is a
-     GitHub repo) and paste it into the URL field.
+   - **Copy its raw URL** and paste it into the URL field.
 3. The app validates it locally and applies it as a **live preview**. If you like
    it, click **Save to library**; otherwise **Stop preview**.
 

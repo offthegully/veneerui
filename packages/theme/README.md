@@ -40,8 +40,8 @@ Anti-flash (apply the saved theme before first paint):
   `app/layout.tsx`'s `<head>`.
 
 Full step-by-step (CLI and manual) for each framework:
-- [Vite guide](https://github.com/offthegully/veneer/blob/main/docs/integration-vite.md)
-- [Next.js guide](https://github.com/offthegully/veneer/blob/main/docs/integration-next.md)
+- [Vite guide](https://github.com/offthegully/veneerui/blob/main/docs/integration-vite.md)
+- [Next.js guide](https://github.com/offthegully/veneerui/blob/main/docs/integration-next.md)
 
 ## Entry points
 
@@ -53,7 +53,7 @@ Full step-by-step (CLI and manual) for each framework:
 | `@offthegully/veneerui/next` | `<AntiFlashScript />` — the Next anti-flash component |
 | `@offthegully/veneerui/node` | `nodeCheckValue` — the `css-tree` value checker for CI (kept out of the browser bundle) |
 
-## How themeing works
+## How theming works
 
 Tokens are declared in Tailwind's `@theme` block, which emits both a CSS custom
 property *and* a utility class (`--color-primary` → `bg-primary`). Components use
@@ -76,7 +76,7 @@ For a showcase, pass `veneer({ shuffleUntilPinned: themes })` (Vite) and
 before first paint, so still flash-free — until the visitor selects one, which pins
 it. `useTheme()` exposes `pinned` and `shuffle()` to build the control. Omit it for
 the ordinary "apply the saved theme" behavior. See the
-[Vite guide](https://github.com/offthegully/veneer/blob/main/docs/integration-vite.md).
+[Vite guide](https://github.com/offthegully/veneerui/blob/main/docs/integration-vite.md).
 
 ## License
 

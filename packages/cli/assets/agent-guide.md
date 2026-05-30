@@ -102,4 +102,4 @@ Read a token value in JS with `tokenValue(current, 'color-primary')` from
   *lighter* than `surface`; and `text-on-primary` must contrast with the primary
   fill (a pale primary needs *dark* on-primary text).
 
-Full token reference and docs: https://github.com/offthegully/veneer
+Full token reference and docs: https://github.com/offthegully/veneerui

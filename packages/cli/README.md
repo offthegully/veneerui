@@ -25,9 +25,11 @@ Flags: `--cwd <path>` to target another directory, `--dry-run`, `--force`,
 
 ## Components
 
-`switcher` (theme dropdown — also adds `import-panel`), `import-panel` (drop /
-paste-URL validate-and-preview modal), `banner` (preview banner), `showcase`
-(a token-exercising demo surface). Run `veneerui list` for the current set.
+`switcher` (theme dropdown; pulls in `import-panel` + `gallery-panel`),
+`gallery-panel` (grid that previews every theme and applies one on click),
+`import-panel` (drop / paste-URL validate-and-preview modal), `banner` (preview
+banner), `showcase` (a token-exercising demo surface). Run `veneerui list` for
+the current set.
 
 ## Why components are copied, not imported
 
@@ -38,8 +40,8 @@ restyle freely. The runtime logic still comes from the `@offthegully/veneerui` d
 so there's no duplicated behavior.
 
 Full setup guides:
-[Vite](https://github.com/offthegully/veneer/blob/main/docs/integration-vite.md) ·
-[Next.js](https://github.com/offthegully/veneer/blob/main/docs/integration-next.md).
+[Vite](https://github.com/offthegully/veneerui/blob/main/docs/integration-vite.md) ·
+[Next.js](https://github.com/offthegully/veneerui/blob/main/docs/integration-next.md).
 
 ## License
 
