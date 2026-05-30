@@ -3,11 +3,13 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "packageManager": "npm@11.12.1",
   "workspaces": [
     "packages/*",
     "apps/*"
   ],
   "scripts": {
+    "preinstall": "npx only-allow npm",
     "gen:theme": "tsx scripts/generate-theme.ts",
     "gen:registry": "tsx scripts/build-registry.ts",
     "build:theme": "npm run gen:theme && npm run build -w @offthegully/veneerui",

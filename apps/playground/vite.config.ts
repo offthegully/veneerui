@@ -25,6 +25,11 @@ export default defineConfig({
   // shuffleUntilPinned shows a random distinctive theme on each load until the
   // visitor pins one in the switcher.
   plugins: [react(), tailwindcss(), veneer({ shuffleUntilPinned: shufflePool })],
+  // Force a single React instance regardless of the package manager's
+  // node_modules layout (npm hoists, pnpm nests). Two Reacts => invalid hook call.
+  resolve: {
+    dedupe: ['react', 'react-dom'],
+  },
   preview: {
     port: 3002,
     allowedHosts: ['veneerui.dev'],
