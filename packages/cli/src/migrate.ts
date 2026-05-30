@@ -18,7 +18,7 @@
  */
 import { writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { applyDeterministic, findJudgmentCalls } from '@veneerui/lint-core/conversions';
+import { migrateSource, findSourceConversions, classRegions } from '@veneerui/lint-core/conversions';
 import { findClassColorViolations } from '@veneerui/lint-core/detect';
 import { collectFiles, isSourceCode } from './walk';
 
@@ -43,25 +43,34 @@ function lineAt(text: string, index: number): number {
 }
 
 /**
- * Pure codemod over one file's source. Applies every deterministic conversion
- * and collects the judgment calls (structural ones plus hardcoded colors) as
- * flags — never rewriting a color, which is always a human decision.
+ * Pure codemod over one file's source. Everything is scoped to `className`/
+ * `class` attribute values (via lint-core), so a utility-looking token in prose,
+ * a comment, or a token-name array is never rewritten or flagged. Applies the
+ * deterministic conversions and collects the judgment calls (structural ones
+ * plus hardcoded colors) as flags — never rewriting a color, which is a human
+ * decision.
  */
 export function migrate(text: string): MigrateResult {
-  const { output, applied } = applyDeterministic(text);
+  const { output, applied } = migrateSource(text);
 
   const flags: MigrateFlag[] = [];
-  for (const j of findJudgmentCalls(text)) {
-    flags.push({ kind: j.kind, value: j.value, line: lineAt(text, j.index), suggest: j.suggest });
+  // Judgment-call structural gotchas (opacity, arbitrary sizes) — already scoped.
+  for (const j of findSourceConversions(text)) {
+    if (j.deterministic === false) {
+      flags.push({ kind: j.kind, value: j.value, line: lineAt(text, j.index), suggest: j.suggest ?? '' });
+    }
   }
   // Hardcoded colors are the biggest judgment call of all — flag, never guess.
-  for (const c of findClassColorViolations(text)) {
-    flags.push({
-      kind: c.kind,
-      value: c.value,
-      line: lineAt(text, c.index),
-      suggest: 'a semantic color utility (bg-primary, text-text-muted, …) — your choice',
-    });
+  // Scoped to class regions too, so a hex in a comment/schema isn't flagged.
+  for (const r of classRegions(text)) {
+    for (const c of findClassColorViolations(text.slice(r.start, r.end))) {
+      flags.push({
+        kind: c.kind,
+        value: c.value,
+        line: lineAt(text, c.index + r.start),
+        suggest: 'a semantic color utility (bg-primary, text-text-muted, …) — your choice',
+      });
+    }
   }
 
   return { output, changed: output !== text, applied, flags };

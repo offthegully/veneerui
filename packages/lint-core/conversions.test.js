@@ -5,6 +5,9 @@ import {
   applyDeterministic,
   findJudgmentCalls,
   countConversions,
+  classRegions,
+  migrateSource,
+  findSourceConversions,
 } from './conversions.js';
 
 describe('deterministic conversions round-trip the AGENTS.md gotchas', () => {
@@ -82,6 +85,64 @@ describe('countConversions sizes a migration', () => {
     expect(counts['box-shadow']).toBe(2);
     expect(counts['opacity']).toBe(1);
     expect(counts['arbitrary-size']).toBe(1);
+  });
+});
+
+describe('migrateSource scopes rewrites to className/class attributes', () => {
+  it('rewrites utilities inside a className attribute', () => {
+    expect(migrateSource('<div className="flex shadow-md border" />').output).toBe(
+      '<div className="flex [box-shadow:var(--shadow-md)] [border-width:var(--border-width-default)] border-border" />',
+    );
+  });
+
+  it('rewrites inside a braced className (template + ternary class lists)', () => {
+    const src = '<div className={`p-2 ${big ? "shadow-lg" : "shadow-sm"}`} />';
+    const out = migrateSource(src).output;
+    expect(out).toContain('[box-shadow:var(--shadow-lg)]');
+    expect(out).toContain('[box-shadow:var(--shadow-sm)]');
+  });
+
+  it('handles class= (plain HTML) too', () => {
+    expect(migrateSource('<div class="border" />').output).toBe(
+      '<div class="[border-width:var(--border-width-default)] border-border" />',
+    );
+  });
+
+  // The regression that motivated scoping: utility-looking tokens OUTSIDE a
+  // className must NEVER be rewritten.
+  it('does NOT touch a token-name string literal (schema data)', () => {
+    const src = "def('shadow-md', 'shadow', 'Shadows', 'theme', '…');";
+    expect(migrateSource(src).output).toBe(src);
+  });
+
+  it('does NOT touch prose, JSX text, or comments', () => {
+    for (const src of [
+      '// shadow-md bakes its geometry at build time',
+      '<p>Higher elevation via shadow-lg — note the offset.</p>',
+      'const names = ["shadow-md", "border", "text-shadow-sm"];',
+      "const desc = 'Default border width';",
+    ]) {
+      expect(migrateSource(src).output).toBe(src);
+    }
+  });
+
+  it('is idempotent over a whole file', () => {
+    const src = '<a className="shadow-lg border">x</a>';
+    const once = migrateSource(src).output;
+    expect(migrateSource(once).output).toBe(once);
+  });
+});
+
+describe('classRegions / findSourceConversions', () => {
+  it('finds only className attribute spans', () => {
+    const regions = classRegions('<div className="shadow-md" data-x="shadow-lg" />');
+    expect(regions.length).toBe(1); // data-x is not a class attribute
+  });
+
+  it('flags judgment calls only inside class regions', () => {
+    const flags = findSourceConversions('const x = "opacity-50";\n<div className="opacity-50" />');
+    // the lone string literal is ignored; only the className opacity is found
+    expect(flags.filter((f) => f.kind === 'opacity').length).toBe(1);
   });
 });
 

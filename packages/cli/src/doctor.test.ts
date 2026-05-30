@@ -47,6 +47,23 @@ describe('analyze', () => {
     expect(report.percentThemeable).toBe(100);
     expect(report.totalIslands).toBe(0);
   });
+
+  it('does not count utility-looking tokens outside a className (regression)', () => {
+    const report = analyze([
+      // token-name data + prose — looks like classes, but isn't
+      { path: 'schema.ts', text: "const names = ['shadow-md', 'border']; // shadow-lg note" },
+      { path: 'ok.tsx', text: '<div className="bg-surface" />' },
+    ]);
+    expect(report.totalIslands).toBe(0);
+    expect(report.percentThemeable).toBe(100);
+  });
+
+  it("skips Veneer's own generated tokens.css (not a consumer collision)", () => {
+    const css = '/* AUTO-GENERATED from packages/theme/src/schema.ts ... */\n@theme {\n  --color-primary: #abc;\n}';
+    const report = analyze([{ path: 'packages/theme/tokens.generated.css', text: css }]);
+    expect(report.collisions).toEqual([]);
+    expect(report.cssFilesScanned).toBe(0);
+  });
 });
 
 describe('findThemeCollisions', () => {

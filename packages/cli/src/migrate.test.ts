@@ -49,3 +49,25 @@ describe('migrate — judgment calls are flagged, never auto-applied', () => {
     expect(flags.some((f) => f.kind === 'palette-utility')).toBe(true);
   });
 });
+
+describe('migrate — never corrupts non-className occurrences (regression)', () => {
+  // This is the bug that ran migrate at repo root and rewrote schema.ts token
+  // names, doc comments, and prose. Everything must be scoped to className.
+  it('leaves token-name string literals (schema data) untouched', () => {
+    const src = "def('shadow-md', 'shadow', 'Shadows', 'theme', '0 1px', 'Default border width');";
+    const { output, changed, flags } = migrate(src);
+    expect(output).toBe(src);
+    expect(changed).toBe(false);
+    expect(flags).toEqual([]);
+  });
+
+  it('leaves prose, comments, and data arrays untouched', () => {
+    for (const src of [
+      '// rewrites shadow-md and border to the bracket form',
+      '<p>Higher elevation via shadow-lg — brutalist offset.</p>',
+      'const reserved = ["shadow-md", "border", "text-shadow-glow"];',
+    ]) {
+      expect(migrate(src).changed).toBe(false);
+    }
+  });
+});

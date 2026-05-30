@@ -31,6 +31,12 @@ declare module '@veneerui/lint-core/conversions' {
   export function findJudgmentCalls(
     text: string,
   ): { kind: string; value: string; index: number; suggest: string }[];
+  export function classRegions(text: string): { start: number; end: number }[];
+  export function migrateSource(text: string): {
+    output: string;
+    applied: { kind: string; from: string }[];
+  };
+  export function findSourceConversions(text: string): ConversionMatch[];
 }
 
 declare module '@veneerui/lint-core/reserved-tokens' {

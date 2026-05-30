@@ -177,3 +177,73 @@ export function countConversions(text) {
   }
   return counts;
 }
+
+// ── Source-file scoping ──────────────────────────────────────────────────────
+// The conversions above run on a class-bearing STRING. Applied to a whole source
+// file they'd also match a Tailwind-looking token inside prose, a comment, a
+// token-name array, or a doc string — and rewrite it, corrupting the file. So
+// over a source file we only ever look INSIDE className / class attribute values.
+
+/**
+ * Spans `[start, end)` of `text` that are the VALUE of a `className`/`class`
+ * attribute — the only place a utility legitimately appears. Handles
+ * `class(Name)="…"`, `'…'`, and `{…}` (the whole braced expression, which covers
+ * template literals and ternary class lists). Everything else is left untouched.
+ */
+export function classRegions(text) {
+  const regions = [];
+  const attrRe = /\b(?:className|class)\s*=\s*/g;
+  let m;
+  while ((m = attrRe.exec(text)) !== null) {
+    const i = m.index + m[0].length;
+    const ch = text[i];
+    if (ch === '"' || ch === "'") {
+      const end = text.indexOf(ch, i + 1);
+      if (end > i) regions.push({ start: i + 1, end });
+    } else if (ch === '{') {
+      let depth = 0;
+      let j = i;
+      for (; j < text.length; j++) {
+        if (text[j] === '{') depth++;
+        else if (text[j] === '}' && --depth === 0) break;
+      }
+      if (j > i) regions.push({ start: i + 1, end: j });
+    }
+  }
+  return regions;
+}
+
+/**
+ * Apply the deterministic conversions across a whole source file, but only
+ * within class attribute values. Returns `{ output, applied }`. Safe and
+ * idempotent — prose/comments/token-name strings are never rewritten.
+ */
+export function migrateSource(text) {
+  const regions = classRegions(text);
+  if (!regions.length) return { output: text, applied: [] };
+  const applied = [];
+  let output = '';
+  let cursor = 0;
+  for (const r of regions) {
+    output += text.slice(cursor, r.start);
+    const res = applyDeterministic(text.slice(r.start, r.end));
+    output += res.output;
+    applied.push(...res.applied);
+    cursor = r.end;
+  }
+  return { output: output + text.slice(cursor), applied };
+}
+
+/**
+ * Find every gotcha across a whole source file, scoped to class regions, with
+ * absolute indices. Used by `doctor` (counting) and `migrate` (flagging).
+ */
+export function findSourceConversions(text) {
+  const out = [];
+  for (const r of classRegions(text)) {
+    for (const c of findConversions(text.slice(r.start, r.end))) {
+      out.push({ ...c, index: c.index + r.start });
+    }
+  }
+  return out;
+}

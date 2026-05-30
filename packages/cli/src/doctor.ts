@@ -17,7 +17,7 @@
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { findClassColorViolations, findBareColorLiterals } from '@veneerui/lint-core/detect';
-import { findConversions } from '@veneerui/lint-core/conversions';
+import { findSourceConversions, classRegions } from '@veneerui/lint-core/conversions';
 import { RESERVED_TOKEN_NAMES } from '@veneerui/lint-core/reserved-tokens';
 import { collectFiles, isSourceCode, type SourceFile } from './walk';
 
@@ -89,27 +89,36 @@ export function analyze(files: ScanFile[]): DoctorReport {
 
   for (const f of files) {
     if (f.path.endsWith('.css')) {
+      // Skip Veneer's own generated token CSS — its @theme block defines the
+      // reserved tokens, so it would otherwise self-report 100 "collisions".
+      // A consumer's copy lives in node_modules (already skipped by the walk).
+      if (f.text.includes('AUTO-GENERATED from packages/theme/src/schema.ts')) continue;
       cssFilesScanned++;
       for (const token of findThemeCollisions(f.text)) collisions.push({ path: f.path, token });
       continue;
     }
     codeFilesScanned++;
     const islands: Island[] = [];
-    // Class-string color violations are safe to scan in any code file.
-    for (const v of findClassColorViolations(f.text)) {
-      islands.push({ kind: v.kind, value: v.value, judgment: true });
-      bump(v.kind);
+    // Everything class-based is scoped to className/class attribute values, so a
+    // utility-looking token in prose, a comment, or a token-name array isn't
+    // mistaken for an island (matches what `migrate` will actually touch).
+    for (const r of classRegions(f.text)) {
+      for (const v of findClassColorViolations(f.text.slice(r.start, r.end))) {
+        islands.push({ kind: v.kind, value: v.value, judgment: true });
+        bump(v.kind);
+      }
     }
-    // Bare hex / color-fn literals only count as islands in rendered markup —
-    // .ts files (schemas, fixtures) legitimately hold hex (matches conformance).
+    // Bare hex / color-fn literals in inline styles only count as islands in
+    // rendered markup — .ts files (schemas, fixtures) legitimately hold hex.
     if (f.path.endsWith('.tsx') || f.path.endsWith('.jsx')) {
       for (const v of findBareColorLiterals(f.text)) {
         islands.push({ kind: v.kind, value: v.value, judgment: true });
         bump(v.kind);
       }
     }
-    // Structural gotchas (baked shadows, fixed widths, fixed durations, …).
-    for (const v of findConversions(f.text)) {
+    // Structural gotchas (baked shadows, fixed widths, fixed durations, …),
+    // scoped to class regions.
+    for (const v of findSourceConversions(f.text)) {
       islands.push({ kind: v.kind, value: v.value, judgment: v.deterministic === false });
       bump(v.kind);
     }
