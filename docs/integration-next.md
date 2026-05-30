@@ -102,6 +102,45 @@ the DOM — not to React's tree — the client `ThemeProvider` reconciles to the
 values on hydration with no mismatch warning. Returning users see their theme
 immediately.
 
+This covers **CSS-variable styling** — the `bg-surface`, `text-text`, `border-border`
+utilities and friends. Style your UI entirely from those tokens and you never
+think about hydration.
+
+### Rendering theme *identity* into markup
+
+There is one case the script can't cover: a component that renders the **identity**
+of the current theme into React's tree — its `name`, swatches built from its
+specific colors, or a branch keyed on `useTheme().pinned`. Those values are
+client-only (they come from `localStorage` and, for shuffle, a per-load random
+pick), so the server renders the default while the first client render already
+holds the real theme — a mismatch.
+
+Guard any such component with `useTheme().hydrated`: render a stable,
+theme-neutral output while it's `false`, then reveal the real value once it flips
+to `true` after mount. (Drive the placeholder's colors from the CSS-variable
+utilities — `bg-primary`, `bg-surface` — not from a theme's inline color values,
+so the markup is identical on the server and the first client render.)
+
+```tsx
+'use client'
+import { useTheme } from '@offthegully/veneerui'
+
+function CurrentThemeName() {
+  const { current, hydrated } = useTheme()
+  return <span>{hydrated ? current.name : 'Theme'}</span>
+}
+```
+
+The bundled `ThemeSwitcher` (`npx veneerui add switcher`) already does this for
+its trigger, so it's SSR-safe out of the box; follow the same pattern in your own
+theme-aware components.
+
+> **Don't inline tokens onto `<html>` (or anywhere) in JSX.** Applying a theme by
+> spreading its tokens into a `style={{ '--color-primary': … }}` prop on the
+> server re-introduces exactly this mismatch (a server roll vs. a client roll).
+> Let `<AntiFlashScript>` own the `<html>` variables; never render token values
+> through React.
+
 ## Shipping your own themes
 
 By default `<ThemeProvider>` ships Veneer's built-in themes. To ship *your own*

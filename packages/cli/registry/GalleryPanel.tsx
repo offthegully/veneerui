@@ -38,7 +38,7 @@ function ThemePreview({ theme }: { theme: Theme }) {
         The quick brown fox
       </span>
       <span className="text-xs" style={{ color: v('color-text-muted'), fontFamily: v('font-sans') }}>
-        Body copy in this theme's type and palette.
+        Body copy in this theme&apos;s type and palette.
       </span>
       <div className="mt-1 flex flex-wrap items-center gap-2">
         <span

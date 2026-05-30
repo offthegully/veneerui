@@ -9,7 +9,7 @@
  * reload the synchronous script in index.html has already applied the persisted
  * theme, so this just reconciles to the same values.
  */
-import { useCallback, useLayoutEffect, useMemo, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useState, type ReactNode } from 'react';
 import type { Theme, ThemeLibrary } from './types';
 import { applyTheme } from './apply';
 import { loadLibrary, saveLibrary } from './storage';
@@ -76,6 +76,17 @@ export function ThemeProvider({
   const appThemeIds = useMemo(() => new Set(themes.map((t) => t.id)), [themes]);
   // A theme being previewed from the import screen — applied but not yet saved.
   const [preview, setPreview] = useState<Theme | null>(null);
+
+  // False during SSR and the first client render, true after mount. The library
+  // above is seeded from localStorage/SHUFFLE_ATTR, which only exist on the
+  // client — so under SSR the server renders the default while the first client
+  // render already holds the persisted/shuffled theme. Exposing this lets
+  // identity-rendering consumers (the switcher) hold a neutral first paint that
+  // matches the server, then reveal the real theme once it flips. CSS variables
+  // are unaffected: applyTheme/the anti-flash script write them to the DOM, not
+  // React's tree, so they never participate in hydration.
+  const [hydrated, setHydrated] = useState(false);
+  useEffect(() => setHydrated(true), []);
 
   // The library is the single source of truth; persist any change.
   const update = useCallback((next: (lib: ThemeLibrary) => ThemeLibrary) => {
@@ -192,6 +203,7 @@ export function ThemeProvider({
       currentId: library.currentId,
       current,
       pinned: library.pinned ?? false,
+      hydrated,
       enabledThemes: library.enabledIds
         .map((id) => byId.get(id))
         .filter((t): t is Theme => t != null),
@@ -209,6 +221,7 @@ export function ThemeProvider({
     library,
     current,
     preview,
+    hydrated,
     setCurrent,
     shuffle,
     addTheme,

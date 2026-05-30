@@ -20,6 +20,17 @@ export interface ThemeContextValue {
    * pins it (true). `shuffle()` returns to the unpinned, re-rolling state.
    */
   pinned: boolean;
+  /**
+   * False during SSR and the *first* client render, true once mounted. The
+   * persisted/shuffled theme (and `pinned`) are client-only state, so anything
+   * that renders theme *identity* into markup — the current theme's name, its
+   * swatches, a `pinned`-dependent branch — must render a stable, theme-neutral
+   * output while this is false and reveal the real value only after it flips,
+   * or the server HTML won't match the first client render. CSS-variable styling
+   * (the `bg-surface`/`text-text` utilities) is exempt: it's applied to the DOM
+   * by the anti-flash script and `applyTheme`, never through React's tree.
+   */
+  hydrated: boolean;
   /** `themes` filtered & ordered by `enabledIds` — what the switcher renders. */
   enabledThemes: Theme[];
   /**
