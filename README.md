@@ -61,6 +61,7 @@ Tailwind v4 project and add Veneer on top, the way you'd add shadcn/ui.
 npm i @offthegully/veneerui
 npx veneerui init            # @import the tokens + wire the anti-flash, then print the provider step
 npx veneerui add switcher    # copy a ThemeSwitcher into your components
+npx veneerui add fonts       # load the fonts the built-in themes name (Fontsource)
 npx veneerui doctor          # report how much of your existing UI is themeable today
 npx veneerui migrate         # rewrite the mechanical hardcoded values to tokens
 ```
@@ -139,10 +140,12 @@ in place — the ones that *look* themeable but bake at build time:
 | Hardcoded | Veneer-themeable form |
 |---|---|
 | `shadow-lg` | `[box-shadow:var(--shadow-lg)]` |
-| `border`, `border-2` | `[border-width:var(--border-width-default)] border-border` |
+| `border`, `border-2` | `[border-width:var(--border-width-default)]` |
 | `duration-200` | `duration-[calc(var(--duration-default)*1ms)]` |
 
-It never guesses the judgment calls — which palette maps to `bg-primary` vs
+Rewrites are scoped to `className` / `class` attributes, so a utility-looking
+token in prose, a comment, or a data array is never touched. It never guesses the
+judgment calls — which palette maps to `bg-primary` vs
 `bg-accent`, whether a surface is raised or sunken, which scale step an arbitrary
 size rounds to — it **flags** those with a `file:line` for you to finish. Run
 `veneerui migrate --dry-run` to preview.
@@ -252,6 +255,8 @@ components.
   [`eslint-plugin-veneer`](./packages/eslint-plugin)
 - **Author a theme** — the [authoring guide](./docs/authoring-guide.md) and the
   generated [token reference](./docs/schema-reference.md)
+- **Fonts** — the family ↔ Fontsource mapping and the `font-sans` footgun in
+  [docs/fonts.md](./docs/fonts.md) (`veneerui add fonts`)
 - **The gallery** — [example themes](./gallery/README.md) and how to
   [contribute one](./gallery/CONTRIBUTING.md)
 - **Maintainers** — release & `SCHEMA_VERSION` policy in

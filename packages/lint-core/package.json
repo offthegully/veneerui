@@ -7,12 +7,14 @@
   "exports": {
     "./detect": "./detect.js",
     "./conversions": "./conversions.js",
-    "./reserved-tokens": "./reserved-tokens.generated.js"
+    "./reserved-tokens": "./reserved-tokens.generated.js",
+    "./font-packages": "./font-packages.generated.js"
   },
   "files": [
     "detect.js",
     "conversions.js",
-    "reserved-tokens.generated.js"
+    "reserved-tokens.generated.js",
+    "font-packages.generated.js"
   ],
   "scripts": {
     "test": "vitest run"

@@ -14,6 +14,7 @@ files are too project-shaped to patch blindly).
 npm i @offthegully/veneerui
 npx veneerui init            # adds the token @import, prints the head + provider steps
 npx veneerui add switcher    # copies a ThemeSwitcher (with 'use client') into src/components
+npx veneerui add fonts       # prints the Fontsource install + import lines (see Fonts below)
 ```
 
 When the target is a Next project, `veneerui add` prepends `'use client'` to the
@@ -240,6 +241,21 @@ import { themes } from './themes'
 Selecting a theme pins it (`useTheme().pinned` → `true`) and saves it, stopping the
 shuffle; `useTheme().shuffle()` re-rolls and returns to the unpinned state. Omit
 `shuffleUntilPinned` for the ordinary "apply the saved theme" behavior.
+
+## Fonts (read this — the `next/font` footgun)
+
+Themes only *name* fonts; your app must load them. Two Next-specific traps:
+
+1. **Don't pin a font on `<body>`.** The common Next starter sets
+   `<body className={geist.className}>` (or another `next/font` import). That
+   hard-coded family overrides the `font-sans` token and **silently disables all
+   font theming** — your themes' fonts never show. Remove the `next/font` class
+   from `<body>` and let `font-sans` flow through.
+2. **Load the families your themes name.** Run `npx veneerui add fonts` for the
+   install command + import lines, then import them in `app/layout.tsx` (a Server
+   Component import is fine — they're CSS side-effects). The family string in a
+   theme must match the loaded font exactly; the
+   [fonts guide](./fonts.md) has the full family ↔ Fontsource mapping.
 
 ## Using themes & API
 

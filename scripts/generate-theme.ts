@@ -17,7 +17,7 @@ import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { SCHEMA_VERSION } from '../packages/theme/src/types.ts';
-import { TOKEN_SCHEMA } from '../packages/theme/src/schema.ts';
+import { TOKEN_SCHEMA, FONTS } from '../packages/theme/src/schema.ts';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const write = (rel: string, contents: string) => {
@@ -136,9 +136,79 @@ function buildReservedTokens(): string {
   ].join('\n');
 }
 
+// ── font-packages.generated.js ───────────────────────────────────────────────
+// The installable fonts (family → Fontsource package + import recipe). Emitted
+// as plain JS so the zero-dep CLI bundles it for `veneerui add fonts`. Self-hosted
+// faces (no pkg, e.g. MS Sans Serif) are omitted — they can't be `add`ed.
+function buildFontPackages(): string {
+  const installable = FONTS.filter((f) => f.pkg).map((f) => ({
+    family: f.family,
+    pkg: f.pkg,
+    imports: f.imports ?? [],
+    ...(f.note ? { note: f.note } : {}),
+  }));
+  return [
+    '// AUTO-GENERATED from packages/theme/src/schema.ts by scripts/generate-theme.ts — do not edit.',
+    `export const FONT_PACKAGES = Object.freeze(${JSON.stringify(installable, null, 2)});`,
+    '',
+  ].join('\n');
+}
+
+// ── docs/fonts.md ────────────────────────────────────────────────────────────
+function buildFontsDoc(): string {
+  const row = (f: (typeof FONTS)[number]) => {
+    const name = [f.family, ...(f.aliases ?? [])].map((n) => `\`${n}\``).join(', ');
+    const install = f.pkg ? `\`npm i ${f.pkg}\`` : '— (self-hosted)';
+    const imp = (f.imports ?? []).map((i) => `\`${i}\``).join('<br>') || (f.note ?? '—');
+    return `| ${name} | ${install} | ${imp} |`;
+  };
+  return [
+    '<!-- AUTO-GENERATED from packages/theme/src/schema.ts by scripts/generate-theme.ts — do not edit. -->',
+    '',
+    '# Fonts',
+    '',
+    'A theme can only **name** a font; it can never load one (the validator blocks',
+    '`url()`, so a theme is inert data). That means **the app is responsible for',
+    'loading every family its themes name** — and the family string in the theme',
+    "must match a loaded font *exactly*. This is the one genuinely fiddly part of",
+    'adoption, so the rules are spelled out below.',
+    '',
+    '## The one that bites everyone: `font-sans`',
+    '',
+    "Body text must be driven by the **`font-sans` token** (the `font-sans` utility,",
+    'or letting it inherit). If you force a font the framework supplies — e.g.',
+    "Next's `next/font` via `<body className={geist.className}>` — that hard-coded",
+    'family wins over the token and **silently defeats all font theming**. Drop the',
+    'framework font class from `<body>` and let `font-sans` flow through.',
+    '',
+    'Veneer\'s own default `font-sans` is `\'Inter Variable\'`; if you never load Inter',
+    "(see below) even the built-in themes fall back to system-ui. Run `veneerui add",
+    'fonts` to load the full bundled set.',
+    '',
+    '## Bundled families ↔ Fontsource packages',
+    '',
+    'Themes may only name the families below (case-insensitive) plus the CSS generic',
+    'keywords. The reliable way to load each is its [Fontsource](https://fontsource.org)',
+    'package — the family name a theme uses must match Fontsource\'s, which is why the',
+    'mapping is exact:',
+    '',
+    '| Family (+ aliases) | Install | Import |',
+    '|---|---|---|',
+    ...FONTS.map(row),
+    '',
+    '`veneerui add fonts` prints the install command and import lines for the whole',
+    'set. Import the specifiers in your app entry (Vite: `src/main.tsx`; Next: the',
+    'root `layout.tsx` or your global CSS via `@import`). Variable packages ship one',
+    'file; static ones (IBM Plex Mono) need a line per weight.',
+    '',
+  ].join('\n');
+}
+
 console.log('Generating theme artifacts from TOKEN_SCHEMA…');
 write('packages/theme/tokens.generated.css', buildCss());
 write('packages/theme/theme-v1.json', buildJsonSchema());
 write('docs/schema-reference.md', buildReference());
 write('packages/lint-core/reserved-tokens.generated.js', buildReservedTokens());
-console.log(`Done — ${TOKEN_SCHEMA.length} tokens.`);
+write('packages/lint-core/font-packages.generated.js', buildFontPackages());
+write('docs/fonts.md', buildFontsDoc());
+console.log(`Done — ${TOKEN_SCHEMA.length} tokens, ${FONTS.length} fonts.`);

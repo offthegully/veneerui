@@ -13,7 +13,12 @@ does the wiring for you, or do the four steps by hand.
 npm i @offthegully/veneerui
 npx veneerui init            # patches your CSS + vite.config, prints the provider step
 npx veneerui add switcher    # copies a ThemeSwitcher into src/components
+npx veneerui add fonts       # prints the Fontsource install + imports for the built-in themes
 ```
+
+> **Fonts:** a theme only *names* a font — your app loads it. `veneerui add fonts`
+> prints the `@fontsource` install + `import` lines (drop them in `src/main.tsx`),
+> and body text must use the `font-sans` token. See the [fonts guide](./fonts.md).
 
 `veneerui init` is idempotent and supports `--dry-run`. It:
 

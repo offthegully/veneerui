@@ -42,3 +42,13 @@ declare module '@veneerui/lint-core/conversions' {
 declare module '@veneerui/lint-core/reserved-tokens' {
   export const RESERVED_TOKEN_NAMES: readonly string[];
 }
+
+declare module '@veneerui/lint-core/font-packages' {
+  export interface FontPackage {
+    family: string;
+    pkg: string;
+    imports: string[];
+    note?: string;
+  }
+  export const FONT_PACKAGES: readonly FontPackage[];
+}

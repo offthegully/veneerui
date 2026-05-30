@@ -11,6 +11,7 @@ import { runAdd } from './add';
 import { runList } from './list';
 import { runDoctor } from './doctor';
 import { runMigrate } from './migrate';
+import { runFonts } from './fonts';
 
 interface Parsed {
   command?: string;
@@ -63,6 +64,7 @@ const HELP = `veneerui — add Veneer theming to an existing Vite or Next + Tail
 Usage:
   veneerui init [--dry-run] [--cwd <path>]      Wire Veneer into this project
   veneerui add <component…> [--force] [--dir d] Copy UI components into your project
+  veneerui add fonts                            Print install + imports for the built-in themes' fonts
   veneerui doctor [--cwd <path>]                Report how much of your UI is themeable today
   veneerui migrate [--dry-run] [--cwd <path>]   Rewrite the mechanical gotchas to themeable tokens
   veneerui list                                 List available components
@@ -72,6 +74,7 @@ Examples:
   npx veneerui init
   npx veneerui add switcher
   npx veneerui add switcher banner --dir src/ui
+  npx veneerui add fonts
   npx veneerui doctor
   npx veneerui migrate --dry-run
 
@@ -95,7 +98,10 @@ function main(): void {
       runInit({ root: p.root, dryRun: p.dryRun });
       break;
     case 'add':
-      runAdd(p.positionals, { root: p.root, dir: p.dir, force: p.force, dryRun: p.dryRun });
+      // `add fonts` is a distinct flow (install packages + import lines), not a
+      // component copy — route it before the registry resolver.
+      if (p.positionals[0] === 'fonts') runFonts({ root: p.root });
+      else runAdd(p.positionals, { root: p.root, dir: p.dir, force: p.force, dryRun: p.dryRun });
       break;
     case 'doctor':
       runDoctor({ root: p.root });

@@ -198,20 +198,55 @@ export const TOKEN_BY_NAME: ReadonlyMap<string, TokenDef> = new Map(
 
 /**
  * Font families a theme is allowed to name. The `url()` blacklist means a theme
- * can never *load* a font, so it may only reference what the app bundles (loaded
- * in main.tsx) plus CSS generic keywords. Compared case-insensitively.
+ * can never *load* a font, so it may only reference what the app bundles plus CSS
+ * generic keywords. Compared case-insensitively.
+ *
+ * Each bundled font records HOW an app loads it — the Fontsource npm package and
+ * the exact import specifier(s) — so the single hard part of adopting a theme
+ * ("make 'Fraunces Variable' actually resolve") is data, not tribal knowledge.
+ * `veneerui add fonts` and docs/fonts.md are both driven from this list (the CLI
+ * via the generated packages/lint-core/font-packages.generated.js).
  */
-const BUNDLED_FONT_FAMILIES = [
-  'Inter Variable', 'Inter',
-  'Source Serif 4 Variable', 'Source Serif 4',
-  'JetBrains Mono Variable', 'JetBrains Mono',
-  'Fraunces Variable', 'Fraunces',
-  'Archivo Black',
-  'MS Sans Serif',
-  'Orbitron Variable', 'Orbitron',
-  'Quicksand Variable', 'Quicksand',
-  'EB Garamond Variable', 'EB Garamond',
-  'IBM Plex Mono',
+export interface BundledFont {
+  /** Canonical family a theme's font token names (e.g. `'Inter Variable'`). */
+  family: string;
+  /** Other accepted spellings (e.g. the non-variable name). */
+  aliases?: string[];
+  /** Fontsource npm package to install; omitted when the face is self-hosted. */
+  pkg?: string;
+  /** Exact import specifier(s) — JS `import '…'` or CSS `@import "…"`. */
+  imports?: string[];
+  /** Loading caveat worth surfacing (static weights, italics, self-hosting). */
+  note?: string;
+}
+
+const BUNDLED_FONTS: BundledFont[] = [
+  { family: 'Inter Variable', aliases: ['Inter'], pkg: '@fontsource-variable/inter', imports: ['@fontsource-variable/inter'] },
+  { family: 'Source Serif 4 Variable', aliases: ['Source Serif 4'], pkg: '@fontsource-variable/source-serif-4', imports: ['@fontsource-variable/source-serif-4'] },
+  { family: 'JetBrains Mono Variable', aliases: ['JetBrains Mono'], pkg: '@fontsource-variable/jetbrains-mono', imports: ['@fontsource-variable/jetbrains-mono'] },
+  { family: 'Fraunces Variable', aliases: ['Fraunces'], pkg: '@fontsource-variable/fraunces', imports: ['@fontsource-variable/fraunces'] },
+  { family: 'Archivo Black', pkg: '@fontsource/archivo-black', imports: ['@fontsource/archivo-black'], note: 'Single weight (900).' },
+  { family: 'Orbitron Variable', aliases: ['Orbitron'], pkg: '@fontsource-variable/orbitron', imports: ['@fontsource-variable/orbitron'] },
+  { family: 'Quicksand Variable', aliases: ['Quicksand'], pkg: '@fontsource-variable/quicksand', imports: ['@fontsource-variable/quicksand'] },
+  {
+    family: 'EB Garamond Variable',
+    aliases: ['EB Garamond'],
+    pkg: '@fontsource-variable/eb-garamond',
+    imports: ['@fontsource-variable/eb-garamond', '@fontsource-variable/eb-garamond/wght-italic.css'],
+    note: 'Variable; add the italic axis import if your theme uses italics.',
+  },
+  {
+    family: 'IBM Plex Mono',
+    pkg: '@fontsource/ibm-plex-mono',
+    imports: [
+      '@fontsource/ibm-plex-mono/400.css',
+      '@fontsource/ibm-plex-mono/500.css',
+      '@fontsource/ibm-plex-mono/600.css',
+      '@fontsource/ibm-plex-mono/400-italic.css',
+    ],
+    note: 'Static (no variable build) — import each weight you use.',
+  },
+  { family: 'MS Sans Serif', note: 'Windows 95 theme — self-host the face; not on Fontsource.' },
 ];
 
 const GENERIC_FONT_KEYWORDS = [
@@ -219,6 +254,12 @@ const GENERIC_FONT_KEYWORDS = [
   'sans-serif', 'serif', 'monospace', 'cursive', 'fantasy', 'math', 'emoji',
 ];
 
+/** Every bundled font, with its Fontsource package + import recipe. */
+export const FONTS: readonly BundledFont[] = BUNDLED_FONTS;
+
 export const ALLOWED_FONT_FAMILIES: ReadonlySet<string> = new Set(
-  [...BUNDLED_FONT_FAMILIES, ...GENERIC_FONT_KEYWORDS].map((f) => f.toLowerCase()),
+  [
+    ...BUNDLED_FONTS.flatMap((f) => [f.family, ...(f.aliases ?? [])]),
+    ...GENERIC_FONT_KEYWORDS,
+  ].map((f) => f.toLowerCase()),
 );
