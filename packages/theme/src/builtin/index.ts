@@ -12,9 +12,17 @@
 import { SCHEMA_VERSION, type Theme } from '../types';
 import light from './default-light.json';
 import dark from './default-dark.json';
-import highContrast from './high-contrast.json';
-import editorial from './editorial.json';
 import brutalist from './brutalist.json';
+import editorial from './editorial.json';
+import glassmorphic from './glassmorphic.json';
+import highContrast from './high-contrast.json';
+import monospaced from './monospaced.json';
+import neonArcade from './neon-arcade.json';
+import neumorphic from './neumorphic.json';
+import sunsetPaper from './sunset-paper.json';
+import terminal from './terminal.json';
+import warmLibrary from './warm-library.json';
+import windows95 from './windows-95.json';
 
 /** The authored slice of a theme, as stored in the JSON files. */
 interface BuiltinSource {
@@ -45,9 +53,17 @@ export const DEFAULT_THEME_ID = 'default-light';
 export const BUILTIN_THEMES: Theme[] = [
   builtin(DEFAULT_THEME_ID, light),
   builtin('default-dark', dark),
-  builtin('high-contrast', highContrast),
-  builtin('editorial', editorial),
   builtin('brutalist', brutalist),
+  builtin('editorial', editorial),
+  builtin('glassmorphic', glassmorphic),
+  builtin('high-contrast', highContrast),
+  builtin('monospaced', monospaced),
+  builtin('neon-arcade', neonArcade),
+  builtin('neumorphic', neumorphic),
+  builtin('sunset-paper', sunsetPaper),
+  builtin('terminal', terminal),
+  builtin('warm-library', warmLibrary),
+  builtin('windows-95', windows95),
 ];
 
 /** Built-in ids can't be deleted from the library. */
