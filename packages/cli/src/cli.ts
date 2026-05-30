@@ -9,6 +9,8 @@ import { fileURLToPath } from 'node:url';
 import { runInit } from './init';
 import { runAdd } from './add';
 import { runList } from './list';
+import { runDoctor } from './doctor';
+import { runMigrate } from './migrate';
 
 interface Parsed {
   command?: string;
@@ -61,6 +63,8 @@ const HELP = `veneerui — add Veneer theming to an existing Vite or Next + Tail
 Usage:
   veneerui init [--dry-run] [--cwd <path>]      Wire Veneer into this project
   veneerui add <component…> [--force] [--dir d] Copy UI components into your project
+  veneerui doctor [--cwd <path>]                Report how much of your UI is themeable today
+  veneerui migrate [--dry-run] [--cwd <path>]   Rewrite the mechanical gotchas to themeable tokens
   veneerui list                                 List available components
   veneerui --version | --help
 
@@ -68,6 +72,8 @@ Examples:
   npx veneerui init
   npx veneerui add switcher
   npx veneerui add switcher banner --dir src/ui
+  npx veneerui doctor
+  npx veneerui migrate --dry-run
 
 Every change init makes is also documented in docs/integration-{vite,next}.md,
 so you can always do it by hand.`;
@@ -90,6 +96,12 @@ function main(): void {
       break;
     case 'add':
       runAdd(p.positionals, { root: p.root, dir: p.dir, force: p.force, dryRun: p.dryRun });
+      break;
+    case 'doctor':
+      runDoctor({ root: p.root });
+      break;
+    case 'migrate':
+      runMigrate({ root: p.root, dryRun: p.dryRun });
       break;
     case 'list':
       runList();

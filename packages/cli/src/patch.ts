@@ -60,10 +60,15 @@ export function nextAntiFlashSnippet(): string {
   return [
     "import { AntiFlashScript } from '@offthegully/veneerui/next'",
     '',
-    '// in app/layout.tsx, inside <html>:',
-    '<head>',
-    '  <AntiFlashScript />',
-    '</head>',
+    '// in app/layout.tsx. suppressHydrationWarning on <html> is REQUIRED: the',
+    '// script sets theme CSS variables on <html> before React hydrates, which',
+    '// would otherwise trip a hydration warning on the html element.',
+    '<html lang="en" suppressHydrationWarning>',
+    '  <head>',
+    '    <AntiFlashScript />',
+    '  </head>',
+    '  ...',
+    '</html>',
   ].join('\n');
 }
 
@@ -81,8 +86,9 @@ function customThemesHint(framework: 'vite' | 'next'): string[] {
     '',
     '// To ship your own themes instead of the built-ins, define them once and',
     '// pass them in — then pass the same default to the anti-flash wiring so a',
-    '// first-ever visit paints your default with no flash:',
-    "//   import { defineTheme } from '@offthegully/veneerui'",
+    '// first-ever visit paints your default with no flash. Import defineTheme',
+    '// from the side-effect-free /themes subpath so it stays server-safe:',
+    "//   import { defineTheme } from '@offthegully/veneerui/themes'",
     "//   const themes = [defineTheme({ id: 'brand', name: 'Brand', tokens: { /* ... */ } })]",
     '//   <ThemeProvider themes={themes} defaultThemeId="brand">',
     antiFlash,

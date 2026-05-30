@@ -14,7 +14,7 @@
     "gen:registry": "tsx scripts/build-registry.ts",
     "build:theme": "npm run gen:theme && npm run build -w @offthegully/veneerui",
     "build:cli": "npm run gen:registry && npm run build -w veneerui",
-    "build": "npm run build:theme && npm run build -w playground && npm run build:cli",
+    "build": "npm run build:theme && npm run build -w playground && npm run build:cli && npm run build -w eslint-plugin-veneer",
     "dev": "npm run build:theme && npm run dev -w playground",
     "preview": "npm run preview -w playground",
     "start": "npm run preview -w playground",

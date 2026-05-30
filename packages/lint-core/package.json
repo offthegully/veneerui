@@ -1,0 +1,23 @@
+{
+  "name": "@veneerui/lint-core",
+  "version": "0.0.0",
+  "description": "Internal shared spec — the hardcoded-value detector, the deterministic token-conversion table, and the reserved token-name list. Consumed by the playground ESLint rule, eslint-plugin-veneer, and the veneerui CLI (doctor + migrate). Plain JS, never published.",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./detect": "./detect.js",
+    "./conversions": "./conversions.js",
+    "./reserved-tokens": "./reserved-tokens.generated.js"
+  },
+  "files": [
+    "detect.js",
+    "conversions.js",
+    "reserved-tokens.generated.js"
+  ],
+  "scripts": {
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "vitest": "^4.1.7"
+  }
+}

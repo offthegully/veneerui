@@ -31,4 +31,19 @@ describe('registry', () => {
     // sibling component imports stay relative so they land working together
     expect(switcher).toContain("from './ImportPanel'");
   });
+
+  // The registry stays framework-neutral: no `'use client'` directive baked in.
+  // `veneerui add` injects it only for a Next target (see add.ts /
+  // withClientDirective), so Vite/Remix/CSR copies stay pristine.
+  it('ships framework-neutral source — no baked-in "use client" directive', () => {
+    for (const c of components) {
+      const src = readComponentSource(c.file);
+      expect(src.startsWith("'use client'"), `${c.file} must not bake in the directive`).toBe(false);
+    }
+  });
+
+  it('gates the switcher trigger on hydrated so SSR has a neutral first paint', () => {
+    const switcher = readComponentSource('ThemeSwitcher.tsx');
+    expect(switcher).toContain('hydrated');
+  });
 });

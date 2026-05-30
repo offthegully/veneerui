@@ -61,6 +61,8 @@ Tailwind v4 project and add Veneer on top, the way you'd add shadcn/ui.
 npm i @offthegully/veneerui
 npx veneerui init            # @import the tokens + wire the anti-flash, then print the provider step
 npx veneerui add switcher    # copy a ThemeSwitcher into your components
+npx veneerui doctor          # report how much of your existing UI is themeable today
+npx veneerui migrate         # rewrite the mechanical hardcoded values to tokens
 ```
 
 The one required interlock is a single line of CSS — `@import
@@ -73,13 +75,23 @@ doesn't scan `node_modules`.
 Step-by-step, CLI and manual:
 **[Vite guide](./docs/integration-vite.md)** · **[Next.js guide](./docs/integration-next.md)**.
 
+> **Next.js (App Router):** Veneer is SSR-safe. `init` adds
+> `suppressHydrationWarning` to `<html>` (the anti-flash script sets theme
+> variables before hydration), `add` prepends `'use client'` to copied
+> components on a Next project, and the bundled `ThemeSwitcher` holds a
+> theme-neutral first paint until mount so there's no hydration mismatch. To
+> compute a default theme in a Server Component, import from the side-effect-free
+> [`@offthegully/veneerui/themes`](./docs/integration-next.md#shipping-your-own-themes)
+> subpath — the package root pulls in React context and can't be imported server-side.
+
 ### Ship your own themes
 
 To ship *your* themes instead of the built-ins, author them with `defineTheme`
 and pass them to the provider:
 
 ```tsx
-import { ThemeProvider, defineTheme } from '@offthegully/veneerui'
+import { ThemeProvider } from '@offthegully/veneerui'
+import { defineTheme } from '@offthegully/veneerui/themes' // server-safe subpath
 
 const themes = [
   defineTheme({ id: 'brand', name: 'Brand', tokens: { 'color-primary': '#5b21b6', /* … */ } }),
@@ -92,6 +104,62 @@ const themes = [
 A theme can change as much or as little as you like — only colors for a quick
 re-skin, or radius, shadow, border width, type, and motion for a full redesign.
 Anything you omit falls back to the schema default.
+
+---
+
+## Migrate an existing app
+
+Wiring Veneer in is the easy 10%. The real work is **moving your existing styles
+onto tokens** — Veneer only re-skins elements that use token utilities
+(`bg-surface`, `text-text`, `border-border`), so a freshly-wired app mostly won't
+change until its hardcoded colors, baked shadows, and fixed sizes are migrated.
+Three tools make that a measured task instead of a surprise.
+
+**See how far you have to go.** `veneerui doctor` scans your project and reports
+roughly what share of your UI is themeable today, broken down by what's blocking it:
+
+```text
+$ npx veneerui doctor
+  ~31% themeable — 9 of 13 file(s) still hold 37 un-themed island(s):
+       17  border-width
+       11  box-shadow
+        6  opacity
+        3  arbitrary-size
+  ⚠ 2 @theme token collision(s) — these silently shadow Veneer's tokens:
+       app/globals.css: --color-primary
+```
+
+That last warning is the most common adoption trap: a **shadcn** (or other)
+`@theme` block redefining a token name Veneer owns silently shadows it, so
+`bg-primary` half-works. `doctor` calls those out by name.
+
+**Do the mechanical 80%.** `veneerui migrate` rewrites the deterministic gotchas
+in place — the ones that *look* themeable but bake at build time:
+
+| Hardcoded | Veneer-themeable form |
+|---|---|
+| `shadow-lg` | `[box-shadow:var(--shadow-lg)]` |
+| `border`, `border-2` | `[border-width:var(--border-width-default)] border-border` |
+| `duration-200` | `duration-[calc(var(--duration-default)*1ms)]` |
+
+It never guesses the judgment calls — which palette maps to `bg-primary` vs
+`bg-accent`, whether a surface is raised or sunken, which scale step an arbitrary
+size rounds to — it **flags** those with a `file:line` for you to finish. Run
+`veneerui migrate --dry-run` to preview.
+
+**Keep it from regressing.** Add
+[`eslint-plugin-veneer`](./packages/eslint-plugin) — the same hardcoded-color
+detector `doctor` uses, enforced in your editor and CI so the next `bg-blue-500`
+fails the build instead of quietly adding an un-themed island.
+
+```js
+// eslint.config.js
+import veneer from 'eslint-plugin-veneer'
+export default [veneer.configs.recommended]
+```
+
+The token vocabulary and the full "looks right but breaks theming" table that
+these tools encode live in **[AGENTS.md](./AGENTS.md)**.
 
 ### Let users bring their own
 
@@ -140,9 +208,12 @@ attack surface.
 
 ## Local development
 
-This is an npm **workspace** monorepo (`packages/theme`, `packages/cli`,
-`apps/playground`). Clone it to hack on Veneer itself or to preview themes against
-the live playground. **Prerequisites:** Node 20+ and npm.
+This is an npm **workspace** monorepo: `packages/theme` (the `@offthegully/veneerui`
+runtime), `packages/cli` (the `veneerui` CLI), `packages/eslint-plugin`
+(`eslint-plugin-veneer`), `packages/lint-core` (the private, shared
+hardcoded-value detector + conversion table the CLI/plugin/conformance test all
+reuse), and `apps/playground`. Clone it to hack on Veneer itself or to preview
+themes against the live playground. **Prerequisites:** Node 20+ and npm.
 
 ```sh
 git clone https://github.com/offthegully/veneerui.git && cd veneer
@@ -177,6 +248,8 @@ components.
 
 - **Add Veneer to your app** — [Vite](./docs/integration-vite.md) ·
   [Next.js](./docs/integration-next.md)
+- **Migrate an existing app** — `veneerui doctor` / `veneerui migrate` and
+  [`eslint-plugin-veneer`](./packages/eslint-plugin)
 - **Author a theme** — the [authoring guide](./docs/authoring-guide.md) and the
   generated [token reference](./docs/schema-reference.md)
 - **The gallery** — [example themes](./gallery/README.md) and how to

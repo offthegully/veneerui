@@ -7,6 +7,14 @@
  * Styled entirely with semantic token utilities (bg-surface-*, text-text-*,
  * border-border, rounded-md, shadow-lg, …) so it re-skins with every theme —
  * it's the first component to follow the Phase 2 adoption contract.
+ *
+ * SSR-safe: the trigger renders theme *identity* (the current name, its
+ * colour swatches, the shuffle badge), all of which come from client-only state
+ * (localStorage / a per-load shuffle roll). It gates them on `useTheme().hydrated`
+ * so the server and first client render emit an identical, theme-neutral trigger
+ * — then reveals the real theme after mount. Without the gate, an SSR host hits a
+ * React hydration mismatch on first paint. (On a Next project, `veneerui add`
+ * prepends the required `'use client'` directive when it copies this in.)
  */
 import { useEffect, useRef, useState } from 'react';
 import { useTheme, tokenValue, type Theme } from '@offthegully/veneerui';
@@ -30,6 +38,25 @@ function Swatches({ theme }: { theme: Theme }) {
 }
 
 /**
+ * The pre-hydration trigger swatch. Same shape as <Swatches>, but driven by
+ * token *utilities* (bg-surface/bg-primary/bg-text) instead of a specific theme's
+ * inline colour values — so its markup is identical on the server and the first
+ * client render. The CSS variables behind those utilities are applied to the DOM
+ * by the anti-flash script, not React, so they never participate in hydration.
+ */
+function PlaceholderSwatch() {
+  return (
+    <span
+      aria-hidden="true"
+      className="inline-flex size-6 shrink-0 items-center justify-center rounded-full border border-border bg-surface"
+    >
+      <span className="size-3 rounded-full bg-primary" />
+      <span className="ml-0.5 size-1.5 rounded-full bg-text" />
+    </span>
+  );
+}
+
+/**
  * `header` (default): square-ish button, dropdown opens downward — for the bar at
  * the top. `floating`: a rounded pill with stronger elevation whose dropdown opens
  * *upward*, for the control fixed to the bottom-right corner.
@@ -37,7 +64,7 @@ function Swatches({ theme }: { theme: Theme }) {
 type SwitcherVariant = 'header' | 'floating';
 
 export function ThemeSwitcher({ variant = 'header' }: { variant?: SwitcherVariant } = {}) {
-  const { enabledThemes, currentId, current, pinned, setCurrent, shuffle } = useTheme();
+  const { enabledThemes, currentId, current, pinned, hydrated, setCurrent, shuffle } = useTheme();
   const floating = variant === 'floating';
   const [open, setOpen] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
@@ -76,11 +103,14 @@ export function ThemeSwitcher({ variant = 'header' }: { variant?: SwitcherVarian
           floating ? 'rounded-full shadow-lg' : 'rounded-md shadow-sm'
         }`}
       >
-        <Swatches theme={current} />
-        <span>{current.name}</span>
+        {/* Identity (swatches / name / shuffle badge) is client-only state; hold a
+            theme-neutral trigger until mount so the server and first client render
+            match, then reveal the real theme. See the file header. */}
+        {hydrated ? <Swatches theme={current} /> : <PlaceholderSwatch />}
+        <span>{hydrated ? current.name : 'Theme'}</span>
         {/* When unpinned the theme re-rolls each visit — flag it so "it changed" reads
             as intentional, not a bug. Pick one from the list to lock it in. */}
-        {!pinned && (
+        {hydrated && !pinned && (
           <span aria-label="Shuffling — pick a theme to keep it" title="Shuffling — pick a theme to keep it">
             🎲
           </span>

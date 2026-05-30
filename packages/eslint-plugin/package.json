@@ -1,0 +1,36 @@
+{
+  "name": "eslint-plugin-veneer",
+  "version": "0.1.0",
+  "description": "ESLint rule that flags hardcoded colors so every surface stays themeable by Veneer tokens.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/offthegully/veneerui.git",
+    "directory": "packages/eslint-plugin"
+  },
+  "homepage": "https://veneerui.dev",
+  "type": "module",
+  "main": "./dist/index.js",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "test": "vitest run"
+  },
+  "peerDependencies": {
+    "eslint": ">=9"
+  },
+  "devDependencies": {
+    "@veneerui/lint-core": "*",
+    "eslint": "^10.3.0",
+    "tsup": "^8.5.0",
+    "vitest": "^4.1.7"
+  }
+}

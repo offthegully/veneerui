@@ -13,8 +13,12 @@ files are too project-shaped to patch blindly).
 ```sh
 npm i @offthegully/veneerui
 npx veneerui init            # adds the token @import, prints the head + provider steps
-npx veneerui add switcher    # copies a ThemeSwitcher into src/components
+npx veneerui add switcher    # copies a ThemeSwitcher (with 'use client') into src/components
 ```
+
+When the target is a Next project, `veneerui add` prepends `'use client'` to the
+copied components (they use hooks, so RSC requires it). On Vite/Remix/CSR it
+leaves them directive-free, since the directive is inert there.
 
 `veneerui init` detects Next, adds `@import "@offthegully/veneerui/tokens.css";` to your
 global stylesheet, and prints the two snippets below for you to paste.
@@ -50,7 +54,7 @@ import { AntiFlashScript } from '@offthegully/veneerui/next'
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
         <AntiFlashScript />
       </head>
@@ -59,6 +63,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   )
 }
 ```
+
+`suppressHydrationWarning` on `<html>` is **required**. The script sets the saved
+theme's CSS variables on the `<html>` element *before* React hydrates, so the
+server-rendered `<html>` and the hydrated one differ — without the attribute,
+React logs a hydration warning for it. The attribute is one level deep (it does
+not suppress warnings for `<body>` or anything inside), and the only thing it
+silences is exactly this intended pre-hydration mutation.
 
 ### 4. Wrap the app in the provider (client boundary)
 
@@ -145,17 +156,28 @@ theme-aware components.
 
 By default `<ThemeProvider>` ships Veneer's built-in themes. To ship *your own*
 set, author them with `defineTheme` (it fills in `schemaVersion`, `source`,
-`version`, and author) in a module-level constant and pass them to the provider:
+`version`, and author) in a module-level constant and pass them to the provider.
+
+Import `defineTheme` from the **`/themes` subpath**, not the package root:
 
 ```tsx
 // app/themes.ts
-import { defineTheme } from '@offthegully/veneerui'
+import { defineTheme } from '@offthegully/veneerui/themes'
 
 export const themes = [
   defineTheme({ id: 'brand', name: 'Brand', tokens: { 'color-primary': '#5b21b6', /* ... */ } }),
   defineTheme({ id: 'brand-dark', name: 'Brand Dark', tokens: { /* ... */ } }),
 ]
 ```
+
+> **Why the subpath?** This `app/themes.ts` is imported by both the client
+> provider *and* `app/layout.tsx` (a Server Component, for the anti-flash
+> default below). The package root (`@offthegully/veneerui`) re-exports the
+> `ThemeProvider`/`useTheme` context, which calls `createContext` at module load
+> — importing it from a Server Component throws *"createContext only works in
+> Client Components"*. `@offthegully/veneerui/themes` is a side-effect-free data
+> slice (`defineTheme`, `BUILTIN_THEMES`, the token schema, the types) with no
+> React context, so it's safe to import anywhere — server or client.
 
 ```tsx
 // app/providers.tsx

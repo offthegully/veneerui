@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { addTokensImport, addViteAntiFlash, providerSnippet, TOKENS_IMPORT } from './patch';
+import {
+  addTokensImport,
+  addViteAntiFlash,
+  nextAntiFlashSnippet,
+  providerSnippet,
+  TOKENS_IMPORT,
+} from './patch';
 
 describe('addTokensImport', () => {
   it('inserts the token @import right after the tailwindcss import', () => {
@@ -52,6 +58,20 @@ describe('addViteAntiFlash', () => {
     const out = addViteAntiFlash('export default {}');
     expect(out.changed).toBe(false);
     expect(out.reason).toBeTruthy();
+  });
+});
+
+describe('nextAntiFlashSnippet', () => {
+  it('renders the AntiFlashScript inside <head>', () => {
+    const out = nextAntiFlashSnippet();
+    expect(out).toContain("import { AntiFlashScript } from '@offthegully/veneerui/next'");
+    expect(out).toContain('<AntiFlashScript />');
+  });
+
+  it('requires suppressHydrationWarning on <html> (the script mutates it pre-hydration)', () => {
+    const out = nextAntiFlashSnippet();
+    expect(out).toContain('suppressHydrationWarning');
+    expect(out).toMatch(/<html[^>]*suppressHydrationWarning/);
   });
 });
 

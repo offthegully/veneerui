@@ -6,6 +6,9 @@
  *                                            autocomplete; shipped as
  *                                            @offthegully/veneerui/theme-v1.json)
  *   - docs/schema-reference.md              (human reference, grouped by category)
+ *   - packages/lint-core/reserved-tokens.generated.js
+ *                                           (the token names doctor warns about
+ *                                            when a shadcn @theme block shadows them)
  *
  * Run: `npm run gen:theme`. CI re-runs it and fails if the working tree changed,
  * which guarantees the artifacts always match the schema.
@@ -117,8 +120,25 @@ function buildReference(): string {
   return out.join('\n');
 }
 
+// ── reserved-tokens.generated.js ─────────────────────────────────────────────
+// The bare token names (no leading `--`) Veneer owns. Emitted as plain JS so the
+// zero-dep CLI bundles it and eslint-plugin-veneer can require it without a build
+// step. `veneerui doctor` warns when a project's @theme block redefines any of
+// these (the common shadcn coexistence trap).
+function buildReservedTokens(): string {
+  const names = TOKEN_SCHEMA.map((t) => t.name);
+  return [
+    '// AUTO-GENERATED from packages/theme/src/schema.ts by scripts/generate-theme.ts — do not edit.',
+    'export const RESERVED_TOKEN_NAMES = Object.freeze([',
+    ...names.map((n) => `  ${JSON.stringify(n)},`),
+    ']);',
+    '',
+  ].join('\n');
+}
+
 console.log('Generating theme artifacts from TOKEN_SCHEMA…');
 write('packages/theme/tokens.generated.css', buildCss());
 write('packages/theme/theme-v1.json', buildJsonSchema());
 write('docs/schema-reference.md', buildReference());
+write('packages/lint-core/reserved-tokens.generated.js', buildReservedTokens());
 console.log(`Done — ${TOKEN_SCHEMA.length} tokens.`);

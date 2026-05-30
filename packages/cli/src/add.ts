@@ -6,8 +6,28 @@
  */
 import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { detect } from './detect';
+import { detect, type Framework } from './detect';
 import { loadManifest, readComponentSource, resolveWithDeps } from './registry';
+
+/**
+ * Hooks/state that make a component a client component under React Server
+ * Components. The registry ships framework-neutral source (no directive); only
+ * Next's RSC compiler needs `'use client'`, and it's inert everywhere else, so
+ * we inject it only when the target project is Next — keeping Vite/Remix/CSR
+ * copies pristine.
+ */
+const CLIENT_HOOK_RE = /\buse(?:Theme|State|Effect|Ref|Id|LayoutEffect|Memo|Callback|Reducer|Context)\b/;
+
+/**
+ * Prepend `'use client'` to a copied component for a Next target if it uses
+ * hooks and doesn't already declare a directive. Pure and idempotent.
+ */
+export function withClientDirective(source: string, framework: Framework): string {
+  if (framework !== 'next') return source;
+  if (/^\s*['"]use client['"]/.test(source)) return source;
+  if (!CLIENT_HOOK_RE.test(source)) return source;
+  return `'use client';\n\n${source}`;
+}
 
 export interface AddOptions {
   root: string;
@@ -26,13 +46,15 @@ export function runAdd(names: string[], opts: AddOptions): void {
   const components = loadManifest();
   const resolved = resolveWithDeps(names, components);
 
-  const targetRel = opts.dir ?? detect(opts.root).componentsDir;
+  const det = detect(opts.root);
+  const targetRel = opts.dir ?? det.componentsDir;
   const targetAbs = join(opts.root, targetRel);
   if (!opts.dryRun) mkdirSync(targetAbs, { recursive: true });
 
   const extra = resolved.filter((c) => !names.includes(c.name));
   if (extra.length) log(`Pulling in dependencies: ${extra.map((c) => c.name).join(', ')}`);
 
+  let injectedClient = false;
   for (const c of resolved) {
     const destRel = `${targetRel}/${c.file}`;
     const destAbs = join(targetAbs, c.file);
@@ -44,9 +66,13 @@ export function runAdd(names: string[], opts: AddOptions): void {
       log(`• would write  ${destRel}`);
       continue;
     }
-    writeFileSync(destAbs, readComponentSource(c.file));
+    const source = readComponentSource(c.file);
+    const out = withClientDirective(source, det.framework);
+    if (out !== source) injectedClient = true;
+    writeFileSync(destAbs, out);
     log(`✓ ${destRel}`);
   }
 
+  if (injectedClient) log("\nAdded 'use client' for Next — these components use hooks (inert on other setups).");
   log('\nThese import from "@offthegully/veneerui" — ensure it is installed (`npm i @offthegully/veneerui`).');
 }

@@ -110,6 +110,12 @@ export function runInit(opts: InitOptions): void {
   }
 
   log('\nNext: `npx veneerui add switcher` to copy a theme switcher into ' + det.componentsDir + '.');
+  // Reality-check: Veneer only re-skins elements already on token utilities, so a
+  // freshly-wired app mostly won't change yet. Point at doctor so the remaining
+  // migration work is a number, not a surprise.
+  log('\nHeads up: Veneer only themes elements that use token utilities (bg-surface,');
+  log('text-text, …). Your existing hardcoded styles won\'t re-skin until they\'re');
+  log('migrated. Run `npx veneerui doctor` to see how much of your UI is themeable today.');
 }
 
 function indent(log: (s: string) => void, block: string): void {

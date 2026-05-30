@@ -21,6 +21,10 @@
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
     },
+    "./themes": {
+      "types": "./dist/themes.d.ts",
+      "default": "./dist/themes.js"
+    },
     "./tokens.css": "./tokens.generated.css",
     "./vite": {
       "types": "./dist/vite.d.ts",
