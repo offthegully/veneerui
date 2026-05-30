@@ -80,7 +80,7 @@ function Sample({ theme, name, kind, label }: { theme: Theme; name: string; kind
     case 'color':
       return (
         <span
-          className={`${base} border border-border`}
+          className={`${base} [border-width:var(--border-width-default)] border-border`}
           style={{ background: v(name) }}
         />
       );

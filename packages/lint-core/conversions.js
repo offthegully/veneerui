@@ -55,13 +55,16 @@ export const CONVERSIONS = [
     kind: 'border-width',
     deterministic: true,
     // Bare `border` (1px) or a fixed box-level numeric width (`border-2`) → the
-    // themeable arbitrary width plus the semantic color utility. Sided
-    // (`border-t`, `border-t-2`), colored (`border-primary`), and the
-    // already-correct `border-border` are deliberately NOT matched: sided widths
-    // need real CSS prop names (`border-top-width`) and a per-side judgment, so
-    // they're left for manual conversion.
+    // themeable arbitrary WIDTH only. We deliberately do NOT add a `border-border`
+    // color: Tailwind's `border` sets width and leaves the color to a separate
+    // `border-<color>` utility (defaulting to currentColor). So converting just
+    // the width preserves the author's exact color — whether that's `border-border`,
+    // `border-text-inverse/40`, or the currentColor default. Adding border-border
+    // here would duplicate an existing color or, worse, override it.
+    // Sided (`border-t`, `border-t-2`) and colored (`border-primary`) tokens are
+    // not matched — sided widths need real CSS prop names and a per-side judgment.
     match: new RegExp(`(${LEAD})border(?:-(?:0|2|4|8))?(?=$|[\\s"'\`])`, 'g'),
-    replace: (_m, lead) => `${lead}[border-width:var(--border-width-default)] border-border`,
+    replace: (_m, lead) => `${lead}[border-width:var(--border-width-default)]`,
   },
   {
     kind: 'duration',
@@ -75,9 +78,11 @@ export const CONVERSIONS = [
   {
     kind: 'opacity',
     deterministic: false,
-    // `opacity-50` could mean the disabled state or an overlay scrim — different
-    // tokens. Flag, don't guess.
-    match: new RegExp(`(${LEAD})opacity-\\d+\\b`, 'g'),
+    // A mid-range `opacity-50` could mean the disabled state or an overlay scrim
+    // — different tokens, so flag (don't guess). `opacity-0` / `opacity-100` are
+    // excluded: they're fully-transparent/opaque show-hide animation states, not
+    // design tokens, so converting them would be wrong.
+    match: new RegExp(`(${LEAD})opacity-(?!0\\b)(?!100\\b)\\d+\\b`, 'g'),
     suggest: 'opacity-(--opacity-disabled) or opacity-(--opacity-overlay)',
   },
   {

@@ -109,7 +109,7 @@ export function GalleryPanel({ onClose }: { onClose: () => void }) {
         aria-modal="true"
         aria-labelledby={titleId}
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-4xl rounded-xl border border-border bg-surface-overlay p-6 shadow-xl"
+        className="w-full max-w-4xl rounded-xl [border-width:var(--border-width-default)] border-border bg-surface-overlay p-6 [box-shadow:var(--shadow-xl)]"
       >
         <div className="mb-4 flex items-start justify-between gap-4">
           <div>
@@ -143,7 +143,7 @@ export function GalleryPanel({ onClose }: { onClose: () => void }) {
                 type="button"
                 onClick={() => apply(theme.id)}
                 aria-pressed={isCurrent}
-                className={`group flex flex-col gap-3 rounded-lg border bg-surface-raised p-3 text-left transition-colors hover:bg-surface-sunken ${
+                className={`group flex flex-col gap-3 rounded-lg [border-width:var(--border-width-default)] bg-surface-raised p-3 text-left transition-colors hover:bg-surface-sunken ${
                   isCurrent ? 'border-primary ring-2 ring-primary' : 'border-border'
                 }`}
               >

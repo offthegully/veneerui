@@ -16,8 +16,11 @@ describe('deterministic conversions round-trip the AGENTS.md gotchas', () => {
     ['shadow-card', '[box-shadow:var(--shadow-card)]'],
     ['inset-shadow-lg', '[box-shadow:var(--inset-shadow-lg)]'],
     ['text-shadow-glow', '[text-shadow:var(--text-shadow-glow)]'],
-    ['border p-2', '[border-width:var(--border-width-default)] border-border p-2'],
-    ['border-2', '[border-width:var(--border-width-default)] border-border'],
+    ['border p-2', '[border-width:var(--border-width-default)] p-2'],
+    ['border-2', '[border-width:var(--border-width-default)]'],
+    // width only — the author's existing color utility is preserved, never duplicated
+    ['border border-border', '[border-width:var(--border-width-default)] border-border'],
+    ['border border-text-inverse/40', '[border-width:var(--border-width-default)] border-text-inverse/40'],
     ['transition duration-200', 'transition duration-[calc(var(--duration-default)*1ms)]'],
   ];
   for (const [input, expected] of cases) {
@@ -68,6 +71,10 @@ describe('judgment calls are flagged, never auto-applied', () => {
     expect(flags.map((f) => f.kind)).toContain('opacity');
   });
 
+  it('does not flag opacity-0 / opacity-100 (animation states, not tokens)', () => {
+    expect(findJudgmentCalls('opacity-0 group-hover:opacity-100')).toEqual([]);
+  });
+
   it('arbitrary sizes are flagged, not silently rounded', () => {
     expect(applyDeterministic('text-[15px] rounded-[22px]').output).toBe('text-[15px] rounded-[22px]');
     const flags = findJudgmentCalls('text-[15px] rounded-[22px]');
@@ -90,7 +97,7 @@ describe('countConversions sizes a migration', () => {
 
 describe('migrateSource scopes rewrites to className/class attributes', () => {
   it('rewrites utilities inside a className attribute', () => {
-    expect(migrateSource('<div className="flex shadow-md border" />').output).toBe(
+    expect(migrateSource('<div className="flex shadow-md border border-border" />').output).toBe(
       '<div className="flex [box-shadow:var(--shadow-md)] [border-width:var(--border-width-default)] border-border" />',
     );
   });
@@ -104,7 +111,7 @@ describe('migrateSource scopes rewrites to className/class attributes', () => {
 
   it('handles class= (plain HTML) too', () => {
     expect(migrateSource('<div class="border" />').output).toBe(
-      '<div class="[border-width:var(--border-width-default)] border-border" />',
+      '<div class="[border-width:var(--border-width-default)]" />',
     );
   });
 

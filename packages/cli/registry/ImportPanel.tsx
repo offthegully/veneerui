@@ -76,7 +76,7 @@ export function ImportPanel({ onClose }: { onClose: () => void }) {
         aria-modal="true"
         aria-labelledby={titleId}
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-lg rounded-xl border border-border bg-surface-overlay p-6 shadow-xl"
+        className="w-full max-w-lg rounded-xl [border-width:var(--border-width-default)] border-border bg-surface-overlay p-6 [box-shadow:var(--shadow-xl)]"
       >
         <div className="mb-4 flex items-start justify-between gap-4">
           <div>
@@ -150,7 +150,7 @@ export function ImportPanel({ onClose }: { onClose: () => void }) {
                 if (e.key === 'Enter' && isFetchableUrl(url.trim())) void onFetch();
               }}
               placeholder="https://raw.githubusercontent.com/…/theme.json"
-              className="min-w-0 flex-1 rounded-md border border-border bg-surface px-3 py-2 text-sm text-text placeholder:text-text-subtle focus:border-primary focus:outline-none"
+              className="min-w-0 flex-1 rounded-md [border-width:var(--border-width-default)] border-border bg-surface px-3 py-2 text-sm text-text placeholder:text-text-subtle focus:border-primary focus:outline-none"
             />
             <button
               type="button"
@@ -165,7 +165,7 @@ export function ImportPanel({ onClose }: { onClose: () => void }) {
 
         {/* Errors */}
         {errors.length > 0 && (
-          <div className="mt-4 rounded-md border border-danger bg-surface px-3 py-2 text-sm text-danger">
+          <div className="mt-4 rounded-md [border-width:var(--border-width-default)] border-danger bg-surface px-3 py-2 text-sm text-danger">
             <p className="font-medium">Couldn't import this theme:</p>
             <ul className="mt-1 list-inside list-disc space-y-0.5 text-xs">
               {errors.slice(0, 8).map((e, i) => (

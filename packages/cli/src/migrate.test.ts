@@ -7,9 +7,18 @@ describe('migrate — deterministic rewrites', () => {
     const { output, changed, applied } = migrate(src);
     expect(changed).toBe(true);
     expect(output).toBe(
-      '<div className="[box-shadow:var(--shadow-lg)] [border-width:var(--border-width-default)] border-border duration-[calc(var(--duration-default)*1ms)]" />',
+      '<div className="[box-shadow:var(--shadow-lg)] [border-width:var(--border-width-default)] duration-[calc(var(--duration-default)*1ms)]" />',
     );
     expect(applied.map((a) => a.kind).sort()).toEqual(['border-width', 'box-shadow', 'duration']);
+  });
+
+  it('converts only the border WIDTH, preserving the author\'s color (no dup)', () => {
+    expect(migrate('<div className="border border-border" />').output).toBe(
+      '<div className="[border-width:var(--border-width-default)] border-border" />',
+    );
+    expect(migrate('<div className="border border-text-inverse/40" />').output).toBe(
+      '<div className="[border-width:var(--border-width-default)] border-text-inverse/40" />',
+    );
   });
 
   it('leaves an already-tokenised file unchanged', () => {

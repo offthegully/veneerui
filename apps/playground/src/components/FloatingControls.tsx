@@ -42,7 +42,7 @@ export function FloatingControls() {
         type="button"
         onClick={scrollToTop}
         aria-label="Scroll back to top"
-        className={`flex size-10 items-center justify-center rounded-full border border-border bg-surface-raised text-text shadow-lg transition-all hover:bg-surface-sunken ${
+        className={`flex size-10 items-center justify-center rounded-full [border-width:var(--border-width-default)] border-border bg-surface-raised text-text [box-shadow:var(--shadow-lg)] transition-all hover:bg-surface-sunken ${
           scrolled ? 'opacity-100' : 'pointer-events-none translate-y-2 opacity-0'
         }`}
       >

@@ -34,7 +34,7 @@ export function PreviewBanner() {
         <button
           type="button"
           onClick={cancelPreview}
-          className="rounded-md border border-text-inverse/40 px-3 py-1.5 text-sm font-medium text-text-inverse transition-colors hover:border-text-inverse"
+          className="rounded-md [border-width:var(--border-width-default)] border-text-inverse/40 px-3 py-1.5 text-sm font-medium text-text-inverse transition-colors hover:border-text-inverse"
         >
           Stop preview
         </button>

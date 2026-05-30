@@ -28,7 +28,7 @@ function Swatches({ theme }: { theme: Theme }) {
   return (
     <span
       aria-hidden="true"
-      className="inline-flex size-6 shrink-0 items-center justify-center rounded-full border border-border"
+      className="inline-flex size-6 shrink-0 items-center justify-center rounded-full [border-width:var(--border-width-default)] border-border"
       style={{ background: surface }}
     >
       <span className="size-3 rounded-full" style={{ background: primary }} />
@@ -48,7 +48,7 @@ function PlaceholderSwatch() {
   return (
     <span
       aria-hidden="true"
-      className="inline-flex size-6 shrink-0 items-center justify-center rounded-full border border-border bg-surface"
+      className="inline-flex size-6 shrink-0 items-center justify-center rounded-full [border-width:var(--border-width-default)] border-border bg-surface"
     >
       <span className="size-3 rounded-full bg-primary" />
       <span className="ml-0.5 size-1.5 rounded-full bg-text" />
@@ -99,8 +99,8 @@ export function ThemeSwitcher({ variant = 'header' }: { variant?: SwitcherVarian
         onClick={() => setOpen((v) => !v)}
         aria-haspopup="listbox"
         aria-expanded={open}
-        className={`flex items-center gap-2 border border-border bg-surface-raised px-3 py-2 text-sm font-medium text-text transition-colors hover:bg-surface-sunken ${
-          floating ? 'rounded-full shadow-lg' : 'rounded-md shadow-sm'
+        className={`flex items-center gap-2 [border-width:var(--border-width-default)] border-border bg-surface-raised px-3 py-2 text-sm font-medium text-text transition-colors hover:bg-surface-sunken ${
+          floating ? 'rounded-full [box-shadow:var(--shadow-lg)]' : 'rounded-md [box-shadow:var(--shadow-sm)]'
         }`}
       >
         {/* Identity (swatches / name / shuffle badge) is client-only state; hold a
@@ -123,7 +123,7 @@ export function ThemeSwitcher({ variant = 'header' }: { variant?: SwitcherVarian
       {open && (
         <div
           role="listbox"
-          className={`absolute right-0 z-50 w-64 overflow-hidden rounded-lg border border-border bg-surface-overlay shadow-lg ${
+          className={`absolute right-0 z-50 w-64 overflow-hidden rounded-lg [border-width:var(--border-width-default)] border-border bg-surface-overlay [box-shadow:var(--shadow-lg)] ${
             floating ? 'bottom-full mb-2' : 'mt-2'
           }`}
         >
