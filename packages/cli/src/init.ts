@@ -116,6 +116,21 @@ export function runInit(opts: InitOptions): void {
   log('\nHeads up: Veneer only themes elements that use token utilities (bg-surface,');
   log('text-text, …). Your existing hardcoded styles won\'t re-skin until they\'re');
   log('migrated. Run `npx veneerui doctor` to see how much of your UI is themeable today.');
+
+  // What a theme can change — the axis list + the one verification habit that
+  // catches the silent "I only did color" failure. A theme varies many axes, but
+  // can only touch the ones a component opts into; an un-referenced axis is a
+  // no-op that fails silently (a shadowless card just renders flat).
+  log('\nWhat a theme can change: color · elevation (shadow + inset-shadow) · radius ·');
+  log('border-width · spacing · type (family/size/weight/tracking/leading) · motion ·');
+  log('effects (blur/gradient/text-shadow). A theme only re-skins the axes your');
+  log('components reference — "I used semantic colors" themes one axis and leaves the');
+  log('rest flat. Two traps: on dark themes surface-raised ≈ surface, so a card needs a');
+  log('shadow (not color) to stand out; and one text-on-primary must stay legible on');
+  log('every status fill (black-on-info is the risk).');
+  log('\nAfter adopting, switch through the extreme themes (Brutalist, Neumorphic,');
+  log('Editorial, Glassmorphic) and look — if a view renders identically under');
+  log('Brutalist and the default, it isn\'t expressing borders/shadows/radius yet.');
 }
 
 function indent(log: (s: string) => void, block: string): void {

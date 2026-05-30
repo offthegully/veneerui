@@ -61,7 +61,9 @@ unitless numbers in ms, hence the `*1ms` in the calc. Gradient text:
   sizes `text-xs` … `text-9xl`; weights `font-thin` … `font-black`; `leading-*`;
   `tracking-*`.
 - **Spacing:** one base unit drives the whole `p-*` / `gap-*` / `m-*` scale —
-  use normal spacing utilities.
+  use normal spacing utilities. Off the scale? Use the decimal multiplier
+  (`p-4.5` → `calc(var(--spacing) * 4.5)`, any decimal), never a bare-px
+  `p-[18px]` — that ignores `--spacing` and won't rescale with the theme.
 - **Effects:** `blur-*`, `gradient-primary` / `-accent` / `-surface` / `-text`,
   `opacity-disabled` / `-overlay`.
 - **Motion:** `duration-fast` / `-default` / `-slow`; `ease-default` /
@@ -88,6 +90,24 @@ Read a token value in JS with `tokenValue(current, 'color-primary')` from
   <p className="text-sm text-text-muted">Body copy.</p>
 </article>
 ```
+
+### Verify under a stress theme
+
+A theme only changes what a component **opts into**, and the failures are
+*silent*: a card with no shadow token renders flat under Neumorphic — not an
+error, just invisible elevation. So after a change, switch through the themes
+that each stress one axis and confirm your view **visibly changes**:
+
+| Theme | Stresses | If nothing changes, you're missing… |
+|---|---|---|
+| Brutalist | borders, hard shadows, radius=0 | border-width / shadow / radius |
+| Neumorphic | shadows only | a `[box-shadow:var(--shadow-card)]` on cards |
+| Editorial | serif type, scale, leading | `font-display`/`font-serif`, type scale |
+| Glassmorphic / Neon | blur, gradient, glow | the effect axes |
+
+**Done checklist:** no raw palette / hex / `*-opacity-N`; off-scale spacing via
+`p-4.5` not `p-[18px]`; cards carry a shadow token; distinct headings use
+`font-display`; verified by eye under ≥2 stress themes.
 
 ### Setup & authoring
 

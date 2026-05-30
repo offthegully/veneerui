@@ -236,6 +236,7 @@ themes** is how you preview a theme you're working on.
 | `npm run lint` | ESLint across workspaces (incl. the `veneer/no-hardcoded-colors` rule) |
 | `npm run typecheck` | Type-check every workspace |
 | `npm test` | Vitest across every workspace |
+| `npm run check:coverage` | Report which theme *axes* the UI references nowhere (silently-inert axes) |
 
 `packages/theme/src/schema.ts` is the single source of truth — the canonical
 `TOKEN_SCHEMA`. `npm run gen:theme` regenerates everything downstream (tokens CSS,

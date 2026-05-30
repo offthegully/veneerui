@@ -22,9 +22,27 @@ Components must therefore express every visual value through a **semantic token*
 (a utility like `bg-primary` / `text-text-muted`, or `var(--token)`), never a
 literal color or a raw Tailwind palette shade.
 
+Three things follow from this, and they're the part agents miss:
+
+1. **A theme is a set of independent axes, not just a palette.** Themes vary along
+   *color · elevation (box-shadow + inset-shadow) · radius · border-width ·
+   spacing · type (family/size/weight/tracking/leading) · motion · effects
+   (blur/gradient/text-shadow)*. Each is themed separately.
+2. **A theme only changes what a component opts into.** If your card never writes
+   a box-shadow token, the elevation axis can't touch it. If no heading uses
+   `font-display`, the type-family axis is inert. "I used semantic colors" buys
+   you *one* axis and leaves the other eight flat.
+3. **The failures are silent.** A shadowless card under Neumorphic isn't an
+   error — it just renders as a flat rectangle the same color as the page.
+   `p-[18px]` works fine; it just won't rescale. Nothing fails loudly, so it
+   accumulates. The fix is to *reference* the axes (below) and *look* under a
+   stress theme (§8).
+
 `packages/theme/src/schema.ts` (`TOKEN_SCHEMA`) is the **single source of truth**
 for every token. `npm run gen:theme` regenerates the tokens CSS, JSON Schema, and
 `docs/schema-reference.md` from it — never hand-edit those generated outputs.
+`npm run check:coverage` lists any axis your UI references *nowhere* (so you know
+which themes are currently no-ops on your surfaces).
 
 ---
 
@@ -87,6 +105,20 @@ so the `drop-shadow-lg` class is fine.
 **Motion:** durations are unitless numbers (ms), hence the `*1ms` in the calc.
 Easings *are* utilities (`ease-default`, `ease-snappy`, `ease-smooth`, `ease-bounce`).
 
+### Off-scale or opt-in? There's always a token form
+
+The gotchas above are *wrong class*. The other failure is *no class* — reaching
+for a bare value, or leaving an axis blank. There's a token form for every case,
+so an island is never necessary:
+
+| Want | ❌ Island / blank | ✅ Token form |
+|---|---|---|
+| off-grid spacing | `p-[18px]` | `p-4.5` (= `calc(var(--spacing)*4.5)`; any decimal) |
+| card elevation | *(nothing)* or `shadow-md` | `[box-shadow:var(--shadow-card)]` |
+| recessed well | *(nothing)* | `[box-shadow:var(--inset-shadow-sm)]` |
+| color + alpha | `bg-x bg-opacity-75` (dead in v4 — renders opaque) | `bg-x/75` |
+| display heading | `font-semibold` only | `font-display …` |
+
 ---
 
 ## 4. The semantic token vocabulary
@@ -112,7 +144,10 @@ Use these names — they describe *role*, not appearance. Full list with default
   `tracking-widest`.
 - **Spacing:** one base unit `--spacing`; the whole `p-*`/`gap-*`/`m-*` scale is
   `calc(spacing * n)`. Just use normal spacing utilities — a theme rescaling
-  `--spacing` changes density everywhere.
+  `--spacing` changes density everywhere. Off the standard scale? Use the decimal
+  multiplier form (`p-4.5` → `calc(var(--spacing) * 4.5)`; any decimal works, e.g.
+  `min-h-23`) — never a bare-px island like `p-[18px]`, which ignores `--spacing`
+  and won't rescale with the theme.
 - **Effects:** `blur-*` (feeds `blur-*` and `backdrop-blur-*`), `gradient-primary`
   / `-accent` / `-surface` / `-text`, `opacity-disabled` / `-overlay`.
 - **Motion:** `duration-fast` / `-default` / `-slow`; `ease-*`.
@@ -173,7 +208,11 @@ Design pitfalls to respect (see `docs/authoring-guide.md`):
   the page is darker — don't just invert a light theme by hand.
 - **`text-on-primary` contrasts with the primary fill, not the page.** A pale
   primary needs *dark* `text-on-primary`. (White text on a light button is the
-  most common mistake.)
+  most common mistake.) It is also the *only* on-fill token, yet it sits on
+  `bg-success` / `-warning` / `-danger` / `-info` too — so it must stay legible on
+  every status fill at once. A value that fixes one fill can break another; if you
+  can't satisfy all of them, keep the status fills tinted close enough in
+  lightness that one on-color works, rather than reaching for a literal.
 - **Themes are more than color** — `border-width-*`, `radius-*`, `shadow-*`, type,
   and motion carry most of a theme's character. Tint shadows with the text color,
   not pure black.
@@ -194,22 +233,52 @@ Design pitfalls to respect (see `docs/authoring-guide.md`):
   `veneer/no-hardcoded-colors` lint rule lives in `eslint-rules/`.
 - `gallery/themes/<slug>/theme.json` — the canonical example themes.
 - `docs/` — `authoring-guide.md`, `schema-reference.md` (generated), integration
-  guides. `scripts/` — `generate-theme.ts`, `build-registry.ts`.
+  guides. `scripts/` — `generate-theme.ts`, `build-registry.ts`,
+  `check-coverage.ts`.
 
 ---
 
-## 8. Definition of done
+## 8. Verify under a stress theme (don't trust the default)
 
-Before you consider a UI change complete, run from the repo root:
+The built-in themes are each designed to *stress one axis* — so they're your
+audit. After changing a view, render it under the themes below and confirm it
+**visibly changes on the named axis**. If it looks identical to the default,
+you're not expressing that axis — go back and reference its tokens.
+
+| Theme | Stresses | If your view doesn't change, you're not expressing… |
+|---|---|---|
+| **Brutalist** | borders, hard shadows, radius=0, heavy weights | border-width / shadow / radius |
+| **Neumorphic** | shadows only (`surface` ≈ `surface-raised`) | elevation — cards are invisible without a shadow token |
+| **Editorial** | serif type, scale, leading, spacing | `font-display`/`font-serif`, type scale, leading |
+| **High Contrast** | border-width, radius | border tokens |
+| **Glassmorphic / Neon Arcade** | blur, gradient, text-shadow/glow | the effect axes |
+
+Two traps these surface: on dark/neumorphic themes `surface-raised` is the same
+as or lighter than `surface`, so a card must carry a **shadow**, not rely on
+color to stand out; and one `text-on-primary` serves *every* status fill, so
+black-on-`bg-info` is the contrast risk to watch.
+
+## 9. Definition of done
+
+A UI change isn't done until:
+
+- [ ] no raw palette (`bg-blue-500`), hex/`rgb()`, or `*-opacity-N`;
+- [ ] off-scale spacing uses the decimal multiplier (`p-4.5`), never `p-[18px]`;
+- [ ] cards carry a `[box-shadow:var(--shadow-*)]` token; headings that should
+      feel distinct use `font-display`;
+- [ ] verified by eye under **≥2 stress themes** from §8 (always include the one
+      that stresses the axis you touched).
+
+Then run from the repo root:
 
 ```sh
-npm run lint        # incl. veneer/no-hardcoded-colors — fails on any island
+npm run lint            # incl. veneer/no-hardcoded-colors — fails on any island
 npm run typecheck
-npm test            # incl. conformance.test.ts (no islands + drastic re-skin)
+npm test                # incl. conformance.test.ts (no islands + drastic re-skin)
+npm run check:coverage  # lists any theme axis your UI references nowhere
 ```
 
 If you changed tokens in `schema.ts`, also run `npm run gen:theme` and commit the
 regenerated outputs. For a real visual check, `npm run dev` runs the playground
 and you can switch themes (top-right / bottom-right picker) to confirm your
-component re-skins across the gallery — verify against a wide-font theme
-(Terminal, Monospaced) and a serif theme (Editorial), not just the default sans.
+component re-skins across the gallery.

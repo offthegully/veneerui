@@ -11,6 +11,7 @@
   "scripts": {
     "preinstall": "npx only-allow npm",
     "gen:theme": "tsx scripts/generate-theme.ts",
+    "check:coverage": "tsx scripts/check-coverage.ts",
     "gen:registry": "tsx scripts/build-registry.ts",
     "build:theme": "npm run gen:theme && npm run build -w @offthegully/veneerui",
     "build:cli": "npm run gen:registry && npm run build -w veneerui",
