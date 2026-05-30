@@ -29,6 +29,8 @@ const card =
 
 const GITHUB_URL = 'https://github.com/offthegully/veneerui';
 
+const INSTALL_COMMAND = 'npm install @offthegully/veneerui';
+
 /** GitHub mark, drawn in currentColor so it inherits the surrounding token color. */
 const GITHUB_PATH =
   'M12 1.5A10.5 10.5 0 0 0 8.68 22c.52.1.71-.23.71-.5v-1.96c-2.92.64-3.54-1.25-3.54-1.25-.48-1.21-1.17-1.53-1.17-1.53-.95-.65.07-.64.07-.64 1.06.07 1.61 1.09 1.61 1.09.94 1.6 2.46 1.14 3.06.87.1-.68.37-1.14.67-1.4-2.33-.27-4.78-1.17-4.78-5.18 0-1.15.41-2.08 1.08-2.82-.11-.27-.47-1.34.1-2.79 0 0 .88-.28 2.88 1.07a9.9 9.9 0 0 1 5.24 0c2-1.35 2.88-1.07 2.88-1.07.57 1.45.21 2.52.1 2.79.67.74 1.08 1.67 1.08 2.82 0 4.02-2.46 4.9-4.8 5.16.38.33.71.97.71 1.96v2.9c0 .28.19.61.72.5A10.5 10.5 0 0 0 12 1.5z';
@@ -75,6 +77,52 @@ const DOCS = [
   { title: 'Token reference', blurb: 'Every token you can set, with defaults.', href: `${DOCS_BASE}/schema-reference.md` },
 ];
 
+/**
+ * InstallCommand — the package-manager one-liner every library shows near its
+ * call-to-action, with a click-to-copy affordance. The whole pill is the copy
+ * button; the icon swaps to a checkmark for a beat after a successful copy.
+ */
+function InstallCommand() {
+  const [copied, setCopied] = useState(false);
+
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(INSTALL_COMMAND);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // Clipboard API unavailable (e.g. insecure context) — leave the UI as-is.
+    }
+  };
+
+  return (
+    <button
+      type="button"
+      onClick={copy}
+      aria-label={`Copy install command: ${INSTALL_COMMAND}`}
+      className={`group inline-flex items-center gap-3 rounded-md border-border bg-surface-sunken py-2 pl-4 pr-3 font-mono text-sm text-text [box-shadow:var(--shadow-sm)] [border-width:var(--border-width-default)] hover:border-border-strong hover:[box-shadow:var(--shadow-md)] ${interactive}`}
+    >
+      <span className="select-none text-text-subtle">$</span>
+      <span className="text-text">{INSTALL_COMMAND}</span>
+      <span
+        className="inline-flex size-7 shrink-0 items-center justify-center rounded text-text-subtle transition-colors duration-[calc(var(--duration-default)*1ms)] ease-default group-hover:text-text"
+        aria-hidden="true"
+      >
+        {copied ? (
+          <svg viewBox="0 0 24 24" className="size-4 text-primary" fill="none" stroke="currentColor" strokeWidth="2.2">
+            <path d="M5 12l5 5L20 6" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        ) : (
+          <svg viewBox="0 0 24 24" className="size-4" fill="none" stroke="currentColor" strokeWidth="1.8">
+            <rect x="9" y="9" width="11" height="11" rx="2" />
+            <path d="M5 15V5a2 2 0 0 1 2-2h10" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        )}
+      </span>
+    </button>
+  );
+}
+
 function VeneerMark({ className, size = 'md' }: { className?: string; size?: 'sm' | 'md' }) {
   if (size === 'sm') {
     return <img src="/veneer-mark-32.png" alt="" className={`rounded ${className ?? ''}`} aria-hidden="true" draggable={false} />;
@@ -120,7 +168,10 @@ export function ProjectOverview() {
           a small JSON file that overrides some of them. Switching is instant, and themes are inert
           data, so they're safe to load from anywhere.
         </p>
-        <div className="mt-9 flex flex-wrap items-center justify-center gap-3">
+        <div className="mt-8 flex justify-center">
+          <InstallCommand />
+        </div>
+        <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
           <a
             href={GITHUB_URL}
             target="_blank"

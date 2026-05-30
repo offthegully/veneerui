@@ -85,7 +85,7 @@ export function ImportPanel({ onClose }: { onClose: () => void }) {
             </h2>
             <p className="mt-1 text-sm text-text-muted">
               Drop a <code className="font-mono text-xs">theme.json</code>, or paste a raw gallery
-              URL. You'll preview it live before saving.
+              URL. You&apos;ll preview it live before saving.
             </p>
           </div>
           <button
