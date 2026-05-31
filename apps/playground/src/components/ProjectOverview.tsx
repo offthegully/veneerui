@@ -260,7 +260,7 @@ export function ProjectOverview() {
                   {/* The URL's pixel width tracks the active theme font (mono/serif themes
                       run far wider than sans), so break-all lets it wrap centered instead
                       of overflowing the button on narrow screens. */}
-                  <span className="break-all text-center">github.com/offthegully/veneer</span>
+                  <span className="break-all text-center">github.com/offthegully/veneerui</span>
                 </a>
               </div>
             </div>
