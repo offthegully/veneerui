@@ -78,8 +78,9 @@ Examples:
   npx veneerui doctor
   npx veneerui migrate --dry-run
 
-Every change init makes is also documented in docs/integration-{vite,next}.md,
-so you can always do it by hand.`;
+Every change init makes is also documented in docs/integration.md, and the
+remaining manual steps are written to VENEER-SETUP.md, so you can always finish
+by hand (or have your AI agent do it).`;
 
 function main(): void {
   const p = parse(process.argv.slice(2));

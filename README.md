@@ -68,9 +68,10 @@ npx veneerui add switcher    # copy a ThemeSwitcher into your components
 npx veneerui add fonts       # load the fonts the built-in themes name (Fontsource)
 ```
 
-Wrap your app root in `<ThemeProvider>` (the one step `init` prints), drop in the
-switcher, and build everything else with token utilities (`bg-surface`,
-`text-text`, …) — it all re-skins for free.
+`init` writes the last few entry-file steps to a self-removing `VENEER-SETUP.md` —
+finish them by hand, or tell your AI agent *"finish the Veneer setup in
+VENEER-SETUP.md."* Then build everything with token utilities (`bg-surface`,
+`text-text`, …) and it all re-skins for free.
 
 **Already have an app?** The wiring is identical, but your existing styles won't
 re-skin until they move onto tokens — `veneerui doctor` and `migrate` make that a

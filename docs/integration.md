@@ -46,8 +46,11 @@ npx veneerui init
 npx veneerui add switcher
 ```
 
-**3. Wrap your app root** in `<ThemeProvider>` — the one step `init` prints but
-doesn't do for you. See [Vite](#vite) / [Next.js](#nextjs) for the exact spot.
+**3. Finish the wiring.** `init` can't safely patch your entry files, so it
+writes the remaining steps (wrap the root in `<ThemeProvider>`, and on Next the
+`<head>` script) to a self-removing **`VENEER-SETUP.md`**. Do them by hand — see
+[Vite](#vite) / [Next.js](#nextjs) — or just tell your AI agent: *"Finish the
+Veneer setup in VENEER-SETUP.md, then verify it and delete the file."*
 
 Drop the `<ThemeSwitcher />` into your UI, start the dev server, and switch
 themes. Build everything else with the token utilities (`bg-surface`,
@@ -78,10 +81,12 @@ so switching a theme re-skins every utility instantly with no re-render.
 
 ## Wire it up
 
-`veneerui init` makes the deterministic edits automatically and prints the steps
-that are too project-shaped to patch blindly. It **detects your framework**,
-**never installs packages** (it tells you to), and is idempotent + `--dry-run`-able.
-Here's what lands per framework, and the manual equivalent.
+`veneerui init` makes the deterministic edits automatically and writes the steps
+that are too project-shaped to patch blindly to a self-removing
+[`VENEER-SETUP.md`](#agent) (finish them by hand, or have your agent do it). It
+**detects your framework**, **never installs packages** (it tells you to), and is
+idempotent + `--dry-run`-able. Here's what lands per framework, and the manual
+equivalent.
 
 <a id="vite"></a>
 
@@ -172,8 +177,10 @@ writing your own.
 ### Other React frameworks (experimental)
 
 Veneer's runtime is framework-agnostic — it's React 19 + Tailwind v4 + a provider
-+ one inline script. Only the CLI's *auto-wiring* is Vite/Next-specific.
-Everywhere else, do the three steps by hand:
++ one inline script. Only the CLI's *auto-wiring* is Vite/Next-specific. Run
+`veneerui init` anyway: on an unrecognized React + Tailwind project it writes the
+agent guide and a **generic [`VENEER-SETUP.md`](#agent)** with the three steps
+below — so you can still finish by hand, or hand it to your agent. The steps:
 
 1. **Interlock** — add the [token `@import`](#interlock) to your Tailwind stylesheet.
 2. **Provider** — wrap your app root in `<ThemeProvider>` (inside a client
@@ -192,12 +199,21 @@ import { getAntiFlashScript } from '@offthegully/veneerui'
 that applies the saved theme before paint. Pass your default theme's `tokens` map
 to also kill the first-load flash (see [Ship your own themes](#themes)).
 
-**Known to work, not yet first-class** (no CLI auto-wiring, lightly tested —
-reports welcome): **Remix / React Router**, **Astro** (React islands),
-**TanStack Start**. The only requirement is React 19 + Tailwind v4. One caveat:
-if your framework forbids importing the React-context package root from a server
-file (Next's RSC does), import `getAntiFlashScript` only where it's allowed — or
-use the dedicated [`/next`](#nextjs) adapter.
+**Known to work, not yet first-class** — no CLI auto-wiring and not fully tested
+yet, so expect rough edges and please [report what you hit](https://github.com/offthegully/veneerui/issues):
+
+- **Remix / React Router** (v7)
+- **TanStack Start**
+- **Astro** (React islands)
+- **Gatsby**
+- **RedwoodJS**
+- any custom **Webpack / Rsbuild / Parcel** React setup
+
+The only hard requirement is **React 19 + Tailwind v4** — if a framework has those,
+the three steps above are all it needs. One caveat: if your framework forbids
+importing the React-context package root from a server file (Next's RSC does),
+import `getAntiFlashScript` only where it's allowed — or use the dedicated
+[`/next`](#nextjs) adapter.
 
 ---
 
@@ -299,12 +315,20 @@ family ↔ package mapping: **[fonts.md](./fonts.md)**.
 
 ## Let your AI agent take it from here
 
-`veneerui init` writes a Veneer section into your **`AGENTS.md` / `CLAUDE.md`**
-(the files Cursor, Claude Code, Copilot, … read), delimited by
-`<!-- veneer:guide:start -->` markers and re-synced in place on every `init`. It
-teaches any coding agent the one rule — **drive everything from tokens; never
-hardcode a color or visual value** — plus the token vocabulary and the handful of
-"looks right but breaks theming" gotchas.
+**Finishing setup.** `init` leaves a `VENEER-SETUP.md` with the few project-shaped
+steps it won't patch blindly. It's plain markdown — both a manual checklist and
+agent instructions — so in any tool you can just say *"Finish the Veneer setup in
+VENEER-SETUP.md, then verify it and delete the file."* The agent wraps your root in
+`<ThemeProvider>`, adds the Next `<head>` script if needed, verifies, and removes
+the file. (It's self-removing precisely so it doesn't linger once setup is done.)
+
+**Building from there.** `veneerui init` also writes a Veneer section into your
+**`AGENTS.md` / `CLAUDE.md`** (the files Cursor, Claude Code, Copilot, … read),
+delimited by `<!-- veneer:guide:start -->` markers and re-synced in place on every
+`init`. Unlike the one-time setup file, this stays: it teaches any coding agent the
+one rule — **drive everything from tokens; never hardcode a color or visual
+value** — plus the token vocabulary and the handful of "looks right but breaks
+theming" gotchas.
 
 So once Veneer is wired in, you keep building UI by *prompting*: the agent knows
 Veneer is under the hood, reaches for `bg-surface` / `text-text` / `rounded-md`

@@ -95,8 +95,13 @@ function customThemesHint(framework: 'vite' | 'next'): string[] {
   ];
 }
 
-/** The client provider-wrapper snippet (printed by `init` for both frameworks). */
-export function providerSnippet(framework: 'vite' | 'next'): string {
+/**
+ * The client provider-wrapper snippet (printed by `init` for both frameworks).
+ * `includeThemesHint` appends the "ship your own themes" comment block — on by
+ * default for `init`'s output; the wiring-only VENEER-SETUP.md passes `false`.
+ */
+export function providerSnippet(framework: 'vite' | 'next', includeThemesHint = true): string {
+  const hint = includeThemesHint ? customThemesHint(framework) : [];
   if (framework === 'next') {
     return [
       '// app/providers.tsx',
@@ -107,7 +112,7 @@ export function providerSnippet(framework: 'vite' | 'next'): string {
       '}',
       '',
       '// then wrap {children} with <Providers> in app/layout.tsx',
-      ...customThemesHint('next'),
+      ...hint,
     ].join('\n');
   }
   return [
@@ -121,6 +126,6 @@ export function providerSnippet(framework: 'vite' | 'next'): string {
     '    </ThemeProvider>',
     '  </StrictMode>,',
     ')',
-    ...customThemesHint('vite'),
+    ...hint,
   ].join('\n');
 }

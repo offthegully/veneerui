@@ -19,6 +19,8 @@ export interface Detection {
   root: string;
   hasVeneerTheme: boolean;
   hasTailwind: boolean;
+  /** True when `react` is a dependency — used to gate help for unrecognized frameworks. */
+  hasReact: boolean;
   viteConfigPath?: string;
   globalCssPath?: string;
   entryPath?: string;
@@ -80,6 +82,7 @@ export function detect(root: string): Detection {
     root,
     hasVeneerTheme: '@offthegully/veneerui' in allDeps,
     hasTailwind: 'tailwindcss' in allDeps,
+    hasReact: 'react' in allDeps,
     viteConfigPath: framework === 'vite' ? firstExisting(root, VITE_CONFIGS) : undefined,
     globalCssPath: findGlobalCss(root, cssCandidates),
     entryPath: firstExisting(root, entryCandidates),
