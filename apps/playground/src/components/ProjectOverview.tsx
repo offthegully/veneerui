@@ -72,8 +72,7 @@ const DOCS_BASE = 'https://github.com/offthegully/veneerui/blob/main/docs';
 
 const DOCS = [
   { title: 'Authoring guide', blurb: 'Pick a coherent palette and surface ladder.', href: `${DOCS_BASE}/authoring-guide.md` },
-  { title: 'Vite integration', blurb: 'Add VeneerUI to a Vite + React + Tailwind v4 app.', href: `${DOCS_BASE}/integration-vite.md` },
-  { title: 'Next integration', blurb: 'Wire it into a Next App Router project.', href: `${DOCS_BASE}/integration-next.md` },
+  { title: 'Integration guide', blurb: 'Add VeneerUI to a Vite, Next, or other React + Tailwind v4 app.', href: `${DOCS_BASE}/integration.md` },
   { title: 'Token reference', blurb: 'Every token you can set, with defaults.', href: `${DOCS_BASE}/schema-reference.md` },
 ];
 

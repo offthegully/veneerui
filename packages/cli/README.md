@@ -49,9 +49,8 @@ source — where Tailwind already scans — makes the classes generate and lets 
 restyle freely. The runtime logic still comes from the `@offthegully/veneerui` dependency,
 so there's no duplicated behavior.
 
-Full setup guides:
-[Vite](https://github.com/offthegully/veneerui/blob/main/docs/integration-vite.md) ·
-[Next.js](https://github.com/offthegully/veneerui/blob/main/docs/integration-next.md).
+Full setup guide (Vite, Next.js, and other React + Tailwind v4 apps):
+[Integration guide](https://github.com/offthegully/veneerui/blob/main/docs/integration.md).
 
 ## License
 

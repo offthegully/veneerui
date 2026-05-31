@@ -52,10 +52,15 @@ unitless numbers in ms, hence the `*1ms` in the calc. Gradient text:
 - **Surfaces:** `surface` (page) → `surface-raised` (cards, sits above) →
   `surface-sunken` (wells, recedes); plus `surface-overlay`, `surface-inverse`,
   `overlay-backdrop`.
-- **Text:** `text`, `text-muted`, `text-subtle`, `text-inverse`,
-  `text-on-primary` (for text on a primary/accent/status fill).
-- **Borders:** color `border` / `border-strong` / `border-subtle`; width
-  `border-width-thin` / `-default` / `-thick`.
+- **Text color:** `text-text` (body), `text-text-muted`, `text-text-subtle`,
+  `text-text-inverse`, `text-text-on-primary` (text on a primary/accent/status
+  fill). The token family is `text`, so the color utility repeats it — it's
+  `text-text-muted`, **not** `text-muted` (which is an undefined class).
+- **Borders:** color `border-border` / `border-border-strong` /
+  `border-border-subtle` (same doubling — `border-border`, not `border`); width
+  tokens `border-width-thin` / `-default` / `-thick`, applied via the
+  `[border-width:var(--border-width-default)]` escape hatch above (there's no
+  `border-2`-style utility for them).
 - **Radii:** `rounded-none` … `rounded-3xl`, `rounded-full`.
 - **Type:** families `font-sans` / `font-serif` / `font-mono` / `font-display`;
   sizes `text-xs` … `text-9xl`; weights `font-thin` … `font-black`; `leading-*`;

@@ -34,8 +34,10 @@ export function runInit(opts: InitOptions): void {
   log(`  tailwindcss present: ${det.hasTailwind ? 'yes' : 'no'}\n`);
 
   if (det.framework === 'unknown') {
-    log('Could not detect Vite or Next. Veneer needs a Vite-React or Next (App Router)');
-    log('project on Tailwind v4. See docs/integration-vite.md / docs/integration-next.md.');
+    log('Could not detect Vite or Next — those are the two `init` auto-wires today.');
+    log('Veneer\'s runtime is framework-agnostic (React 19 + Tailwind v4), so other');
+    log('frameworks (Remix, Astro, TanStack Start, …) work via the manual three-step');
+    log('path. See the "Other React frameworks" section of docs/integration.md.');
     return;
   }
 
@@ -110,27 +112,15 @@ export function runInit(opts: InitOptions): void {
   }
 
   log('\nNext: `npx veneerui add switcher` to copy a theme switcher into ' + det.componentsDir + '.');
-  // Reality-check: Veneer only re-skins elements already on token utilities, so a
-  // freshly-wired app mostly won't change yet. Point at doctor so the remaining
-  // migration work is a number, not a surprise.
-  log('\nHeads up: Veneer only themes elements that use token utilities (bg-surface,');
-  log('text-text, …). Your existing hardcoded styles won\'t re-skin until they\'re');
-  log('migrated. Run `npx veneerui doctor` to see how much of your UI is themeable today.');
-
-  // What a theme can change — the axis list + the one verification habit that
-  // catches the silent "I only did color" failure. A theme varies many axes, but
-  // can only touch the ones a component opts into; an un-referenced axis is a
-  // no-op that fails silently (a shadowless card just renders flat).
-  log('\nWhat a theme can change: color · elevation (shadow + inset-shadow) · radius ·');
-  log('border-width · spacing · type (family/size/weight/tracking/leading) · motion ·');
-  log('effects (blur/gradient/text-shadow). A theme only re-skins the axes your');
-  log('components reference — "I used semantic colors" themes one axis and leaves the');
-  log('rest flat. Two traps: on dark themes surface-raised ≈ surface, so a card needs a');
-  log('shadow (not color) to stand out; and one text-on-primary must stay legible on');
-  log('every status fill (black-on-info is the risk).');
-  log('\nAfter adopting, switch through the extreme themes (Brutalist, Neumorphic,');
-  log('Editorial, Glassmorphic) and look — if a view renders identically under');
-  log('Brutalist and the default, it isn\'t expressing borders/shadows/radius yet.');
+  // Reality-check, kept to a pointer: Veneer only re-skins elements already on
+  // token utilities, so an existing app won't fully change until its hardcoded
+  // styles are migrated. The axis list, the design traps, and the stress-theme
+  // checklist all live in the AGENTS.md guide just written — don't repeat them here.
+  log('\nVeneer only themes elements that use token utilities (bg-surface, text-text, …).');
+  log('On an existing app, `npx veneerui doctor` reports how much is themeable today and');
+  log('`npx veneerui migrate` converts the mechanical gotchas. The token rules — what a');
+  log('theme can change, and the gotchas that silently break it — are in the AGENTS.md');
+  log('guide written above; skim it before building UI.');
 }
 
 function indent(log: (s: string) => void, block: string): void {

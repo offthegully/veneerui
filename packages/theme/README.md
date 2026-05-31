@@ -39,9 +39,8 @@ Anti-flash (apply the saved theme before first paint):
 - **Next (App Router):** render `<AntiFlashScript />` from `@offthegully/veneerui/next` in
   `app/layout.tsx`'s `<head>`.
 
-Full step-by-step (CLI and manual) for each framework:
-- [Vite guide](https://github.com/offthegully/veneerui/blob/main/docs/integration-vite.md)
-- [Next.js guide](https://github.com/offthegully/veneerui/blob/main/docs/integration-next.md)
+Full step-by-step (CLI and manual) for Vite, Next.js, and other React + Tailwind
+v4 apps: [Integration guide](https://github.com/offthegully/veneerui/blob/main/docs/integration.md).
 
 ## Entry points
 
@@ -76,7 +75,7 @@ For a showcase, pass `veneer({ shuffleUntilPinned: themes })` (Vite) and
 before first paint, so still flash-free — until the visitor selects one, which pins
 it. `useTheme()` exposes `pinned` and `shuffle()` to build the control. Omit it for
 the ordinary "apply the saved theme" behavior. See the
-[Vite guide](https://github.com/offthegully/veneerui/blob/main/docs/integration-vite.md).
+[integration guide](https://github.com/offthegully/veneerui/blob/main/docs/integration.md#shuffle).
 
 ## License
 

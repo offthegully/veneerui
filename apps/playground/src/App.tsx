@@ -8,12 +8,6 @@ import { FloatingControls } from './components/FloatingControls'
 
 export type View = 'overview' | 'components' | 'tokens'
 
-// const TABS: { id: View; label: string }[] = [
-//   { id: 'overview', label: 'Overview' },
-//   { id: 'components', label: 'Components' },
-//   { id: 'tokens', label: 'What changed' },
-// ]
-
 export default function App() {
   const [view] = useState<View>('overview')
 
@@ -32,30 +26,6 @@ export default function App() {
           <ThemeSwitcher />
         </header>
       </div>
-
-      {/* View switcher — segmented control, token-styled so it re-skins too. */}
-      {/*<div className="flex justify-center border-border px-6 py-3 [border-bottom-width:var(--border-width-thin)]">
-        <div className="inline-flex gap-1 rounded-lg bg-surface-sunken p-1">
-          {TABS.map((tab) => {
-            const active = view === tab.id
-            return (
-              <button
-                key={tab.id}
-                type="button"
-                onClick={() => setView(tab.id)}
-                aria-pressed={active}
-                className={`rounded-md px-4 py-1.5 text-sm font-medium transition-colors duration-[calc(var(--duration-default)*1ms)] ease-default ${
-                  active
-                    ? 'bg-surface-raised text-text [box-shadow:var(--shadow-sm)]'
-                    : 'text-text-muted hover:text-text'
-                }`}
-              >
-                {tab.label}
-              </button>
-            )
-          })}
-        </div>
-      </div>*/}
 
       {view === 'overview' ? (
         <main>

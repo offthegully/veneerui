@@ -12,8 +12,8 @@ Because a theme is **inert data, not code**, it's validated and safe to load fro
 untrusted sources: a user's whole theme library lives in their browser.
 
 **[▶ Live demo](https://veneerui.dev)** &nbsp;·&nbsp;
-**Add it to your app** — [Vite](./docs/integration-vite.md) ·
-[Next.js](./docs/integration-next.md) &nbsp;·&nbsp;
+**[Add it to your app](./docs/integration.md)** —
+[Vite](./docs/integration.md#vite) · [Next.js](./docs/integration.md#nextjs) &nbsp;·&nbsp;
 **Author a theme** — [guide](./docs/authoring-guide.md) ·
 [tokens](./docs/schema-reference.md) &nbsp;·&nbsp;
 **[Gallery](./gallery/README.md)**
@@ -54,17 +54,27 @@ playground under a different theme:
 
 ## Add Veneer to your app
 
-Veneer is a **drop-in add-on, not a scaffolder** — keep your own Vite/Next +
-Tailwind v4 project and add Veneer on top, the way you'd add shadcn/ui.
+Veneer is a **drop-in add-on, not a scaffolder** — keep your own React +
+Tailwind v4 project and add theming on top, the way you'd add shadcn/ui.
+
+**Easiest on a fresh app** ([recommended](./docs/integration.md#fresh)). A new
+Vite or Next + Tailwind v4 project has nothing to migrate, so every screen is
+themeable from the first commit:
 
 ```sh
 npm i @offthegully/veneerui
-npx veneerui init            # @import the tokens + wire the anti-flash, then print the provider step
+npx veneerui init            # @import the tokens + wire anti-flash, write the agent guide, print the provider step
 npx veneerui add switcher    # copy a ThemeSwitcher into your components
 npx veneerui add fonts       # load the fonts the built-in themes name (Fontsource)
-npx veneerui doctor          # report how much of your existing UI is themeable today
-npx veneerui migrate         # rewrite the mechanical hardcoded values to tokens
 ```
+
+Wrap your app root in `<ThemeProvider>` (the one step `init` prints), drop in the
+switcher, and build everything else with token utilities (`bg-surface`,
+`text-text`, …) — it all re-skins for free.
+
+**Already have an app?** The wiring is identical, but your existing styles won't
+re-skin until they move onto tokens — `veneerui doctor` and `migrate` make that a
+measured task. It works today and is [actively improving](#migrate-an-existing-app).
 
 The one required interlock is a single line of CSS — `@import
 "@offthegully/veneerui/tokens.css";` after `@import "tailwindcss";` — which makes
@@ -73,8 +83,9 @@ Tailwind v4 generate the token utilities Veneer overrides at runtime. The runtim
 UI components are **copied into your project** (shadcn-style), because Tailwind v4
 doesn't scan `node_modules`.
 
-Step-by-step, CLI and manual:
-**[Vite guide](./docs/integration-vite.md)** · **[Next.js guide](./docs/integration-next.md)**.
+Step-by-step, CLI and manual — the **[integration guide](./docs/integration.md)**
+covers [Vite](./docs/integration.md#vite), [Next.js](./docs/integration.md#nextjs),
+and [other React + Tailwind v4 apps](./docs/integration.md#other).
 
 > **Next.js (App Router):** Veneer is SSR-safe. `init` adds
 > `suppressHydrationWarning` to `<html>` (the anti-flash script sets theme
@@ -82,7 +93,7 @@ Step-by-step, CLI and manual:
 > components on a Next project, and the bundled `ThemeSwitcher` holds a
 > theme-neutral first paint until mount so there's no hydration mismatch. To
 > compute a default theme in a Server Component, import from the side-effect-free
-> [`@offthegully/veneerui/themes`](./docs/integration-next.md#shipping-your-own-themes)
+> [`@offthegully/veneerui/themes`](./docs/integration.md#themes)
 > subpath — the package root pulls in React context and can't be imported server-side.
 
 ### Ship your own themes
@@ -250,8 +261,9 @@ components.
 
 ## Further reading
 
-- **Add Veneer to your app** — [Vite](./docs/integration-vite.md) ·
-  [Next.js](./docs/integration-next.md)
+- **Add Veneer to your app** — the [integration guide](./docs/integration.md)
+  ([Vite](./docs/integration.md#vite) · [Next.js](./docs/integration.md#nextjs) ·
+  [other frameworks](./docs/integration.md#other))
 - **Migrate an existing app** — `veneerui doctor` / `veneerui migrate` and
   [`eslint-plugin-veneer`](./packages/eslint-plugin)
 - **Author a theme** — the [authoring guide](./docs/authoring-guide.md) and the
