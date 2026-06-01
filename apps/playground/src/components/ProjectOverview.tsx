@@ -52,8 +52,8 @@ const FEATURES = [
     path: 'M12 3l8 4v5c0 5-3.4 8-8 9-4.6-1-8-4-8-9V7l8-4z',
   },
   {
-    title: 'Framework-agnostic',
-    body: 'Drop it into an existing Vite or Next app on Tailwind v4. It is a runtime you add, not a scaffolder you adopt.',
+    title: 'Web and native',
+    body: 'Drop it into an existing Vite or Next app on Tailwind v4, or scaffold a fresh web or Expo (React Native) app from one command. The same token set drives both — native runs via NativeWind (experimental).',
     path: 'M4 4h7v7H4zM13 13h7v7h-7zM13 4h7v7h-7zM4 13h7v7H4z',
   },
   {
@@ -73,6 +73,7 @@ const DOCS_BASE = 'https://github.com/offthegully/veneerui/blob/main/docs';
 const DOCS = [
   { title: 'Authoring guide', blurb: 'Pick a coherent palette and surface ladder.', href: `${DOCS_BASE}/authoring-guide.md` },
   { title: 'Integration guide', blurb: 'Add VeneerUI to a Vite, Next, or other React + Tailwind v4 app.', href: `${DOCS_BASE}/integration.md` },
+  { title: 'Expo / React Native', blurb: 'Run the same tokens on native via NativeWind (experimental).', href: `${DOCS_BASE}/expo.md` },
   { title: 'Token reference', blurb: 'Every token you can set, with defaults.', href: `${DOCS_BASE}/schema-reference.md` },
 ];
 
