@@ -1,91 +1,108 @@
 /*
-  Two Veneer themes, ported as plain data.
+  Thin, hand-written surface over the GENERATED Veneer token data.
 
-  Values are lifted verbatim from the Veneer repo's builtin themes
-  (packages/theme/src/builtin/{default-light,brutalist}.json) merged over the
-  schema defaults (packages/theme/src/schema.ts) — exactly how Veneer's
-  tokenValue() resolves a theme on the web: `theme.tokens[name] ?? default`.
-
-  This is the portable half of Veneer: the token map is pure JSON. The web
-  runtime (DOM mutation, localStorage, anti-flash) is NOT used here — NativeWind's
-  VariableContextProvider replaces it (see App.tsx).
+  The token VALUES live in ./veneer-themes.generated.ts and are produced by
+  `npm run gen:tokens` from Veneer's published source of truth (tokens.css +
+  builtin/*.json). Do not hand-edit values here or there — change the upstream
+  theme and re-generate. This file only adds the React-Native helpers and curates
+  which themes the demo screen offers.
 */
+import {
+  THEME_TOKENS,
+  THEME_META,
+  TOKEN_META,
+  type TokenName,
+  type ThemeId,
+} from "./veneer-themes.generated";
 
-export type TokenName =
-  | "color-primary"
-  | "color-primary-hover"
-  | "color-accent"
-  | "color-surface"
-  | "color-surface-raised"
-  | "color-surface-sunken"
-  | "color-text"
-  | "color-text-muted"
-  | "color-text-on-primary"
-  | "color-border"
-  | "color-focus-ring"
-  | "radius-md"
-  | "radius-lg"
-  | "border-width-default"
-  | "shadow-card";
-
+export { THEME_TOKENS, THEME_META };
+export type { TokenName, ThemeId };
 export type TokenMap = Record<TokenName, string>;
 
-/** Veneer `default-light` (the fallback theme — these are the schema defaults). */
-export const lightTheme: TokenMap = {
-  "color-primary": "#3b82f6",
-  "color-primary-hover": "#2563eb",
-  "color-accent": "#06b6d4",
-  "color-surface": "#ffffff",
-  "color-surface-raised": "#f9fafb",
-  "color-surface-sunken": "#f3f4f6",
-  "color-text": "#111827",
-  "color-text-muted": "#4b5563",
-  "color-text-on-primary": "#ffffff",
-  "color-border": "#e5e7eb",
-  "color-focus-ring": "#3b82f6",
-  "radius-md": "8px",
-  "radius-lg": "12px",
-  "border-width-default": "1px",
-  "shadow-card": "0px 2px 8px rgba(0,0,0,0.12)",
-};
+/**
+ * Themes whose look survives React Native's lack of blur / gradients / layered
+ * shadows. The effect-heavy themes (glassmorphic, neumorphic, neon-arcade) are
+ * still generated — they're all in THEME_TOKENS — they're just left out of the
+ * switcher because they'd degrade. The axes shown here (color, radius, border
+ * width, hard shadow) are exactly the ones that port cleanly.
+ */
+export const DEMO_THEME_IDS = [
+  "default-light",
+  "default-dark",
+  "brutalist",
+  "high-contrast",
+  "terminal",
+] as const satisfies readonly ThemeId[];
 
-/** Veneer `brutalist` — sharp corners, heavy black borders, hard offset shadow. */
-export const brutalistTheme: TokenMap = {
-  "color-primary": "#ff4d00",
-  "color-primary-hover": "#e64500",
-  "color-accent": "#00e5ff",
-  "color-surface": "#fefce8",
-  "color-surface-raised": "#ffffff",
-  "color-surface-sunken": "#f7f3d0",
-  "color-text": "#000000",
-  "color-text-muted": "#1a1a1a",
-  "color-text-on-primary": "#000000",
-  "color-border": "#000000",
-  "color-focus-ring": "#000000",
-  "radius-md": "0px",
-  "radius-lg": "0px",
-  "border-width-default": "3px",
-  "shadow-card": "4px 4px 0px 0px #000000",
-};
+export type ThemeName = (typeof DEMO_THEME_IDS)[number];
 
-export const THEMES = { light: lightTheme, brutalist: brutalistTheme };
-export type ThemeName = keyof typeof THEMES;
+/** Human label for a theme id (e.g. "default-light" → "Light"). */
+export const themeLabel = (id: ThemeId): string => THEME_META[id]?.name ?? id;
+
+// The provider only needs the tokens a className utility resolves via var(): the
+// simple scalar, theme-bridge tokens (color / length / number). Filtering by type
+// deterministically drops the values RN can't take live anyway — gradients,
+// layered/glow shadows (nested var()), easings, font stacks — which the screen
+// instead reads straight off the map (see `token()` below), exactly as Veneer
+// consumes its root-bridge tokens via var() on the web.
+const SCALAR_TYPES = new Set(["color", "length", "number"]);
+const PROVIDER_TOKENS = (Object.keys(TOKEN_META) as TokenName[]).filter((n) => {
+  const meta = TOKEN_META[n];
+  return meta.bridge === "theme" && SCALAR_TYPES.has(meta.type);
+});
 
 /**
- * Convert a Veneer token map into the `--token` CSS-variable record that
- * NativeWind's VariableContextProvider expects. This is the RN analogue of
- * Veneer's applyTheme() — instead of writing vars onto document.documentElement,
- * we hand the whole map to a React provider.
+ * RN analogue of Veneer's applyTheme(): turn a theme into the `--token` record
+ * NativeWind's <VariableContextProvider> swaps in. Instead of writing the vars
+ * onto document.documentElement, we hand the whole map to a React provider.
  */
-export function toCssVars(tokens: TokenMap): Record<`--${string}`, string> {
+export function toCssVars(id: ThemeId): Record<`--${string}`, string> {
+  const tokens = THEME_TOKENS[id];
   const out: Record<string, string> = {};
-  for (const [name, value] of Object.entries(tokens)) {
-    out[`--${name}`] = value;
-  }
+  for (const name of PROVIDER_TOKENS) out[`--${name}`] = tokens[name];
   return out as Record<`--${string}`, string>;
 }
+
+/** One resolved token value for a theme — the root-bridge escape hatch (the RN
+ *  equivalent of reading `var(--token)`, used for border width / shadow inline). */
+export const token = (id: ThemeId, name: TokenName): string => THEME_TOKENS[id][name];
 
 /** Parse a `"3px"` length into the number RN style props want. */
 export function pxToNumber(value: string): number {
   return parseFloat(value) || 0;
 }
+
+/**
+ * A theme resolved into ready-to-apply React Native inline-style values.
+ *
+ * WHY this exists instead of just using className utilities: in the NativeWind v5
+ * *preview* we tested (Expo SDK 56), the generated color utilities (bg-*, text-*,
+ * border-*) do NOT resolve their CSS variable at runtime — verified by rendering on
+ * web, where bg-primary computes to transparent even though <VariableContextProvider>
+ * sets --color-primary on the root. Only layout utilities and inline styles work.
+ *
+ * So the portable, engine-independent way to drive Veneer tokens in RN today is a
+ * plain JS theme object applied through `style={…}` — which re-skins on the normal
+ * React re-render when the active theme changes. That's what `palette()` returns.
+ * (Token DATA still comes straight from Veneer via the codegen — see THEME_TOKENS.)
+ */
+export function palette(id: ThemeId) {
+  const t = (n: TokenName) => THEME_TOKENS[id][n];
+  return {
+    surface: t("color-surface"),
+    surfaceRaised: t("color-surface-raised"),
+    surfaceSunken: t("color-surface-sunken"),
+    primary: t("color-primary"),
+    accent: t("color-accent"),
+    text: t("color-text"),
+    textMuted: t("color-text-muted"),
+    textOnPrimary: t("color-text-on-primary"),
+    border: t("color-border"),
+    radiusMd: pxToNumber(t("radius-md")),
+    radiusLg: pxToNumber(t("radius-lg")),
+    borderWidth: pxToNumber(t("border-width-default")),
+    shadow: t("shadow-card"),
+  };
+}
+
+export type Palette = ReturnType<typeof palette>;
