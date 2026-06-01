@@ -39,28 +39,41 @@ describe('buildExpoScaffoldCommand', () => {
 });
 
 describe('patchExpoPackageJson', () => {
-  it('adds the entry, codegen + typecheck scripts, and the lightningcss pin', () => {
-    const out = patchExpoPackageJson({ scripts: { start: 'expo start' } });
+  it('adds the entry and the codegen + typecheck scripts', () => {
+    const out = patchExpoPackageJson({ scripts: { start: 'expo start' } }, 'npm');
     expect(out.main).toBe('index.ts');
     expect(out.scripts).toMatchObject({
       start: 'expo start', // preserved
       'gen:tokens': 'node scripts/generate-veneer-tokens.mjs',
       typecheck: 'tsc --noEmit',
     });
-    expect(out.overrides).toMatchObject({ lightningcss: '1.30.1' });
+  });
+
+  it('pins lightningcss under the key the package manager actually reads', () => {
+    expect(patchExpoPackageJson({}, 'npm').overrides).toMatchObject({ lightningcss: '1.30.1' });
+    expect(patchExpoPackageJson({}, 'bun').overrides).toMatchObject({ lightningcss: '1.30.1' });
+    expect(patchExpoPackageJson({}, 'pnpm').pnpm?.overrides).toMatchObject({ lightningcss: '1.30.1' });
+    expect(patchExpoPackageJson({}, 'yarn').resolutions).toMatchObject({ lightningcss: '1.30.1' });
+    // npm-style override is NOT written for pnpm/yarn (they'd ignore it)
+    expect(patchExpoPackageJson({}, 'pnpm').overrides).toBeUndefined();
+    expect(patchExpoPackageJson({}, 'yarn').overrides).toBeUndefined();
   });
 
   it('is non-destructive to unrelated fields', () => {
-    const out = patchExpoPackageJson({ name: 'x', dependencies: { expo: '~56' } });
+    const out = patchExpoPackageJson({ name: 'x', dependencies: { expo: '~56' } }, 'npm');
     expect(out.name).toBe('x');
     expect(out.dependencies).toEqual({ expo: '~56' });
   });
 });
 
 describe('expo deps', () => {
-  it('installs the NativeWind + RN stack natively and the Tailwind toolchain as dev', () => {
-    expect(EXPO_NATIVE_DEPS).toContain('nativewind');
+  it('pins the NativeWind stack (not in Expo SDK map) and floats the SDK-managed deps', () => {
+    // nativewind + react-native-css are pinned (expo install would otherwise float them)
+    expect(EXPO_NATIVE_DEPS).toContain('nativewind@^5.0.0-preview.4');
+    expect(EXPO_NATIVE_DEPS).toContain('react-native-css@^3.0.7');
+    // SDK-managed deps stay unpinned so expo install matches the SDK
     expect(EXPO_NATIVE_DEPS).toContain('react-native-worklets'); // reanimated 4 peer
+    expect(EXPO_NATIVE_DEPS).toContain('react-native-safe-area-context');
     expect(EXPO_DEV_DEPS).toContain('tailwindcss');
     expect(EXPO_DEV_DEPS).toContain('@offthegully/veneerui'); // the codegen's data source
   });

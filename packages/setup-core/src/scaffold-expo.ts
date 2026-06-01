@@ -15,7 +15,7 @@
  * the template manifest — are unit-tested; `runScaffoldExpo` is the fs/process glue.
  */
 import { spawnSync } from 'node:child_process';
-import { cpSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { cpSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { installArgs, type PackageManager, type ScaffoldOptions } from './scaffold';
@@ -26,8 +26,12 @@ const VENEER_PKG = '@offthegully/veneerui';
 
 /** Native deps installed through `expo install` so versions match the SDK. */
 export const EXPO_NATIVE_DEPS = [
-  'nativewind',
-  'react-native-css',
+  // NativeWind isn't in Expo's version map, so PIN it (and its react-native-css peer) to
+  // the verified v5-preview — `expo install` would otherwise float to latest, which can be
+  // a breaking newer preview. Bump these when NativeWind v5 ships stable.
+  'nativewind@^5.0.0-preview.4',
+  'react-native-css@^3.0.7',
+  // SDK-managed — leave unpinned so `expo install` picks versions matching the Expo SDK.
   'react-native-reanimated',
   'react-native-worklets',
   'react-native-safe-area-context',
@@ -74,17 +78,20 @@ interface ExpoPackageJson {
   main?: string;
   scripts?: Record<string, string>;
   overrides?: Record<string, string>;
+  resolutions?: Record<string, string>;
+  pnpm?: { overrides?: Record<string, string>; [k: string]: unknown };
   [k: string]: unknown;
 }
 
 /**
- * Patch the created app's package.json: a stable entry, the codegen + typecheck
- * scripts, and the `lightningcss` pin (a known NativeWind-v5-preview build gotcha).
- * Pure so it's unit-tested. The override is npm-style; pnpm/yarn users may need to
- * mirror it under `pnpm.overrides` / `resolutions`.
+ * Patch the created app's package.json: a stable entry, the codegen + typecheck scripts,
+ * and the `lightningcss` pin (a known NativeWind-v5-preview build gotcha). Pure so it's
+ * unit-tested. The pin is written under the key the chosen package manager actually reads
+ * (`overrides` for npm/bun, `pnpm.overrides`, `resolutions` for yarn) — otherwise a
+ * non-npm scaffold would silently get an unpinned lightningcss.
  */
-export function patchExpoPackageJson(pkg: ExpoPackageJson): ExpoPackageJson {
-  return {
+export function patchExpoPackageJson(pkg: ExpoPackageJson, pm: PackageManager): ExpoPackageJson {
+  const next: ExpoPackageJson = {
     ...pkg,
     main: 'index.ts',
     scripts: {
@@ -92,8 +99,12 @@ export function patchExpoPackageJson(pkg: ExpoPackageJson): ExpoPackageJson {
       'gen:tokens': 'node scripts/generate-veneer-tokens.mjs',
       typecheck: 'tsc --noEmit',
     },
-    overrides: { ...pkg.overrides, lightningcss: '1.30.1' },
   };
+  const PIN = { lightningcss: '1.30.1' };
+  if (pm === 'pnpm') next.pnpm = { ...pkg.pnpm, overrides: { ...pkg.pnpm?.overrides, ...PIN } };
+  else if (pm === 'yarn') next.resolutions = { ...pkg.resolutions, ...PIN };
+  else next.overrides = { ...pkg.overrides, ...PIN }; // npm + bun
+  return next;
 }
 
 function run(cmd: string, args: string[], cwd: string): void {
@@ -112,10 +123,10 @@ function writeTemplates(appDir: string, log: (l: string) => void): void {
   log(`  ✓ wired NativeWind + Tailwind config, token codegen, ThemeProvider + switcher`);
 }
 
-function patchPackageJson(appDir: string, log: (l: string) => void): void {
+function patchPackageJson(appDir: string, pm: PackageManager, log: (l: string) => void): void {
   const p = join(appDir, 'package.json');
   const pkg = JSON.parse(readFileSync(p, 'utf8')) as ExpoPackageJson;
-  writeFileSync(p, JSON.stringify(patchExpoPackageJson(pkg), null, 2) + '\n');
+  writeFileSync(p, JSON.stringify(patchExpoPackageJson(pkg, pm), null, 2) + '\n');
   log('  ✓ package.json — gen:tokens script + lightningcss pin');
 }
 
@@ -145,7 +156,7 @@ export function runScaffoldExpo(opts: ScaffoldOptions): { appDir: string } {
 
   log('\nWiring Veneer…');
   writeTemplates(appDir, log);
-  patchPackageJson(appDir, log);
+  patchPackageJson(appDir, opts.pm, log);
 
   if (install) {
     log('\nInstalling deps…');
@@ -159,7 +170,7 @@ export function runScaffoldExpo(opts: ScaffoldOptions): { appDir: string } {
   }
 
   if (opts.agent) {
-    const noGit = true; // create-expo-app may or may not init git; treat as fresh for the hand-off note
+    const noGit = !existsSync(join(appDir, '.git'));
     runAgentHandoff({ root: appDir, agent: opts.agent, noGit, log });
   }
 
