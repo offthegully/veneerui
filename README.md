@@ -96,6 +96,10 @@ because Tailwind v4 doesn't scan `node_modules`.)
 > `suppressHydrationWarning`, the `'use client'` boundary, and a no-flash first
 > paint for you. [SSR details →](./docs/integration.md#ssr)
 
+> **React Native / Expo (experimental).** The same tokens and the same utilities
+> (`bg-primary`, `text-text`, `rounded-md`) run on native via NativeWind — one theme
+> JSON for web *and* app. [Expo quickstart →](./docs/expo.md)
+
 ### Ship your own themes
 
 To ship *your* themes instead of the built-ins, author them with `defineTheme`
@@ -208,7 +212,9 @@ Tokens are declared in Tailwind v4's `@theme` block, so each one emits both a CS
 custom property *and* a utility class (`--color-primary` → `bg-primary`). Your
 components use only those semantic utilities — never a hardcoded hex. `applyTheme()`
 writes a theme's values as inline custom properties on `<html>`, which outrank the
-`:root` defaults — so a switch re-skins everything instantly with no re-render.
+`:root` defaults — so a switch re-skins everything instantly with no re-render. The
+same model runs on **React Native** via NativeWind — same utilities, same theme JSON,
+the provider swapping the variables instead of `<html>` ([Expo guide](./docs/expo.md)).
 
 Themes are **validated, not trusted**: a theme is *rejected* (never silently
 degraded) if it uses unknown tokens, invalid CSS values, or any dangerous pattern
@@ -265,6 +271,8 @@ components.
   [integration guide](./docs/integration.md) to add it to an existing one
   ([Vite](./docs/integration.md#vite) · [Next.js](./docs/integration.md#nextjs) ·
   [other frameworks](./docs/integration.md#other))
+- **React Native / Expo** (experimental) — the same tokens and utilities on native
+  via NativeWind ([Expo quickstart](./docs/expo.md))
 - **Migrate an existing app** — `veneerui doctor` / `veneerui migrate` and
   [`eslint-plugin-veneer`](./packages/eslint-plugin)
 - **Author a theme** — the [authoring guide](./docs/authoring-guide.md) and the

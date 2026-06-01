@@ -26,6 +26,10 @@ installed).
 **Flags:** `--framework <vite|next>` · `--pm <npm|pnpm|yarn|bun>` · `--no-install` ·
 `--dry-run` · `--yes`
 
+**React Native / Expo?** Not a scaffolder option yet (web only). Wire it manually —
+quickstart + a copy-and-run POC in the
+[Expo guide](https://github.com/offthegully/veneerui/blob/main/docs/expo.md).
+
 Already have an app? Use the [`veneerui`](https://www.npmjs.com/package/veneerui) CLI
 (`npx veneerui init`) instead. Full docs:
 [Veneer integration guide](https://github.com/offthegully/veneerui/blob/main/docs/integration.md).

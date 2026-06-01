@@ -19,6 +19,8 @@ per framework, and the agent hand-off.
 - **[Create a new app](#new-app)** — one command scaffolds and wires everything. **Recommended.**
 - **[Add to an existing app](#existing)** — works today; your styles won't re-skin
   until they move onto tokens. **Beta.**
+- **[React Native / Expo](./expo.md)** — the same tokens and utilities on native via
+  NativeWind. **Experimental.**
 - **The invariants & per-framework wiring:** [interlock](#interlock) · [Vite](#vite) ·
   [Next.js](#nextjs) · [other React + Tailwind v4](#other)
 
