@@ -1,5 +1,5 @@
 /** `veneerui list` — show the copy-in components available to `veneerui add`. */
-import { loadManifest } from './registry';
+import { loadManifest } from '@veneerui/setup-core';
 
 export function runList(log: (line: string) => void = console.log): void {
   const components = loadManifest();

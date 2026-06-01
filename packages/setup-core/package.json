@@ -1,0 +1,20 @@
+{
+  "name": "@veneerui/setup-core",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Internal shared core for Veneer setup — framework detection, idempotent file patchers, the VENEER-SETUP.md plan, the agent-guide upsert, the copy-in component registry, and scaffold/agent orchestration. Consumed and bundled by the `veneerui` CLI and the `create-veneerui` scaffolder. Plain TS source, never published.",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "^24.12.4",
+    "@veneerui/lint-core": "*",
+    "typescript": "~6.0.2",
+    "vitest": "^4.1.7"
+  }
+}

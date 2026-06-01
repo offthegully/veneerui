@@ -1,15 +1,20 @@
 # Publishing
 
-Veneer publishes **two** packages from this monorepo:
+Veneer publishes **three** packages from this monorepo:
 
 | Package | Dir | What it is |
 |---|---|---|
 | `@offthegully/veneerui` | `packages/theme` | the runtime + tokens (a dependency apps install) |
-| `veneerui` | `packages/cli` | the `init`/`add` CLI (run via `npx veneerui`) |
+| `veneerui` | `packages/cli` | the `init`/`add`/`doctor`/`migrate` CLI for existing apps (`npx veneerui`) |
+| `create-veneerui` | `packages/create-veneerui` | the `npm create veneerui` scaffolder for new apps |
+
+> `@veneerui/setup-core` (the shared setup logic) and `@veneerui/lint-core` are
+> **private** (`"private": true`, never published); both are bundled into the CLI and
+> scaffolder at build time.
 
 > The package names assume the `@offthegully` npm scope (owned) and the unscoped
-> `veneerui` name are available — verify the unscoped name is free before the first
-> publish. npm renders each package's `README.md` as its landing page.
+> `veneerui` / `create-veneerui` names are available — verify both unscoped names are
+> free before the first publish. npm renders each package's `README.md` as its landing page.
 
 ## Before publishing
 
@@ -23,18 +28,23 @@ npm run build                               # builds package + playground + CLI
 ```
 
 `@offthegully/veneerui` ships `dist/`, `tokens.generated.css`, and `theme-v1.json` (its
-`files` allowlist); `veneerui` ships `dist/` and `registry/`. Confirm with
-`npm pack --dry-run -w @offthegully/veneerui` and `-w veneerui`.
+`files` allowlist); `veneerui` and `create-veneerui` each ship `dist/`, `registry/`, and
+`assets/` (the registry + agent guide are build-copied from `@veneerui/setup-core` by
+`scripts/sync-setup-assets.ts`). Confirm with `npm pack --dry-run -w @offthegully/veneerui`,
+`-w veneerui`, and `-w create-veneerui`.
 
 ## Publishing
 
 ```sh
 npm publish -w @offthegully/veneerui --access public
-npm publish -w veneerui      --access public
+npm publish -w veneerui              --access public
+npm publish -w create-veneerui       --access public
 ```
 
-Publish `@offthegully/veneerui` first — the CLI's copy-in components and the integration
-docs reference it.
+Publish `@offthegully/veneerui` first (the CLI and scaffolder install/reference it), then
+`veneerui`, then `create-veneerui`. The scaffolder **bundles** `@veneerui/setup-core`, so
+it has no runtime dependency on `veneerui`'s published version — the only coupling is the
+runtime semver string it installs into the new app.
 
 ## Versioning
 

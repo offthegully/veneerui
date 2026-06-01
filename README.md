@@ -12,8 +12,7 @@ Because a theme is **inert data, not code**, it's validated and safe to load fro
 untrusted sources: a user's whole theme library lives in their browser.
 
 **[▶ Live demo](https://veneerui.dev)** &nbsp;·&nbsp;
-**[Add it to your app](./docs/integration.md)** —
-[Vite](./docs/integration.md#vite) · [Next.js](./docs/integration.md#nextjs) &nbsp;·&nbsp;
+**[Add it to your app](./docs/integration.md)** — `npm create veneerui@latest` &nbsp;·&nbsp;
 **Author a theme** — [guide](./docs/authoring-guide.md) ·
 [tokens](./docs/schema-reference.md) &nbsp;·&nbsp;
 **[Gallery](./gallery/README.md)**
@@ -54,48 +53,48 @@ playground under a different theme:
 
 ## Add Veneer to your app
 
-Veneer is a **drop-in add-on, not a scaffolder** — keep your own React +
-Tailwind v4 project and add theming on top, the way you'd add shadcn/ui.
+**New app? One command.** `npm create veneerui@latest` scaffolds a React +
+Tailwind v4 app — you pick the framework — then wires Veneer end-to-end and drops
+in a theme switcher, so it runs themed from the first commit with no manual steps:
 
-**Easiest on a fresh app** ([recommended](./docs/integration.md#fresh)). A new
-Vite or Next + Tailwind v4 project has nothing to migrate, so every screen is
-themeable from the first commit:
+```sh
+npm create veneerui@latest my-app
+# → pick Vite or Next.js; it scaffolds, installs, wires the tokens + provider +
+#   anti-flash, and adds a ThemeSwitcher
+cd my-app && npm run dev
+```
+
+**Hand it to your agent (optional).** Add `--agent` and the scaffolder finishes and
+verifies the setup with whatever coding-agent CLI you have installed (`claude`,
+`codex`, …) — model-agnostic; with none installed it prints a copy-paste prompt for
+any AI tool. From there you keep building by *prompting*: the generated `AGENTS.md`
+teaches the agent to drive every surface from tokens.
+
+**Already have an app? (Beta)** Add Veneer on top, shadcn-style — keep your project,
+the CLI does the wiring:
 
 ```sh
 npm i @offthegully/veneerui
-npx veneerui init            # @import the tokens + wire anti-flash, write the agent guide, print the provider step
+npx veneerui init            # wire tokens + provider + anti-flash, write the agent guide
 npx veneerui add switcher    # copy a ThemeSwitcher into your components
-npx veneerui add fonts       # load the fonts the built-in themes name (Fontsource)
 ```
 
-`init` writes the last few entry-file steps to a self-removing `VENEER-SETUP.md` —
-finish them by hand, or tell your AI agent *"finish the Veneer setup in
-VENEER-SETUP.md."* Then build everything with token utilities (`bg-surface`,
-`text-text`, …) and it all re-skins for free.
+`init` writes any entry-file steps it won't patch blindly to a self-removing
+`VENEER-SETUP.md` — finish them by hand, or tell your agent *"finish the Veneer setup
+in VENEER-SETUP.md."* One catch: existing styles won't re-skin until they move onto
+tokens — `veneerui doctor` and `migrate` make that a [measured task](#migrate-an-existing-app).
 
-**Already have an app?** The wiring is identical, but your existing styles won't
-re-skin until they move onto tokens — `veneerui doctor` and `migrate` make that a
-measured task. It works today and is [actively improving](#migrate-an-existing-app).
+However you start, Veneer rests on **three framework-agnostic invariants**: (1)
+`@import "@offthegully/veneerui/tokens.css";` after `@import "tailwindcss";` (so
+Tailwind v4 generates the token utilities Veneer overrides at runtime), (2) wrap the
+app root in `<ThemeProvider>`, and (3) run the anti-flash script before first paint.
+The **[integration guide](./docs/integration.md)** explains them and how they land on
+any React framework. (UI components are **copied into your project**, shadcn-style,
+because Tailwind v4 doesn't scan `node_modules`.)
 
-The one required interlock is a single line of CSS — `@import
-"@offthegully/veneerui/tokens.css";` after `@import "tailwindcss";` — which makes
-Tailwind v4 generate the token utilities Veneer overrides at runtime. The runtime
-(`ThemeProvider`, `useTheme`, validation, import pipeline) is a normal dependency;
-UI components are **copied into your project** (shadcn-style), because Tailwind v4
-doesn't scan `node_modules`.
-
-Step-by-step, CLI and manual — the **[integration guide](./docs/integration.md)**
-covers [Vite](./docs/integration.md#vite), [Next.js](./docs/integration.md#nextjs),
-and [other React + Tailwind v4 apps](./docs/integration.md#other).
-
-> **Next.js (App Router):** Veneer is SSR-safe. `init` adds
-> `suppressHydrationWarning` to `<html>` (the anti-flash script sets theme
-> variables before hydration), `add` prepends `'use client'` to copied
-> components on a Next project, and the bundled `ThemeSwitcher` holds a
-> theme-neutral first paint until mount so there's no hydration mismatch. To
-> compute a default theme in a Server Component, import from the side-effect-free
-> [`@offthegully/veneerui/themes`](./docs/integration.md#themes)
-> subpath — the package root pulls in React context and can't be imported server-side.
+> **Next.js (App Router)** is fully supported and SSR-safe — `init` handles
+> `suppressHydrationWarning`, the `'use client'` boundary, and a no-flash first
+> paint for you. [SSR details →](./docs/integration.md#ssr)
 
 ### Ship your own themes
 
@@ -262,7 +261,8 @@ components.
 
 ## Further reading
 
-- **Add Veneer to your app** — the [integration guide](./docs/integration.md)
+- **Add Veneer to your app** — `npm create veneerui` for a new app, or the
+  [integration guide](./docs/integration.md) to add it to an existing one
   ([Vite](./docs/integration.md#vite) · [Next.js](./docs/integration.md#nextjs) ·
   [other frameworks](./docs/integration.md#other))
 - **Migrate an existing app** — `veneerui doctor` / `veneerui migrate` and

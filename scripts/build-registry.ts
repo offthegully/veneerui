@@ -20,7 +20,9 @@ import { fileURLToPath } from 'node:url';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const SRC = join(root, 'apps/playground/src/components');
-const OUT = join(root, 'packages/cli/registry');
+// Canonical home of the registry is setup-core (where registry.ts reads it from);
+// the build copies it into the `veneerui` CLI and `create-veneerui` packages.
+const OUT = join(root, 'packages/setup-core/registry');
 
 /** Filename → registry slug + human description. The curated public surface. */
 const CATALOG: Record<string, { slug: string; description: string }> = {
@@ -66,7 +68,7 @@ for (const file of readdirSync(SRC).sort()) {
 
 const manifest = { components };
 writeFileSync(join(OUT, 'manifest.json'), JSON.stringify(manifest, null, 2) + '\n');
-console.log(`Done — ${components.length} components → packages/cli/registry/`);
+console.log(`Done — ${components.length} components → packages/setup-core/registry/`);
 
 // Touch fileBySlug so the inverse map is part of the contract (used by the CLI).
 void fileBySlug;

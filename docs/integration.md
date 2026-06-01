@@ -1,61 +1,67 @@
 # Add Veneer to your app
 
-Veneer is a **drop-in add-on, not a scaffolder** — you keep your own React +
-Tailwind v4 project and add theming on top, the way you'd add shadcn/ui. The
-whole interlock is *one line of CSS* and *one provider*; the CLI wires the rest.
+Veneer drives your whole visual surface from theme tokens. Wiring it in rests on
+**three framework-agnostic invariants** — true on any React 19 + Tailwind v4 app:
 
-```sh
-npm i @offthegully/veneerui
-npx veneerui init          # @import the tokens + wire anti-flash, write the agent guide, print the provider step
-npx veneerui add switcher  # copy a ThemeSwitcher into your components
-```
+1. **Tokens** — `@import "@offthegully/veneerui/tokens.css";` after `@import "tailwindcss";`
+2. **Provider** — wrap the app root in `<ThemeProvider>`
+3. **Anti-flash** — a tiny script before first paint, so a saved theme applies with no flash
+
+`npm create veneerui` (new app) and `veneerui init` (existing app) set these up for
+you. This guide shows the one-command path, the invariants in detail, how they land
+per framework, and the agent hand-off.
 
 > **Requires React 19 and Tailwind v4** (the CSS-first `@theme` engine). Tailwind
 > v3 and non-React frameworks aren't supported.
 
 **Pick your path:**
 
-- **[Starting fresh](#fresh)** — the painless path: a new app with nothing to
-  migrate. **Recommended.**
-- **[Adding to an existing app](#existing)** — works, but your current styles
-  won't re-skin until they move onto tokens. Experimental and improving.
-- **Framework wiring:** [Vite](#vite) · [Next.js](#nextjs) ·
-  [other React + Tailwind v4](#other)
+- **[Create a new app](#new-app)** — one command scaffolds and wires everything. **Recommended.**
+- **[Add to an existing app](#existing)** — works today; your styles won't re-skin
+  until they move onto tokens. **Beta.**
+- **The invariants & per-framework wiring:** [interlock](#interlock) · [Vite](#vite) ·
+  [Next.js](#nextjs) · [other React + Tailwind v4](#other)
 
 ---
 
+<a id="new-app"></a>
 <a id="fresh"></a>
 
-## Easiest path: a fresh app — recommended
+## Create a new app — recommended
 
-Veneer shines brightest on a clean slate: there are no hardcoded colors to
-migrate, so every screen you build is themeable from the first commit.
-
-**1. Scaffold a React + Tailwind v4 app** (skip if you already have one):
-
-- **Vite:** `npm create vite@latest my-app -- --template react-ts`, then add
-  Tailwind v4 with [`@tailwindcss/vite`](https://tailwindcss.com/docs/installation/using-vite).
-- **Next (App Router):** `npx create-next-app@latest my-app` and enable Tailwind
-  — current versions scaffold v4.
-
-**2. Add Veneer:**
+One command scaffolds a React + Tailwind v4 app, wires all three invariants, and
+drops in a theme switcher — so it runs themed from the first commit:
 
 ```sh
-npm i @offthegully/veneerui
-npx veneerui init
-npx veneerui add switcher
+npm create veneerui@latest my-app
 ```
 
-**3. Finish the wiring.** `init` can't safely patch your entry files, so it
-writes the remaining steps (wrap the root in `<ThemeProvider>`, and on Next the
-`<head>` script) to a self-removing **`VENEER-SETUP.md`**. Do them by hand — see
-[Vite](#vite) / [Next.js](#nextjs) — or just tell your AI agent: *"Finish the
-Veneer setup in VENEER-SETUP.md, then verify it and delete the file."*
+It asks one thing — **which framework** (Vite + React, or Next.js App Router) —
+then delegates to that framework's official scaffolder (`create-vite` /
+`create-next-app`), installs Veneer, wires the tokens `@import` + `<ThemeProvider>`
++ anti-flash script, copies in a `ThemeSwitcher`, and writes an
+`AGENTS.md` of the token rules. Then:
 
-Drop the `<ThemeSwitcher />` into your UI, start the dev server, and switch
-themes. Build everything else with the token utilities (`bg-surface`,
-`text-text`, `rounded-md`, …) and it all re-skins for free. That's the whole
-loop — and from here your AI coding agent can [take over](#agent).
+```sh
+cd my-app && npm run dev
+```
+
+Open it, switch themes in the top-right, and watch every surface re-skin. Build the
+rest with the token utilities (`bg-surface`, `text-text`, `rounded-md`, …).
+
+**Flags** (all optional — the command is also fully non-interactive for scripts/agents):
+
+| Flag | Effect |
+|---|---|
+| `--framework <vite\|next>` | skip the prompt |
+| `--agent[=claude\|codex]` | after wiring, hand off to an installed agent to finish/customize ([below](#agent)) |
+| `--pm <npm\|pnpm\|yarn\|bun>` | override the detected package manager |
+| `--no-install` · `--dry-run` | as named |
+
+**Another framework?** (Remix, Astro, TanStack Start, …) Scaffold it with that
+framework's own tool, then run `npx veneerui init` inside it: Veneer's runtime is
+framework-agnostic, so the [three invariants](#interlock) are all it needs, and
+`init` writes a `VENEER-SETUP.md` you (or [your agent](#agent)) can finish.
 
 ---
 
@@ -81,19 +87,20 @@ so switching a theme re-skins every utility instantly with no re-render.
 
 ## Wire it up
 
-`veneerui init` makes the deterministic edits automatically and writes the steps
-that are too project-shaped to patch blindly to a self-removing
-[`VENEER-SETUP.md`](#agent) (finish them by hand, or have your agent do it). It
-**detects your framework**, **never installs packages** (it tells you to), and is
-idempotent + `--dry-run`-able. Here's what lands per framework, and the manual
-equivalent.
+`veneerui init` makes all the edits below when it recognizes your entry files
+(always true on a freshly scaffolded app): the token `@import`, the anti-flash
+plugin/script, **and** wrapping the root in `<ThemeProvider>`. Anything whose shape
+it can't patch safely it leaves in a self-removing [`VENEER-SETUP.md`](#agent) for
+you (or your agent) to finish. It **detects your framework**, **never installs
+packages** (it tells you to), and is idempotent + `--dry-run`-able. Here's what
+lands per framework — also the recipe if you're wiring by hand.
 
 <a id="vite"></a>
 
 ### Vite + React
 
-`init` auto-adds the [token `@import`](#interlock) **and** the `veneer()`
-anti-flash plugin; you wrap the root.
+`init` adds the [token `@import`](#interlock), the `veneer()` anti-flash plugin,
+**and** wraps your root in `<ThemeProvider>` — all three:
 
 ```ts
 // vite.config.ts — added by init
@@ -105,7 +112,7 @@ export default defineConfig({
 ```
 
 ```tsx
-// src/main.tsx — the one manual step
+// src/main.tsx — init wraps your root
 import { ThemeProvider } from '@offthegully/veneerui'
 
 createRoot(document.getElementById('root')!).render(
@@ -127,9 +134,11 @@ never hand-edit HTML.
 
 > App Router + Tailwind v4 only. The Pages Router and v3 aren't supported.
 
-`init` auto-adds the token `@import` and prints the two snippets below.
+`init` adds the token `@import`, creates `app/providers.tsx`, and wires
+`app/layout.tsx` — the head script, `suppressHydrationWarning`, and the
+`<Providers>` wrap, all shown below.
 
-**Anti-flash** — render the server-component script in `<head>`:
+**Anti-flash** — `init` renders the server-component script in `<head>`:
 
 ```tsx
 // app/layout.tsx
@@ -219,7 +228,7 @@ import `getAntiFlashScript` only where it's allowed — or use the dedicated
 
 <a id="existing"></a>
 
-## Adding to an existing app (experimental)
+## Add to an existing app (Beta)
 
 Wiring Veneer in is the easy 10%. The real work is **moving your current styles
 onto tokens**: Veneer only re-skins elements that already use token utilities

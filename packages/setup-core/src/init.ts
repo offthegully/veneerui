@@ -1,20 +1,22 @@
 /**
  * `veneerui init` — wire Veneer into a Vite or Next + Tailwind v4 app.
  *
- * For Vite/Next it does the deterministic, low-risk edits automatically (the token
- * @import, and on Vite the anti-flash plugin) and writes the project-shaped steps
- * (the provider wrapper, the Next <head> script) to a self-removing
- * `VENEER-SETUP.md`, so the developer can finish by hand OR just tell any AI
- * coding agent to complete it.
+ * This is the single wiring engine: both `veneerui init` (existing app) and the
+ * `create-veneerui` scaffolder (new app) call it. It makes the deterministic edits
+ * — the token `@import`, the anti-flash plugin/script, and wrapping the root in
+ * `<ThemeProvider>` — by patching the entry files when their shape is recognized
+ * (always true on a freshly scaffolded app, often true on an existing one). When a
+ * file's shape is unfamiliar it bails and writes that step to a self-removing
+ * `VENEER-SETUP.md`, so the developer (or any AI agent) can finish it.
  *
- * For any *other* React + Tailwind v4 project (Remix, Astro, TanStack Start, …)
- * the CLI can't auto-wire the framework, but the runtime still works — so init
- * drops the agent guide and a *generic* VENEER-SETUP.md (the manual three-step
- * path) instead of bailing. Idempotent and `--dry-run`-able: re-running is a
- * no-op, and nothing here installs packages or rewrites your component tree.
+ * For any *other* React + Tailwind v4 project (Remix, Astro, TanStack Start, …) the
+ * CLI can't auto-wire the framework, but the runtime still works — so init drops the
+ * agent guide and a *generic* VENEER-SETUP.md (the manual three-step path) instead of
+ * bailing. Idempotent and `--dry-run`-able: re-running is a no-op, and nothing here
+ * installs packages or rewrites your component tree.
  */
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
 import { detect, type Detection } from './detect';
 import {
   addTokensImport,
@@ -22,6 +24,7 @@ import {
   nextAntiFlashSnippet,
   providerSnippet,
 } from './patch';
+import { createNextProviders, wireNextLayout, wrapEntryWithProvider } from './entry-patch';
 import { agentDocTargets, readAgentGuide, upsertAgentGuide } from './agents';
 import { buildSetupPlan, EXPERIMENTAL_FRAMEWORKS, SETUP_FILE } from './setup-plan';
 
@@ -69,45 +72,21 @@ export function runInit(opts: InitOptions): void {
     log('     tailwindcss import:  @import "@offthegully/veneerui/tokens.css";');
   }
 
-  // 3 — anti-flash.
-  log('3. Anti-flash (apply saved theme before first paint)');
-  if (det.framework === 'vite') {
-    if (det.viteConfigPath) {
-      const abs = join(opts.root, det.viteConfigPath);
-      const before = readFileSync(abs, 'utf8');
-      const { content, changed, reason } = addViteAntiFlash(before);
-      if (!changed && content === before && before.includes('@offthegully/veneerui/vite')) {
-        log(`   ✓ ${det.viteConfigPath} already uses the veneer() plugin`);
-      } else if (!changed) {
-        log(`   ! Couldn't safely edit ${det.viteConfigPath} (${reason}). Add manually:`);
-        log("       import { veneer } from '@offthegully/veneerui/vite'");
-        log('       plugins: [react(), tailwindcss(), veneer()]');
-      } else if (opts.dryRun) {
-        log(`   → would add the veneer() plugin to ${det.viteConfigPath}`);
-      } else {
-        writeFileSync(abs, content);
-        log(`   ✓ added the veneer() plugin to ${det.viteConfigPath}`);
-      }
-    } else {
-      log('   ! No vite config found. Add the veneer() plugin from @offthegully/veneerui/vite.');
-    }
-  } else {
-    log('   → Next: render <AntiFlashScript/> in app/layout.tsx <head>:');
-    indent(log, nextAntiFlashSnippet());
-  }
+  // 3 — provider + anti-flash. These patch the entry files when their shape is
+  // recognized; when it isn't, they bail and print the snippet, and step 5
+  // records it in VENEER-SETUP.md for you (or your agent) to finish.
+  log('3. Provider + anti-flash');
+  if (det.framework === 'vite') wireViteEntry(opts, det, log);
+  else wireNextEntry(opts, det, log);
 
-  // 4 — provider (printed, never auto-wrapped).
-  log('4. Provider — wrap your app root:');
-  indent(log, providerSnippet(det.framework));
-
-  // 5 — agent guide so AI coding tools write themeable components.
-  log('\n5. Agent guide (so AI tools write themeable components)');
+  // 4 — agent guide so AI coding tools write themeable components.
+  log('\n4. Agent guide (so AI tools write themeable components)');
   const agentDocs = writeAgentGuide(opts, log);
 
-  // 6 — the finish-setup hand-off: the project-shaped steps above, written to a
-  // portable, self-removing VENEER-SETUP.md so the dev (or any coding agent) can
-  // finish them. Skipped once everything is already wired (so a re-run stays clean).
-  log('\n6. Finish setup');
+  // 5 — the finish-setup hand-off: whatever the patchers couldn't apply is written
+  // to a portable, self-removing VENEER-SETUP.md. Skipped once everything is wired
+  // (the common case on a fresh app), so a re-run stays clean.
+  log('\n5. Finish setup');
   const plan = buildSetupPlan({
     framework: det.framework as 'vite' | 'next',
     entryPath: det.entryPath,
@@ -121,6 +100,89 @@ export function runInit(opts: InitOptions): void {
   writeSetupFile(opts, plan, log);
 
   printOutro(log);
+}
+
+/** Vite: the veneer() anti-flash plugin in the config, and the `<ThemeProvider>` wrap in the entry. */
+function wireViteEntry(opts: InitOptions, det: Detection, log: (line: string) => void): void {
+  if (det.viteConfigPath) {
+    const abs = join(opts.root, det.viteConfigPath);
+    const before = readFileSync(abs, 'utf8');
+    if (before.includes('@offthegully/veneerui/vite')) {
+      log(`   ✓ ${det.viteConfigPath} already uses the veneer() plugin`);
+    } else {
+      const { content, changed, reason } = addViteAntiFlash(before);
+      if (!changed) {
+        log(`   ! couldn't edit ${det.viteConfigPath} (${reason}) — add it manually:`);
+        log("       import { veneer } from '@offthegully/veneerui/vite'  // plugins: [react(), veneer()]");
+      } else if (opts.dryRun) {
+        log(`   → would add the veneer() plugin to ${det.viteConfigPath}`);
+      } else {
+        writeFileSync(abs, content);
+        log(`   ✓ added the veneer() plugin to ${det.viteConfigPath}`);
+      }
+    }
+  } else {
+    log('   ! no vite config found — add the veneer() plugin from @offthegully/veneerui/vite manually.');
+  }
+
+  if (det.entryPath) {
+    const abs = join(opts.root, det.entryPath);
+    const before = readFileSync(abs, 'utf8');
+    if (before.includes('ThemeProvider')) {
+      log(`   ✓ ${det.entryPath} already wraps the root in <ThemeProvider>`);
+    } else {
+      const { content, changed, reason } = wrapEntryWithProvider(before);
+      if (!changed) {
+        log(`   ! couldn't wrap ${det.entryPath} (${reason}) — wrap your root manually:`);
+        indent(log, providerSnippet('vite', false));
+      } else if (opts.dryRun) {
+        log(`   → would wrap the root in ${det.entryPath} with <ThemeProvider>`);
+      } else {
+        writeFileSync(abs, content);
+        log(`   ✓ wrapped the root in ${det.entryPath} with <ThemeProvider>`);
+      }
+    }
+  } else {
+    log('   ! no entry file found — wrap your root in <ThemeProvider> manually:');
+    indent(log, providerSnippet('vite', false));
+  }
+}
+
+/** Next: a client providers.tsx, plus providers + anti-flash + suppressHydrationWarning in the layout. */
+function wireNextEntry(opts: InitOptions, det: Detection, log: (line: string) => void): void {
+  const layoutRel = det.entryPath ?? 'app/layout.tsx';
+  const layoutAbs = join(opts.root, layoutRel);
+
+  const providersAbs = join(dirname(layoutAbs), 'providers.tsx');
+  if (existsSync(providersAbs)) {
+    log('   ✓ providers.tsx already present');
+  } else if (opts.dryRun) {
+    log('   → would create the client providers.tsx beside the layout');
+  } else {
+    writeFileSync(providersAbs, createNextProviders());
+    log(`   ✓ created ${join(dirname(layoutRel), 'providers.tsx')}`);
+  }
+
+  if (!existsSync(layoutAbs)) {
+    log(`   ! no ${layoutRel} found — add the provider + anti-flash manually:`);
+    indent(log, nextAntiFlashSnippet());
+    return;
+  }
+  const before = readFileSync(layoutAbs, 'utf8');
+  if (before.includes('<Providers>') && before.includes('AntiFlashScript')) {
+    log(`   ✓ ${layoutRel} already wired (providers + anti-flash)`);
+    return;
+  }
+  const { content, changed, reason } = wireNextLayout(before);
+  if (!changed) {
+    log(`   ! couldn't wire ${layoutRel} (${reason}) — add it manually:`);
+    indent(log, nextAntiFlashSnippet());
+  } else if (opts.dryRun) {
+    log(`   → would wire ${layoutRel} (providers + anti-flash + suppressHydrationWarning)`);
+  } else {
+    writeFileSync(layoutAbs, content);
+    log(`   ✓ wired ${layoutRel} (providers + anti-flash + suppressHydrationWarning)`);
+  }
 }
 
 /**

@@ -6,12 +6,10 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { runInit } from './init';
-import { runAdd } from './add';
+import { runInit, runAdd, runFonts } from '@veneerui/setup-core';
 import { runList } from './list';
 import { runDoctor } from './doctor';
 import { runMigrate } from './migrate';
-import { runFonts } from './fonts';
 
 interface Parsed {
   command?: string;
@@ -59,7 +57,9 @@ function version(): string {
   }
 }
 
-const HELP = `veneerui — add Veneer theming to an existing Vite or Next + Tailwind v4 app
+const HELP = `veneerui — add Veneer theming to an existing React + Tailwind v4 app
+
+New app? Run \`npm create veneerui@latest\` instead — it scaffolds and wires everything.
 
 Usage:
   veneerui init [--dry-run] [--cwd <path>]      Wire Veneer into this project
@@ -85,11 +85,11 @@ by hand (or have your AI agent do it).`;
 function main(): void {
   const p = parse(process.argv.slice(2));
 
-  if (p.version) {
+  if (p.version || p.command === '--version' || p.command === '-v') {
     console.log(version());
     return;
   }
-  if (!p.command || p.command === 'help' || p.help) {
+  if (p.help || !p.command || p.command === 'help' || p.command === '--help' || p.command === '-h') {
     console.log(HELP);
     return;
   }

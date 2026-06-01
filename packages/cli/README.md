@@ -1,10 +1,13 @@
 # veneerui
 
 CLI to add [Veneer UI](https://www.npmjs.com/package/@offthegully/veneerui) theming to an
-**existing Vite or Next + Tailwind v4 app**. Veneer is a drop-in add-on, not a
-scaffolder — you keep your own project and the CLI does the wiring, shadcn-style.
-Everything it does is also documented as manual steps, so you can always do it by
-hand.
+**existing React + Tailwind v4 app** — it wires the tokens, the `<ThemeProvider>`,
+and the anti-flash script for you, shadcn-style (you keep your own project).
+
+> **Starting a new app?** Use `npm create veneerui@latest` instead — it scaffolds the
+> app and runs this same wiring end-to-end.
+
+Everything it does is also documented as manual steps, so you can always do it by hand.
 
 ```sh
 npm i @offthegully/veneerui
@@ -19,7 +22,7 @@ npx veneerui migrate         # rewrite the mechanical gotchas to tokens
 
 | Command | What it does |
 |---|---|
-| `veneerui init` | Detect Vite/Next, add `@import "@offthegully/veneerui/tokens.css"` to your global stylesheet, wire the anti-flash (Vite: the `veneer()` plugin; Next: a printed `<AntiFlashScript/>` snippet), and print the `<ThemeProvider>` wrapper. Idempotent; supports `--dry-run`. |
+| `veneerui init` | Detect Vite/Next, add `@import "@offthegully/veneerui/tokens.css"` to your global stylesheet, wire the anti-flash (Vite: the `veneer()` plugin; Next: `<AntiFlashScript/>` in the layout `<head>`), and wrap your root in `<ThemeProvider>`. Patches the entry files when it recognizes their shape, else leaves that step in `VENEER-SETUP.md`. Idempotent; supports `--dry-run`. |
 | `veneerui add <component…>` | Copy UI components (and their registry dependencies) into your project. They import their logic from `@offthegully/veneerui`; you own and can restyle the markup. On a **Next** project it prepends `'use client'` (RSC needs it; inert elsewhere). `--force` overwrites; `--dir <path>` sets the target. |
 | `veneerui add fonts` | Print the `npm i` command and exact `@fontsource` import lines for every family the built-in themes name, plus the `font-sans` footgun. Themes can only *name* a font — the app must load it — and the family must match exactly; this removes the guesswork. See [docs/fonts.md](https://github.com/offthegully/veneerui/blob/main/docs/fonts.md). |
 | `veneerui doctor` | Scan the project and report roughly **how much of your UI is themeable today** — counts hardcoded colors, baked shadows, fixed widths, and arbitrary sizes, and warns about `@theme` blocks (e.g. shadcn) that redefine reserved Veneer token names. The honest reality-check: `init` only wires Veneer in; this tells you how much migration is left. |
