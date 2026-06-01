@@ -30,8 +30,10 @@ npm run build                               # builds package + playground + CLI
 `@offthegully/veneerui` ships `dist/`, `tokens.generated.css`, and `theme-v1.json` (its
 `files` allowlist); `veneerui` and `create-veneerui` each ship `dist/`, `registry/`, and
 `assets/` (the registry + agent guide are build-copied from `@veneerui/setup-core` by
-`scripts/sync-setup-assets.ts`). Confirm with `npm pack --dry-run -w @offthegully/veneerui`,
-`-w veneerui`, and `-w create-veneerui`.
+`scripts/sync-setup-assets.ts`). The sync copies `assets/` **recursively**, so the Expo
+scaffold templates (`assets/expo/`) ride along into `create-veneerui` automatically — no
+allowlist change. Confirm with `npm pack --dry-run -w @offthegully/veneerui`, `-w veneerui`,
+and `-w create-veneerui`; the `create-veneerui` listing should include `assets/expo/*`.
 
 ## Publishing
 
@@ -61,6 +63,35 @@ runtime semver string it installs into the new app.
   validator can then refuse or migrate themes carrying an unsupported
   `schemaVersion`. As long as changes stay additive, `SCHEMA_VERSION` stays `1`
   across many minor package releases.
+- **The `./themes` subpath is a published API.** The Expo scaffold's token
+  codegen (`gen:tokens`, in a user's app) imports `TOKEN_SCHEMA` + `BUILTIN_THEMES`
+  from `@offthegully/veneerui/themes`, so adding tokens flows through to native on
+  the next `npm run gen:tokens` with no scaffold change (additive = minor). Renaming
+  the subpath or changing the shape of those exports **breaks `gen:tokens` in
+  already-scaffolded Expo apps** — treat it as a major, breaking change.
+
+## Updating the Expo scaffold's pinned versions
+
+The Expo scaffolder pins three third-party versions that are **not tied to Veneer's
+semver** — they track NativeWind v5's preview, which can ship a breaking newer build.
+All three live in `packages/setup-core/src/scaffold-expo.ts`:
+
+| Pin | Where | Why pinned |
+|---|---|---|
+| `nativewind@^5.0.0-preview.4` | `EXPO_NATIVE_DEPS` | not in Expo's SDK version map; `expo install` would float it to latest |
+| `react-native-css@^3.0.7` | `EXPO_NATIVE_DEPS` | NativeWind's peer; same floating risk |
+| `lightningcss` `1.30.1` | `patchExpoPackageJson` override | a known NativeWind-v5-preview build gotcha |
+
+When NativeWind v5 advances (or ships **stable**): bump these, re-run the live
+end-to-end smoke test (`npm create veneerui@latest tmp-app --framework expo`, then
+`npm start` boots a themed app), update `scaffold-expo.test.ts`, and rebuild
+`create-veneerui`. The SDK-managed deps (`react-native-reanimated`,
+`react-native-worklets`, `react-native-safe-area-context`) stay **unpinned** so
+`expo install` keeps matching the user's Expo SDK — don't pin those.
+
+> This bump rides along in the next `create-veneerui` release; it has no effect on
+> already-scaffolded apps (they pinned at scaffold time) and none on the
+> `@offthegully/veneerui` runtime package.
 
 ## Hosting the JSON Schema
 
