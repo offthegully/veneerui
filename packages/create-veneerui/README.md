@@ -7,10 +7,10 @@ Scaffold a new **themed** React + Tailwind v4 app, wired for
 npm create veneerui@latest my-app
 ```
 
-Pick a framework — **Vite + React** or **Next.js (App Router)** — and it delegates to
-that framework's official scaffolder, installs Veneer, wires the tokens `@import`, the
-`<ThemeProvider>`, and the anti-flash script, drops in a `ThemeSwitcher`, and writes an
-`AGENTS.md` of the token rules. Then:
+Pick a framework — **Vite + React**, **Next.js (App Router)**, or **Expo (React Native)** —
+and it delegates to that framework's official scaffolder, installs Veneer, wires the tokens,
+the provider, and the anti-flash script (or, on Expo, the NativeWind config + token codegen),
+drops in a `ThemeSwitcher`, and writes an `AGENTS.md` of the token rules. Then:
 
 ```sh
 cd my-app && npm run dev
@@ -23,11 +23,11 @@ re-skin. No manual steps.
 finishes and verifies the setup (model-agnostic; prints a copy-paste prompt if none is
 installed).
 
-**Flags:** `--framework <vite|next>` · `--pm <npm|pnpm|yarn|bun>` · `--no-install` ·
+**Flags:** `--framework <vite|next|expo>` · `--pm <npm|pnpm|yarn|bun>` · `--no-install` ·
 `--dry-run` · `--yes`
 
-**React Native / Expo?** Not a scaffolder option yet (web only). Wire it manually —
-quickstart + a copy-and-run POC in the
+**Expo (React Native)** is **experimental** — it scaffolds via `create-expo-app` and wires
+Veneer through NativeWind (the same token utilities as the web). See the
 [Expo guide](https://github.com/offthegully/veneerui/blob/main/docs/expo.md).
 
 Already have an app? Use the [`veneerui`](https://www.npmjs.com/package/veneerui) CLI

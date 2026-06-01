@@ -20,8 +20,12 @@ import { addTailwindVite } from './entry-patch';
 import { runInit } from './init';
 import { runAdd } from './add';
 import { runAgentHandoff, type AgentChoice } from './agent';
+import { runScaffoldExpo } from './scaffold-expo';
 
-export type ScaffoldFramework = 'vite' | 'next';
+/** Frameworks wired through the shared web path (create-vite / create-next-app + runInit). */
+export type WebFramework = 'vite' | 'next';
+/** Every framework `create-veneerui` can scaffold. `expo` takes a separate native path. */
+export type ScaffoldFramework = WebFramework | 'expo';
 export type PackageManager = 'npm' | 'pnpm' | 'yarn' | 'bun';
 
 /** The runtime the scaffolded app installs. Pin only the runtime; `add`/wiring is in-process. */
@@ -57,7 +61,7 @@ function nextFlags(pm: PackageManager): string[] {
  * dislikes the `@latest` tag.
  */
 export function buildScaffoldCommand(
-  framework: ScaffoldFramework,
+  framework: WebFramework,
   pm: PackageManager,
   name: string,
 ): { cmd: string; args: string[] } {
@@ -76,7 +80,7 @@ export function installArgs(pm: PackageManager, pkgs: string[], dev = false): st
 }
 
 /** A minimal, self-contained token-driven starter page — themeable on first run. */
-export function starterPage(framework: ScaffoldFramework): string {
+export function starterPage(framework: WebFramework): string {
   const from = framework === 'next' ? '@/components' : './components';
   const fn = framework === 'next' ? 'Home' : 'App';
   return `import { ThemeSwitcher } from '${from}/ThemeSwitcher'
@@ -144,7 +148,7 @@ function setUpViteTailwind(appDir: string, log: (l: string) => void): void {
 }
 
 /** Overwrite the template's demo page with a token-driven starter (switcher + showcase). */
-function writeStarterPage(appDir: string, framework: ScaffoldFramework, log: (l: string) => void): void {
+function writeStarterPage(appDir: string, framework: WebFramework, log: (l: string) => void): void {
   const det = detect(appDir);
   const rel =
     framework === 'next' ? join(dirname(det.entryPath ?? 'app/layout.tsx'), 'page.tsx') : 'src/App.tsx';
@@ -157,6 +161,10 @@ function writeStarterPage(appDir: string, framework: ScaffoldFramework, log: (l:
 
 /** Scaffold + wire a fresh app. Returns the created app directory. */
 export function runScaffold(opts: ScaffoldOptions): { appDir: string } {
+  // Expo (React Native) takes a wholly separate native path — Veneer's web runtime
+  // (DOM provider, anti-flash, tokens.css import) doesn't apply there.
+  if (opts.framework === 'expo') return runScaffoldExpo(opts);
+
   const log = opts.log ?? console.log;
   const appDir = join(opts.parentDir, opts.name);
   const { cmd, args } = buildScaffoldCommand(opts.framework, opts.pm, opts.name);

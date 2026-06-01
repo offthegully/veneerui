@@ -19,8 +19,9 @@ per framework, and the agent hand-off.
 - **[Create a new app](#new-app)** — one command scaffolds and wires everything. **Recommended.**
 - **[Add to an existing app](#existing)** — works today; your styles won't re-skin
   until they move onto tokens. **Beta.**
-- **[React Native / Expo](./expo.md)** — the same tokens and utilities on native via
-  NativeWind. **Experimental.**
+- **[React Native / Expo](./expo.md)** — `npm create veneerui my-app --framework expo`
+  scaffolds a themed Expo app; same tokens and utilities on native via NativeWind.
+  **Experimental.**
 - **The invariants & per-framework wiring:** [interlock](#interlock) · [Vite](#vite) ·
   [Next.js](#nextjs) · [other React + Tailwind v4](#other)
 
@@ -38,11 +39,12 @@ drops in a theme switcher — so it runs themed from the first commit:
 npm create veneerui@latest my-app
 ```
 
-It asks one thing — **which framework** (Vite + React, or Next.js App Router) —
-then delegates to that framework's official scaffolder (`create-vite` /
-`create-next-app`), installs Veneer, wires the tokens `@import` + `<ThemeProvider>`
-+ anti-flash script, copies in a `ThemeSwitcher`, and writes an
-`AGENTS.md` of the token rules. Then:
+It asks one thing — **which framework** (Vite + React, Next.js App Router, or
+[Expo / React Native](./expo.md) — experimental) — then delegates to that framework's
+official scaffolder (`create-vite` / `create-next-app` / `create-expo-app`), installs
+Veneer, wires the tokens `@import` + `<ThemeProvider>` + anti-flash script (or, on Expo,
+the NativeWind config + token codegen + provider), copies in a `ThemeSwitcher`, and writes
+an `AGENTS.md` of the token rules. Then:
 
 ```sh
 cd my-app && npm run dev
@@ -55,7 +57,7 @@ rest with the token utilities (`bg-surface`, `text-text`, `rounded-md`, …).
 
 | Flag | Effect |
 |---|---|
-| `--framework <vite\|next>` | skip the prompt |
+| `--framework <vite\|next\|expo>` | skip the prompt (`expo` = React Native, [experimental](./expo.md)) |
 | `--agent[=claude\|codex]` | after wiring, hand off to an installed agent to finish/customize ([below](#agent)) |
 | `--pm <npm\|pnpm\|yarn\|bun>` | override the detected package manager |
 | `--no-install` · `--dry-run` | as named |

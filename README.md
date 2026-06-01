@@ -59,8 +59,8 @@ in a theme switcher, so it runs themed from the first commit with no manual step
 
 ```sh
 npm create veneerui@latest my-app
-# → pick Vite or Next.js; it scaffolds, installs, wires the tokens + provider +
-#   anti-flash, and adds a ThemeSwitcher
+# → pick Vite, Next.js, or Expo; it scaffolds, installs, wires the tokens + provider +
+#   anti-flash (or NativeWind, on Expo), and adds a ThemeSwitcher
 cd my-app && npm run dev
 ```
 
@@ -96,9 +96,10 @@ because Tailwind v4 doesn't scan `node_modules`.)
 > `suppressHydrationWarning`, the `'use client'` boundary, and a no-flash first
 > paint for you. [SSR details →](./docs/integration.md#ssr)
 
-> **React Native / Expo (experimental).** The same tokens and the same utilities
-> (`bg-primary`, `text-text`, `rounded-md`) run on native via NativeWind — one theme
-> JSON for web *and* app. [Expo quickstart →](./docs/expo.md)
+> **React Native / Expo (experimental).** `npm create veneerui@latest my-app
+> --framework expo` scaffolds a themed Expo app. The same tokens and utilities
+> (`bg-primary`, `text-text`, `rounded-md`) run on native via NativeWind — one theme JSON
+> for web *and* app. [Expo quickstart →](./docs/expo.md)
 
 ### Ship your own themes
 

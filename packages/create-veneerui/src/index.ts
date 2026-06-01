@@ -16,13 +16,13 @@ import { parse, validateName } from './args';
 
 type FrameworkChoice = ScaffoldFramework | 'other';
 
-const HELP = `create-veneerui — scaffold a themed Vite or Next + Tailwind v4 app, wired for Veneer
+const HELP = `create-veneerui — scaffold a themed Vite, Next, or Expo app, wired for Veneer
 
 Usage:
   npm create veneerui@latest [name] [options]
 
 Options:
-  --framework <vite|next|other>  Skip the framework prompt
+  --framework <vite|next|expo|other>  Skip the framework prompt
   --yes, --defaults              Non-interactive (name required; framework defaults to vite)
   --pm <npm|pnpm|yarn|bun>       Override the detected package manager
   --no-install                   Skip dependency install
@@ -40,7 +40,18 @@ function version(): string {
   }
 }
 
-function nextSteps(name: string, pm: string): string {
+function nextSteps(name: string, pm: string, framework: ScaffoldFramework): string {
+  if (framework === 'expo') {
+    const start = pm === 'npm' ? 'npm start' : `${pm} start`;
+    return (
+      `Done — your themed Expo app is ready.\n\n` +
+      `  cd ${name}\n  ${start}\n\n` +
+      `Press i (iOS) / a (Android), or scan with Expo Go. Tap the ThemeSwitcher and watch\n` +
+      `color, radius, border and shadow re-skin. Build screens from token utilities\n` +
+      `(bg-surface, text-text, rounded-md, …) — see AGENTS.md. \`npm run gen:tokens\` refreshes\n` +
+      `the token data after upgrading Veneer.`
+    );
+  }
   const dev = pm === 'npm' ? 'npm run dev' : `${pm} dev`;
   return (
     `Done — your themed app is ready.\n\n` +
@@ -90,8 +101,8 @@ async function main(): Promise<void> {
 
   // Framework.
   let framework = o.framework as FrameworkChoice | undefined;
-  if (framework && !['vite', 'next', 'other'].includes(framework)) {
-    cancel(`Unknown framework "${framework}" — expected vite, next, or other.`);
+  if (framework && !['vite', 'next', 'expo', 'other'].includes(framework)) {
+    cancel(`Unknown framework "${framework}" — expected vite, next, expo, or other.`);
     process.exitCode = 1;
     return;
   }
@@ -102,6 +113,7 @@ async function main(): Promise<void> {
         options: [
           { value: 'vite', label: 'Vite + React', hint: 'fastest — fully wired' },
           { value: 'next', label: 'Next.js (App Router)', hint: 'SSR-safe — fully wired' },
+          { value: 'expo', label: 'Expo (React Native)', hint: 'NativeWind — same tokens on native (experimental)' },
           { value: 'other', label: 'Other React framework', hint: 'Remix, Astro, TanStack — manual + agent' },
         ],
       });
@@ -138,7 +150,7 @@ async function main(): Promise<void> {
     return;
   }
 
-  if (!o.dryRun) outro(nextSteps(name, pm));
+  if (!o.dryRun) outro(nextSteps(name, pm, framework));
 }
 
 main().catch((err: unknown) => {

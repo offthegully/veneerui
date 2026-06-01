@@ -5,26 +5,25 @@ Native). You write the **same semantic utilities as the web** — `bg-primary`,
 `text-text`, `rounded-md` — and the **same theme JSON** drives both; switching a theme
 re-skins the tree at runtime.
 
-> **Status: experimental.** NativeWind v5 is pre-release. `npm create veneerui` and the
-> `veneerui` CLI are **web-only** (Vite / Next) today — there's no `--framework expo`, so
-> on native you wire it with the steps below. A complete, verified reference app lives in
+> **Status: experimental.** NativeWind v5 is pre-release, so expect rough edges. The
+> `veneerui` CLI (`init`, for *existing* apps) is still web-only; Expo support is in the
+> **new-app scaffolder**. A complete reference app lives in
 > [`experiments/expo-theme-poc`](../experiments/expo-theme-poc).
 
 ## Two ways in
 
-### Option A — new app: copy the working POC (fastest)
-
-The proof-of-concept *is* a runnable Expo app. Copy it and go:
+### Option A — new app: scaffold it (recommended)
 
 ```sh
-npx degit offthegully/veneerui/experiments/expo-theme-poc my-app
+npm create veneerui@latest my-app --framework expo
 cd my-app
-npm install            # add --legacy-peer-deps if npm flags the react-dom peer
-npm run gen:tokens     # (re)generate the token maps from Veneer's published tokens
-npm start              # press i / a, or scan with Expo Go;  npm run web for the browser
+npm start          # press i (iOS) / a (Android), or scan with Expo Go
 ```
 
-Tap the switcher, watch it re-skin, then build your screens with the token utilities.
+This delegates to `create-expo-app`, then wires Veneer: the NativeWind + Tailwind v4
+config, a token codegen, a `ThemeProvider` + `ThemeSwitcher`, and a token-driven starter
+screen — and runs `npm run gen:tokens` so it boots themed. Tap the switcher and watch it
+re-skin; build screens from the token utilities (see the app's `AGENTS.md`).
 
 ### Option B — add to an existing Expo app
 

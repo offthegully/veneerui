@@ -52,8 +52,9 @@ source — where Tailwind already scans — makes the classes generate and lets 
 restyle freely. The runtime logic still comes from the `@offthegully/veneerui` dependency,
 so there's no duplicated behavior.
 
-This CLI is **web-only** (Vite / Next + Tailwind v4). **React Native / Expo** is a
-manual, experimental path — see the
+`veneerui init` (adding Veneer to an **existing** app) is web-only (Vite / Next). For a
+**new Expo (React Native)** app, `npm create veneerui@latest my-app --framework expo`
+scaffolds and wires it through NativeWind (experimental) — see the
 [Expo guide](https://github.com/offthegully/veneerui/blob/main/docs/expo.md).
 
 Full setup guide (Vite, Next.js, and other React + Tailwind v4 apps):
