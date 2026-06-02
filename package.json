@@ -11,9 +11,11 @@
   "scripts": {
     "preinstall": "npx only-allow npm",
     "gen:theme": "tsx scripts/generate-theme.ts",
+    "gen:builtin": "tsx scripts/gen-builtin.ts",
+    "check:builtin": "tsx scripts/gen-builtin.ts --check",
     "check:coverage": "tsx scripts/check-coverage.ts",
     "gen:registry": "tsx scripts/build-registry.ts",
-    "build:theme": "npm run gen:theme && npm run build -w @offthegully/veneerui",
+    "build:theme": "npm run gen:theme && npm run gen:builtin && npm run build -w @offthegully/veneerui",
     "build:cli": "npm run gen:registry && tsx scripts/sync-setup-assets.ts packages/cli && npm run build -w veneerui",
     "build:create": "npm run gen:registry && tsx scripts/sync-setup-assets.ts packages/create-veneerui && npm run build -w create-veneerui",
     "build": "npm run build:theme && npm run build -w playground && npm run build:cli && npm run build -w eslint-plugin-veneer && npm run build:create",
@@ -22,9 +24,13 @@
     "start": "npm run preview -w playground",
     "lint": "npm run lint --workspaces --if-present",
     "typecheck": "tsc -p tsconfig.json && npm run build:theme && npm run gen:registry && npm run typecheck --workspaces --if-present",
-    "test": "npm run build:theme && npm run gen:registry && npm run test --workspaces --if-present"
+    "test": "npm run check:builtin && npm run build:theme && npm run gen:registry && npm run test --workspaces --if-present",
+    "changeset": "changeset",
+    "version-packages": "changeset version && npm install --package-lock-only",
+    "release": "npm run build && changeset publish"
   },
   "devDependencies": {
+    "@changesets/cli": "^2.31.0",
     "@types/node": "^25.9.1",
     "tsx": "^4.22.3",
     "typescript": "~6.0.2"

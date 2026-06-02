@@ -96,8 +96,12 @@ end-to-end smoke test (`npm create veneerui@latest tmp-app --framework expo`, th
 ## Hosting the JSON Schema
 
 Themes reference `"$schema": "https://veneerui.dev/schemas/theme-v1.json"` for
-editor autocomplete and inline validation. Serve the generated
-`packages/theme/theme-v1.json` at that URL (it's also shipped in the package as
-`@offthegully/veneerui/theme-v1.json`, so a host can pull it straight from the registry).
-Until it's hosted, editors that can't fetch the URL simply skip autocomplete —
-validation in the app and in CI is independent of it.
+editor autocomplete and inline validation. The playground (which *is*
+veneerui.dev) serves this automatically: `generate-theme.ts` writes the schema to
+`apps/playground/public/schemas/theme-v1.json`, Vite copies it to the dist root,
+and the deploy rsyncs it — so it lands at the `$schema` URL. It's generated from
+the same `TOKEN_SCHEMA` as `packages/theme/theme-v1.json` (and the package's
+`@offthegully/veneerui/theme-v1.json`), so the served copy can't drift; just
+re-run `npm run gen:theme` after a schema change. If the URL is ever unreachable,
+editors simply skip autocomplete — validation in the app and in CI is independent
+of it.

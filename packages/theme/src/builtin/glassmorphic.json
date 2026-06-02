@@ -1,7 +1,19 @@
 {
+  "$schema": "https://veneerui.dev/schemas/theme-v1.json",
   "name": "Glassmorphic",
   "description": "Liquid glass over an iridescent violet mesh: tinted translucent panels with a bright top-edge highlight, heavy backdrop blur, and cyan->violet->magenta gradients. Best with blurred panels over the gradient surface.",
-  "tags": ["dark", "glass", "translucent"],
+  "author": {
+    "id": "veneer",
+    "name": "Veneer Team"
+  },
+  "version": "1.1.0",
+  "schemaVersion": 1,
+  "tags": [
+    "dark",
+    "glass",
+    "translucent"
+  ],
+  "license": "MIT",
   "tokens": {
     "color-primary": "#a78bfa",
     "color-primary-hover": "#c4b5fd",

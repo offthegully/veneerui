@@ -1,7 +1,20 @@
 {
+  "$schema": "https://veneerui.dev/schemas/theme-v1.json",
   "name": "Windows 95",
-  "description": "Battleship-gray system UI: chiseled outset bevels instead of soft shadows, hard square corners, the navy\u2192cyan title-bar gradient, a teal accent, the system font, and zero transition time. Depth comes from light and dark edges, not blur.",
-  "tags": ["retro", "light", "system", "bold"],
+  "description": "Battleship-gray system UI: chiseled outset bevels instead of soft shadows, hard square corners, the navy→cyan title-bar gradient, a teal accent, the system font, and zero transition time. Depth comes from light and dark edges, not blur.",
+  "author": {
+    "id": "veneer",
+    "name": "Veneer Team"
+  },
+  "version": "1.0.0",
+  "schemaVersion": 1,
+  "tags": [
+    "retro",
+    "light",
+    "system",
+    "bold"
+  ],
+  "license": "MIT",
   "tokens": {
     "color-primary": "#000080",
     "color-primary-hover": "#1084d0",

@@ -286,3 +286,33 @@ If you changed tokens in `schema.ts`, also run `npm run gen:theme` and commit th
 regenerated outputs. For a real visual check, `npm run dev` runs the playground
 and you can switch themes (top-right / bottom-right picker) to confirm your
 component re-skins across the gallery.
+
+## 10. Releasing (publishing to npm)
+
+Versioning and publishing are automated with [Changesets](https://github.com/changesets/changesets)
+and GitHub Actions. The published packages are `@offthegully/veneerui`,
+`veneerui`, `create-veneerui`, and `eslint-plugin-veneer`. The internal
+`@veneerui/lint-core` / `@veneerui/setup-core` are `private` (bundled into the
+CLIs by tsup) and are never published.
+
+**When you open a PR that changes a published package:**
+
+```sh
+npm run changeset        # pick the affected packages + bump type, write a summary
+git add .changeset && git commit
+```
+
+Commit the generated `.changeset/*.md` file with your PR. No changeset is needed
+for docs-only or playground-only changes.
+
+**What happens after merge to `main`** (`.github/workflows/release.yml`):
+
+1. Changesets opens/updates a **"Version Packages"** PR that bumps versions and
+   writes `CHANGELOG.md` entries for everything with a pending changeset.
+2. Merging that PR triggers the publish: `npm run build` then
+   `changeset publish`, which publishes only the changed packages to npm with
+   **provenance**, and creates git tags + GitHub Releases.
+
+Auth uses npm **Trusted Publishing (OIDC)** — there is no `NPM_TOKEN` secret.
+Each package's trusted publisher (repo `offthegully/veneerui`, workflow
+`release.yml`) must be configured once on npmjs.com before the first publish.

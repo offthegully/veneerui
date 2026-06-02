@@ -1,7 +1,19 @@
 {
+  "$schema": "https://veneerui.dev/schemas/theme-v1.json",
   "name": "Editorial",
   "description": "A literary review in print: rich ink on crisp ivory, a singular oxblood with a midnight-ink companion, hairline rules that box every article instead of soft shadows, sharp near-zero corners, and a dramatic Fraunces display scale over a Source Serif body. Leans on type scale, leading, spacing, and crisp borders.",
-  "tags": ["light", "serif", "editorial"],
+  "author": {
+    "id": "veneer",
+    "name": "Veneer Team"
+  },
+  "version": "1.1.0",
+  "schemaVersion": 1,
+  "tags": [
+    "light",
+    "serif",
+    "editorial"
+  ],
+  "license": "MIT",
   "tokens": {
     "color-primary": "#6f1d1b",
     "color-primary-hover": "#581512",

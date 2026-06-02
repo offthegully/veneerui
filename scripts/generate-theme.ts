@@ -206,7 +206,13 @@ function buildFontsDoc(): string {
 
 console.log('Generating theme artifacts from TOKEN_SCHEMA…');
 write('packages/theme/tokens.generated.css', buildCss());
-write('packages/theme/theme-v1.json', buildJsonSchema());
+const jsonSchema = buildJsonSchema();
+write('packages/theme/theme-v1.json', jsonSchema);
+// The same schema, served by the playground (= veneerui.dev) at the `$schema`
+// URL themes point to (https://veneerui.dev/schemas/theme-v1.json), for editor
+// autocomplete/validation. Vite copies public/ to the dist root, so this deploys
+// to /schemas/theme-v1.json. Generated from the same source, so it can't drift.
+write('apps/playground/public/schemas/theme-v1.json', jsonSchema);
 write('docs/schema-reference.md', buildReference());
 write('packages/lint-core/reserved-tokens.generated.js', buildReservedTokens());
 write('packages/lint-core/font-packages.generated.js', buildFontPackages());
