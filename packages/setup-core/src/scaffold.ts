@@ -67,7 +67,12 @@ export function buildScaffoldCommand(
 ): { cmd: string; args: string[] } {
   const create = framework === 'next' ? 'next-app' : 'vite';
   const tool = pm === 'yarn' ? create : `${create}@latest`;
-  const flags = framework === 'next' ? nextFlags(pm) : ['--template', 'react-ts'];
+  // `--no-interactive` is critical: create-vite v7+ prompts "Install with <pm> and
+  // start now?" whenever stdin is a TTY — even with `--template` — then installs and
+  // launches the dev server itself, blocking us. The user Ctrl+C's the server, which
+  // kills this whole process before any Veneer wiring runs, leaving a bare Vite app.
+  // The flag (introduced alongside that prompt) forces non-interactive scaffold-only.
+  const flags = framework === 'next' ? nextFlags(pm) : ['--template', 'react-ts', '--no-interactive'];
   const sep = pm === 'npm' ? ['--'] : [];
   return { cmd: pm, args: ['create', tool, name, ...sep, ...flags] };
 }

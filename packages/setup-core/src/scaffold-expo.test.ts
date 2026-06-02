@@ -8,21 +8,23 @@ import {
   EXPO_TEMPLATE_FILES,
   EXPO_NATIVE_DEPS,
   EXPO_DEV_DEPS,
+  expoDevInstallArgs,
 } from './scaffold-expo';
 
 const assetDir = fileURLToPath(new URL('../assets/expo/', import.meta.url));
 const asset = (f: string): string => readFileSync(join(assetDir, f), 'utf8');
 
 describe('buildExpoScaffoldCommand', () => {
-  it('delegates to create-expo-app (blank-typescript), with -- for npm', () => {
+  it('delegates to create-expo-app (blank-typescript), non-interactive, with -- for npm', () => {
     expect(buildExpoScaffoldCommand('npm', 'my-app')).toEqual({
       cmd: 'npm',
-      args: ['create', 'expo-app@latest', 'my-app', '--', '--template', 'blank-typescript'],
+      args: ['create', 'expo-app@latest', 'my-app', '--', '--yes', '--template', 'blank-typescript'],
     });
     expect(buildExpoScaffoldCommand('pnpm', 'my-app').args).toEqual([
       'create',
       'expo-app@latest',
       'my-app',
+      '--yes',
       '--template',
       'blank-typescript',
     ]);
@@ -30,6 +32,14 @@ describe('buildExpoScaffoldCommand', () => {
 
   it('uses a bare tool name for yarn (no @latest)', () => {
     expect(buildExpoScaffoldCommand('yarn', 'my-app').args[1]).toBe('expo-app');
+  });
+
+  // create-expo-app prompts for the SDK version in a TTY even with --template; --yes
+  // takes the latest default so non-interactive/agent runs don't block or EOF-cancel.
+  it('always passes --yes to create-expo-app', () => {
+    for (const pm of ['npm', 'pnpm', 'yarn', 'bun'] as const) {
+      expect(buildExpoScaffoldCommand(pm, 'my-app').args).toContain('--yes');
+    }
   });
 
   it('appends --no-install when install is false', () => {
@@ -76,6 +86,21 @@ describe('expo deps', () => {
     expect(EXPO_NATIVE_DEPS).toContain('react-native-safe-area-context');
     expect(EXPO_DEV_DEPS).toContain('tailwindcss');
     expect(EXPO_DEV_DEPS).toContain('@offthegully/veneerui'); // the codegen's data source
+  });
+
+  // veneerui's web peers (react-dom/vite) are irrelevant on native, but npm auto-installs
+  // the react-dom peer and ERESOLVE-fails against Expo's older pinned react. npm needs
+  // --legacy-peer-deps to install this build-only dep; other PMs don't hard-enforce peers.
+  it('passes --legacy-peer-deps only for npm', () => {
+    expect(expoDevInstallArgs('npm')).toEqual([
+      'install',
+      '--save-dev',
+      ...EXPO_DEV_DEPS,
+      '--legacy-peer-deps',
+    ]);
+    for (const pm of ['pnpm', 'yarn', 'bun'] as const) {
+      expect(expoDevInstallArgs(pm)).not.toContain('--legacy-peer-deps');
+    }
   });
 });
 

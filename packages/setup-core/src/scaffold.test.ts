@@ -32,15 +32,24 @@ describe('resolvePm', () => {
 });
 
 describe('buildScaffoldCommand', () => {
-  it('delegates Vite to create-vite (react-ts), with -- for npm', () => {
+  it('delegates Vite to create-vite (react-ts), non-interactive, with -- for npm', () => {
     expect(buildScaffoldCommand('vite', 'npm', 'my-app')).toEqual({
       cmd: 'npm',
-      args: ['create', 'vite@latest', 'my-app', '--', '--template', 'react-ts'],
+      args: ['create', 'vite@latest', 'my-app', '--', '--template', 'react-ts', '--no-interactive'],
     });
     expect(buildScaffoldCommand('vite', 'pnpm', 'my-app')).toEqual({
       cmd: 'pnpm',
-      args: ['create', 'vite@latest', 'my-app', '--template', 'react-ts'],
+      args: ['create', 'vite@latest', 'my-app', '--template', 'react-ts', '--no-interactive'],
     });
+  });
+
+  // create-vite v7+ prompts "Install with <pm> and start now?" in a TTY even with
+  // `--template`; without this flag it starts a dev server and the user's Ctrl+C
+  // kills our process before Veneer is wired. The flag must always be present.
+  it('always passes --no-interactive to create-vite', () => {
+    for (const pm of ['npm', 'pnpm', 'yarn', 'bun'] as const) {
+      expect(buildScaffoldCommand('vite', pm, 'my-app').args).toContain('--no-interactive');
+    }
   });
 
   it('uses a bare tool name for yarn (no @latest)', () => {
@@ -50,6 +59,7 @@ describe('buildScaffoldCommand', () => {
       'my-app',
       '--template',
       'react-ts',
+      '--no-interactive',
     ]);
   });
 

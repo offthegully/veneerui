@@ -40,6 +40,19 @@ export const EXPO_NATIVE_DEPS = [
 /** Build/dev deps installed through the package manager (Tailwind toolchain + the codegen source). */
 export const EXPO_DEV_DEPS = ['tailwindcss', '@tailwindcss/postcss', 'postcss', VENEER_PKG];
 
+/**
+ * The dev-dep install args. `@offthegully/veneerui` is the WEB runtime, installed dev-only
+ * so the token codegen can read its theme DATA (`@offthegully/veneerui/themes`) — the native
+ * app never renders it. It declares `react-dom`/`vite` as peers; npm auto-installs the
+ * react-dom peer, pulling react-dom@latest whose `react@^19.x.y` peer outranks the older
+ * react Expo pins, and npm then hard-fails ERESOLVE. Those web peers are irrelevant on
+ * native, so npm gets `--legacy-peer-deps`. (pnpm/yarn/bun don't hard-enforce peers — no flag.)
+ */
+export function expoDevInstallArgs(pm: PackageManager): string[] {
+  const args = installArgs(pm, EXPO_DEV_DEPS, true);
+  return pm === 'npm' ? [...args, '--legacy-peer-deps'] : args;
+}
+
 /** asset (in assets/expo/) → path written into the scaffolded app. */
 export const EXPO_TEMPLATE_FILES: ReadonlyArray<{ asset: string; dest: string }> = [
   { asset: 'metro.config.js', dest: 'metro.config.js' },
@@ -70,7 +83,10 @@ export function buildExpoScaffoldCommand(
 ): { cmd: string; args: string[] } {
   const tool = pm === 'yarn' ? 'expo-app' : 'expo-app@latest';
   const sep = pm === 'npm' ? ['--'] : [];
-  const flags = ['--template', 'blank-typescript', ...(install ? [] : ['--no-install'])];
+  // `--yes` is critical: create-expo-app prompts "Select an Expo SDK version" in a TTY
+  // even with `--template`, which blocks (and EOF-cancels) non-interactive/agent runs.
+  // `--yes` takes the default (latest SDK); the explicit `--template` still overrides it.
+  const flags = ['--yes', '--template', 'blank-typescript', ...(install ? [] : ['--no-install'])];
   return { cmd: pm, args: ['create', tool, name, ...sep, ...flags] };
 }
 
@@ -161,7 +177,7 @@ export function runScaffoldExpo(opts: ScaffoldOptions): { appDir: string } {
   if (install) {
     log('\nInstalling deps…');
     run('npx', ['expo', 'install', ...EXPO_NATIVE_DEPS], appDir);
-    run(opts.pm, installArgs(opts.pm, EXPO_DEV_DEPS, true), appDir);
+    run(opts.pm, expoDevInstallArgs(opts.pm), appDir);
     log('\nGenerating token data from Veneer…');
     run('node', ['scripts/generate-veneer-tokens.mjs'], appDir);
     log('  ✓ global.css + src/veneer-themes.generated.ts');
