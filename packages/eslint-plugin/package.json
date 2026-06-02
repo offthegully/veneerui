@@ -1,6 +1,6 @@
 {
   "name": "eslint-plugin-veneer",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "ESLint rule that flags hardcoded colors so every surface stays themeable by Veneer tokens.",
   "license": "MIT",
   "repository": {
