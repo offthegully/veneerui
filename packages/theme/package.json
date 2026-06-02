@@ -1,6 +1,6 @@
 {
   "name": "@offthegully/veneerui",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "User-extensible Tailwind v4 theming runtime — tokens, provider, validation, and import pipeline.",
   "license": "MIT",
   "repository": {
@@ -10,7 +10,9 @@
   },
   "homepage": "https://veneerui.dev",
   "type": "module",
-  "sideEffects": ["*.css"],
+  "sideEffects": [
+    "*.css"
+  ],
   "files": [
     "dist",
     "tokens.generated.css",
@@ -56,8 +58,12 @@
     "vite": "^8"
   },
   "peerDependenciesMeta": {
-    "tailwindcss": { "optional": true },
-    "vite": { "optional": true }
+    "tailwindcss": {
+      "optional": true
+    },
+    "vite": {
+      "optional": true
+    }
   },
   "devDependencies": {
     "@types/css-tree": "^2.3.11",
