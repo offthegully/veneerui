@@ -1,30 +1,78 @@
 # Publishing
 
-Veneer publishes **three** packages from this monorepo:
+Veneer publishes **four** packages from this monorepo:
 
 | Package | Dir | What it is |
 |---|---|---|
 | `@offthegully/veneerui` | `packages/theme` | the runtime + tokens (a dependency apps install) |
 | `veneerui` | `packages/cli` | the `init`/`add`/`doctor`/`migrate` CLI for existing apps (`npx veneerui`) |
 | `create-veneerui` | `packages/create-veneerui` | the `npm create veneerui` scaffolder for new apps |
+| `eslint-plugin-veneer` | `packages/eslint-plugin` | the `veneer/no-hardcoded-colors` ESLint rule |
 
 > `@veneerui/setup-core` (the shared setup logic) and `@veneerui/lint-core` are
-> **private** (`"private": true`, never published); both are bundled into the CLI and
-> scaffolder at build time.
+> **private** (`"private": true`, never published); both are bundled into the CLI,
+> scaffolder, and ESLint plugin at build time. [Changesets](https://github.com/changesets/changesets)
+> ignores private packages automatically.
 
 > The package names assume the `@offthegully` npm scope (owned) and the unscoped
-> `veneerui` / `create-veneerui` names are available — verify both unscoped names are
-> free before the first publish. npm renders each package's `README.md` as its landing page.
+> `veneerui` / `create-veneerui` / `eslint-plugin-veneer` names are available. npm
+> renders each package's `README.md` as its landing page.
 
-## Before publishing
+## How releases work
 
-Publishing is a manual, deliberate step (it's outward-facing and hard to undo).
-From the repo root:
+Versioning and publishing are **automated** with Changesets + GitHub Actions
+([`.github/workflows/release.yml`](../.github/workflows/release.yml)). You don't run
+`npm publish` by hand. The flow:
+
+1. **Each PR that changes a published package carries a changeset** — a small
+   markdown file declaring which packages changed and the bump type (patch/minor/
+   major). Create one with `npm run changeset` and commit it.
+2. **On merge to `main`**, the release workflow opens (or updates) a **"Version
+   Packages" PR** that consumes the pending changesets: it bumps each affected
+   package's version, writes `CHANGELOG.md` entries, and refreshes the lockfile.
+3. **Merging the "Version Packages" PR** triggers the publish: the workflow runs
+   `npm run release` (`npm run build && changeset publish`), which publishes **only
+   the changed packages** to npm with [provenance](https://docs.npmjs.com/generating-provenance-statements),
+   then creates git tags (e.g. `veneerui@0.1.4`) and GitHub Releases.
+
+Because each package versions independently, an unchanged package is simply not
+republished. The scoped `@offthegully/veneerui` publishes public via
+`access: "public"` in [`.changeset/config.json`](../.changeset/config.json).
+
+### Authentication: npm Trusted Publishing (OIDC)
+
+There is **no `NPM_TOKEN` secret**. The workflow authenticates to npm over OIDC,
+which also produces the provenance attestation. This requires a one-time setup
+**per package** on npmjs.com → the package's *Settings → Trusted Publisher*:
+
+- **Repository:** `offthegully/veneerui`
+- **Workflow filename:** `release.yml`
+
+All four packages already exist on npm, so their trusted publishers can be
+configured now. Until a package's trusted publisher is set, its first OIDC publish
+will fail. Renaming `release.yml` later means re-configuring each package.
+
+### Cutting a release, step by step
 
 ```sh
-npm run gen:theme && npm run gen:registry   # regenerate all derived artifacts
+# 1. On your feature branch, after making changes to a published package:
+npm run changeset          # pick affected packages + bump type, write a summary
+git add .changeset && git commit
+# 2. Open the PR, get it reviewed, merge to main.
+# 3. The bot opens a "Version Packages" PR — review the bumps/changelogs, merge it.
+# 4. Watch the Release workflow publish + tag + create GitHub Releases.
+```
+
+No changeset is needed for docs-only, playground-only, or other non-published
+changes. Run `npx changeset add --empty` if you want an explicit "no release" marker.
+
+### Local sanity check (optional)
+
+Before relying on CI you can verify the artifacts locally. From the repo root:
+
+```sh
 npm test && npm run typecheck && npm run lint
-npm run build                               # builds package + playground + CLI
+npm run build
 ```
 
 `@offthegully/veneerui` ships `dist/`, `tokens.generated.css`, and `theme-v1.json` (its
@@ -32,27 +80,25 @@ npm run build                               # builds package + playground + CLI
 `assets/` (the registry + agent guide are build-copied from `@veneerui/setup-core` by
 `scripts/sync-setup-assets.ts`). The sync copies `assets/` **recursively**, so the Expo
 scaffold templates (`assets/expo/`) ride along into `create-veneerui` automatically — no
-allowlist change. Confirm with `npm pack --dry-run -w @offthegully/veneerui`, `-w veneerui`,
-and `-w create-veneerui`; the `create-veneerui` listing should include `assets/expo/*`.
+allowlist change. Confirm tarball contents with `npm publish --dry-run -w @offthegully/veneerui`,
+`-w veneerui`, and `-w create-veneerui`; the `create-veneerui` listing should include
+`assets/expo/*`, and no published manifest should list the private `@veneerui/*` deps
+(they're devDependencies, bundled by tsup).
 
-## Publishing
-
-```sh
-npm publish -w @offthegully/veneerui --access public
-npm publish -w veneerui              --access public
-npm publish -w create-veneerui       --access public
-```
-
-Publish `@offthegully/veneerui` first (the CLI and scaffolder install/reference it), then
-`veneerui`, then `create-veneerui`. The scaffolder **bundles** `@veneerui/setup-core`, so
-it has no runtime dependency on `veneerui`'s published version — the only coupling is the
-runtime semver string it installs into the new app.
+> Build/publish order is handled for you: `npm run build` builds the theme runtime
+> first (the CLI and scaffolder reference it), and `changeset publish` publishes in
+> dependency order. The scaffolder **bundles** `@veneerui/setup-core`, so it has no
+> runtime dependency on `veneerui`'s published version — the only coupling is the
+> runtime semver string it installs into the new app.
 
 ## Versioning
 
-- **Both packages follow semver.** The CLI depends on the package only through
-  the code it copies in and the `@import`/plugin it wires up, so they can version
-  independently.
+Changeset bump types map directly to semver (`patch` / `minor` / `major`); the
+guidance below tells you which to pick.
+
+- **Each package follows semver and versions independently.** The CLI depends on the
+  runtime only through the code it copies in and the `@import`/plugin it wires up, so
+  the two can move at their own pace.
 - **Adding tokens to the schema is a *minor* (additive) change.** Old themes keep
   working because every omitted token falls back to its default. Each theme
   records the `schemaVersion` it targeted.
