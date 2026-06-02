@@ -1,7 +1,20 @@
 {
+  "$schema": "https://veneerui.dev/schemas/theme-v1.json",
   "name": "Neon Arcade",
   "description": "Synthwave on near-black: a glowing neon grid floor under a violet horizon haze, hot-magenta and cyan tubes that bloom on every surface, vivid magenta->violet->cyan gradients, glowing text, and an Orbitron display face. Leans hard on the gradient set, layered glow shadows, and text-shadow-glow.",
-  "tags": ["dark", "neon", "retro", "synthwave"],
+  "author": {
+    "id": "veneer",
+    "name": "Veneer Team"
+  },
+  "version": "1.1.0",
+  "schemaVersion": 1,
+  "tags": [
+    "dark",
+    "neon",
+    "retro",
+    "synthwave"
+  ],
+  "license": "MIT",
   "tokens": {
     "color-primary": "#ff2bd6",
     "color-primary-hover": "#ff5ce0",

@@ -1,7 +1,20 @@
 {
+  "$schema": "https://veneerui.dev/schemas/theme-v1.json",
   "name": "Warm Library",
   "description": "A cozy reading room: EB Garamond for everything (chrome included), antique-cream paper, a muted-terracotta primary with a sage accent, an enlarged type scale, and generous leading.",
-  "tags": ["light", "serif", "reading", "warm"],
+  "author": {
+    "id": "veneer",
+    "name": "Veneer Team"
+  },
+  "version": "1.0.0",
+  "schemaVersion": 1,
+  "tags": [
+    "light",
+    "serif",
+    "reading",
+    "warm"
+  ],
+  "license": "MIT",
   "tokens": {
     "color-primary": "#9c4a2a",
     "color-primary-hover": "#823c22",

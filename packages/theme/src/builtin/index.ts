@@ -9,7 +9,8 @@
  * The ids here are stable and referenced by storage/anti-flash logic, so don't
  * rename them casually — a persisted `currentId` points at one of these.
  */
-import { SCHEMA_VERSION, type Theme } from '../types';
+import type { Theme } from '../types';
+import { normalizeAuthoredTheme, type AuthoredTheme } from '../authored-theme';
 import light from './default-light.json';
 import dark from './default-dark.json';
 import brutalist from './brutalist.json';
@@ -24,27 +25,11 @@ import terminal from './terminal.json';
 import warmLibrary from './warm-library.json';
 import windows95 from './windows-95.json';
 
-/** The authored slice of a theme, as stored in the JSON files. */
-interface BuiltinSource {
-  name: string;
-  description?: string;
-  tags?: string[];
-  tokens: Record<string, string>;
-}
-
-const AUTHOR = { id: 'veneer', name: 'Veneer' } as const;
-
-const builtin = (id: string, src: BuiltinSource): Theme => ({
-  id,
-  name: src.name,
-  description: src.description,
-  author: { ...AUTHOR },
-  version: '1.0.0',
-  schemaVersion: SCHEMA_VERSION,
-  tags: src.tags,
-  tokens: src.tokens,
-  source: 'builtin',
-});
+// The default-* files are authored by hand; the rest are generated from
+// gallery/themes/<slug>/theme.json by scripts/gen-builtin.ts (gallery is the
+// single source of truth). All share the authored shape, so one normalizer wraps
+// them — see ../authored-theme.
+const builtin = (id: string, src: AuthoredTheme): Theme => normalizeAuthoredTheme(id, src);
 
 /** The id applied on first run and the safe fallback when state is malformed. */
 export const DEFAULT_THEME_ID = 'default-light';

@@ -1,0 +1,517 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://veneerui.dev/schemas/theme-v1.json",
+  "title": "Veneer Theme",
+  "description": "Theme document targeting TOKEN_SCHEMA generation 1.",
+  "type": "object",
+  "required": [
+    "name",
+    "version",
+    "schemaVersion",
+    "tokens"
+  ],
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "description": {
+      "type": "string"
+    },
+    "author": {
+      "oneOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "name": {
+              "type": "string"
+            }
+          }
+        }
+      ]
+    },
+    "version": {
+      "type": "string"
+    },
+    "schemaVersion": {
+      "const": 1
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "license": {
+      "type": "string"
+    },
+    "tokens": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "color-primary",
+        "color-surface",
+        "color-text"
+      ],
+      "properties": {
+        "color-primary": {
+          "type": "string",
+          "description": "Main brand color (color, default: #3b82f6)"
+        },
+        "color-primary-hover": {
+          "type": "string",
+          "description": "Hover state of primary (color, default: #2563eb)"
+        },
+        "color-primary-active": {
+          "type": "string",
+          "description": "Pressed state of primary (color, default: #1d4ed8)"
+        },
+        "color-primary-subtle": {
+          "type": "string",
+          "description": "Tinted background derived from primary (color, default: #dbeafe)"
+        },
+        "color-accent": {
+          "type": "string",
+          "description": "Secondary emphasis color (color, default: #06b6d4)"
+        },
+        "color-accent-hover": {
+          "type": "string",
+          "description": "Hover state of accent (color, default: #0891b2)"
+        },
+        "color-accent-active": {
+          "type": "string",
+          "description": "Pressed state of accent (color, default: #0e7490)"
+        },
+        "color-success": {
+          "type": "string",
+          "description": "Positive / success status (color, default: #16a34a)"
+        },
+        "color-warning": {
+          "type": "string",
+          "description": "Caution / warning status (color, default: #d97706)"
+        },
+        "color-danger": {
+          "type": "string",
+          "description": "Destructive / error status (color, default: #dc2626)"
+        },
+        "color-info": {
+          "type": "string",
+          "description": "Informational status (color, default: #0ea5e9)"
+        },
+        "color-focus-ring": {
+          "type": "string",
+          "description": "Focus outline / ring color (color, default: #3b82f6)"
+        },
+        "color-surface": {
+          "type": "string",
+          "description": "Default page background (color, default: #ffffff)"
+        },
+        "color-surface-raised": {
+          "type": "string",
+          "description": "Raised elements like cards (color, default: #f9fafb)"
+        },
+        "color-surface-sunken": {
+          "type": "string",
+          "description": "Recessed wells / insets (color, default: #f3f4f6)"
+        },
+        "color-surface-overlay": {
+          "type": "string",
+          "description": "Floating surfaces like menus & modals (color, default: #ffffff)"
+        },
+        "color-surface-inverse": {
+          "type": "string",
+          "description": "Inverted surface (e.g. tooltips) (color, default: #111827)"
+        },
+        "color-overlay-backdrop": {
+          "type": "string",
+          "description": "Scrim behind modals (color, default: rgb(0 0 0 / 0.5))"
+        },
+        "color-text": {
+          "type": "string",
+          "description": "Body text color (color, default: #111827)"
+        },
+        "color-text-muted": {
+          "type": "string",
+          "description": "Secondary text (color, default: #4b5563)"
+        },
+        "color-text-subtle": {
+          "type": "string",
+          "description": "Tertiary / placeholder text (color, default: #9ca3af)"
+        },
+        "color-text-inverse": {
+          "type": "string",
+          "description": "Text on inverse surfaces (color, default: #f9fafb)"
+        },
+        "color-text-on-primary": {
+          "type": "string",
+          "description": "Text rendered on primary fills (color, default: #ffffff)"
+        },
+        "color-border": {
+          "type": "string",
+          "description": "Default border color (color, default: #e5e7eb)"
+        },
+        "color-border-strong": {
+          "type": "string",
+          "description": "High-emphasis border (color, default: #d1d5db)"
+        },
+        "color-border-subtle": {
+          "type": "string",
+          "description": "Low-emphasis border (color, default: #f3f4f6)"
+        },
+        "border-width-thin": {
+          "type": "string",
+          "description": "Hairline border width (length, default: 1px)"
+        },
+        "border-width-default": {
+          "type": "string",
+          "description": "Default border width (length, default: 1px)"
+        },
+        "border-width-thick": {
+          "type": "string",
+          "description": "Heavy border for brutalist/emphasis themes (length, default: 3px)"
+        },
+        "radius-none": {
+          "type": "string",
+          "description": "No rounding (brutalist/sharp) (length, default: 0px)"
+        },
+        "radius-xs": {
+          "type": "string",
+          "description": "Hairline rounding (length, default: 2px)"
+        },
+        "radius-sm": {
+          "type": "string",
+          "description": "Small radius (length, default: 4px)"
+        },
+        "radius-md": {
+          "type": "string",
+          "description": "Default radius for cards, buttons (length, default: 8px)"
+        },
+        "radius-lg": {
+          "type": "string",
+          "description": "Large radius (length, default: 12px)"
+        },
+        "radius-xl": {
+          "type": "string",
+          "description": "Extra-large radius (length, default: 16px)"
+        },
+        "radius-2xl": {
+          "type": "string",
+          "description": "Very large radius (neumorphic) (length, default: 24px)"
+        },
+        "radius-3xl": {
+          "type": "string",
+          "description": "Pillowy radius for soft/playful themes (length, default: 32px)"
+        },
+        "radius-full": {
+          "type": "string",
+          "description": "Pill / fully rounded (length, default: 9999px)"
+        },
+        "shadow-2xs": {
+          "type": "string",
+          "description": "Faintest hairline elevation (shadow, default: 0 1px rgb(0 0 0 / 0.05))"
+        },
+        "shadow-sm": {
+          "type": "string",
+          "description": "Subtle elevation (shadow, default: 0 1px 2px 0 rgb(0 0 0 / 0.05))"
+        },
+        "shadow-md": {
+          "type": "string",
+          "description": "Default elevation (shadow, default: 0 4px 6px -1px rgb(0 0 0 / 0.1))"
+        },
+        "shadow-lg": {
+          "type": "string",
+          "description": "High elevation (shadow, default: 0 10px 15px -3px rgb(0 0 0 / 0.1))"
+        },
+        "shadow-xl": {
+          "type": "string",
+          "description": "Highest elevation (shadow, default: 0 20px 25px -5px rgb(0 0 0 / 0.1))"
+        },
+        "shadow-2xl": {
+          "type": "string",
+          "description": "Dramatic floating elevation (shadow, default: 0 25px 50px -12px rgb(0 0 0 / 0.25))"
+        },
+        "shadow-card": {
+          "type": "string",
+          "description": "Semantic alias for card elevation (shadow, default: 0 1px 3px 0 rgb(0 0 0 / 0.1))"
+        },
+        "shadow-glow": {
+          "type": "string",
+          "description": "Glow for retro/playful themes (follows the palette) (shadow, default: 0 0 20px color-mix(in srgb, var(--color-primary) 45%, transparent))"
+        },
+        "inset-shadow-sm": {
+          "type": "string",
+          "description": "Small inset (neumorphic) (shadow, default: inset 0 2px 4px rgb(0 0 0 / 0.06))"
+        },
+        "inset-shadow-md": {
+          "type": "string",
+          "description": "Medium inset (neumorphic) (shadow, default: inset 0 3px 6px rgb(0 0 0 / 0.09))"
+        },
+        "inset-shadow-lg": {
+          "type": "string",
+          "description": "Large inset (neumorphic) (shadow, default: inset 0 4px 8px rgb(0 0 0 / 0.12))"
+        },
+        "text-shadow-sm": {
+          "type": "string",
+          "description": "Subtle text depth (textShadow, default: 0 1px 2px rgb(0 0 0 / 0.1))"
+        },
+        "text-shadow-md": {
+          "type": "string",
+          "description": "Default text depth (textShadow, default: 0 2px 4px rgb(0 0 0 / 0.12))"
+        },
+        "text-shadow-lg": {
+          "type": "string",
+          "description": "Strong text depth (display headings) (textShadow, default: 0 4px 8px rgb(0 0 0 / 0.15))"
+        },
+        "text-shadow-glow": {
+          "type": "string",
+          "description": "Neon glow on text (retro/synthwave; follows the palette) (textShadow, default: 0 0 12px color-mix(in srgb, var(--color-primary) 55%, transparent))"
+        },
+        "drop-shadow-sm": {
+          "type": "string",
+          "description": "Subtle alpha-aware shadow (dropShadow, default: 0 1px 1px rgb(0 0 0 / 0.1))"
+        },
+        "drop-shadow-md": {
+          "type": "string",
+          "description": "Default alpha-aware shadow (glass/cutout) (dropShadow, default: 0 3px 4px rgb(0 0 0 / 0.15))"
+        },
+        "drop-shadow-lg": {
+          "type": "string",
+          "description": "Deep alpha-aware shadow (dropShadow, default: 0 8px 12px rgb(0 0 0 / 0.2))"
+        },
+        "font-sans": {
+          "type": "string",
+          "description": "Default body font stack (fontFamily, default: 'Inter Variable', system-ui, sans-serif)"
+        },
+        "font-serif": {
+          "type": "string",
+          "description": "Serif font stack (fontFamily, default: 'Source Serif 4 Variable', serif)"
+        },
+        "font-mono": {
+          "type": "string",
+          "description": "Monospace font stack (fontFamily, default: 'JetBrains Mono Variable', ui-monospace, monospace)"
+        },
+        "font-display": {
+          "type": "string",
+          "description": "Display/heading font (often more dramatic) (fontFamily, default: 'Inter Variable', system-ui, sans-serif)"
+        },
+        "text-xs": {
+          "type": "string",
+          "description": "Extra-small text (length, default: 12px)"
+        },
+        "text-sm": {
+          "type": "string",
+          "description": "Small text (length, default: 14px)"
+        },
+        "text-base": {
+          "type": "string",
+          "description": "Default body text size (length, default: 16px)"
+        },
+        "text-lg": {
+          "type": "string",
+          "description": "Large text (length, default: 18px)"
+        },
+        "text-xl": {
+          "type": "string",
+          "description": "Extra-large text (length, default: 20px)"
+        },
+        "text-2xl": {
+          "type": "string",
+          "description": "Heading size (length, default: 24px)"
+        },
+        "text-3xl": {
+          "type": "string",
+          "description": "Heading size (length, default: 30px)"
+        },
+        "text-4xl": {
+          "type": "string",
+          "description": "Display size (length, default: 36px)"
+        },
+        "text-5xl": {
+          "type": "string",
+          "description": "Display size (length, default: 48px)"
+        },
+        "text-6xl": {
+          "type": "string",
+          "description": "Hero display size (length, default: 60px)"
+        },
+        "text-7xl": {
+          "type": "string",
+          "description": "Oversized display (length, default: 72px)"
+        },
+        "text-8xl": {
+          "type": "string",
+          "description": "Editorial poster size (length, default: 96px)"
+        },
+        "text-9xl": {
+          "type": "string",
+          "description": "Maximal hero size (length, default: 128px)"
+        },
+        "font-weight-thin": {
+          "type": "string",
+          "description": "Thin weight (fashion/editorial) (number, default: 100)"
+        },
+        "font-weight-light": {
+          "type": "string",
+          "description": "Light weight (number, default: 300)"
+        },
+        "font-weight-normal": {
+          "type": "string",
+          "description": "Regular weight (number, default: 400)"
+        },
+        "font-weight-medium": {
+          "type": "string",
+          "description": "Medium weight (number, default: 500)"
+        },
+        "font-weight-semibold": {
+          "type": "string",
+          "description": "Semibold weight (number, default: 600)"
+        },
+        "font-weight-bold": {
+          "type": "string",
+          "description": "Bold weight (number, default: 700)"
+        },
+        "font-weight-extrabold": {
+          "type": "string",
+          "description": "Extra-bold weight (number, default: 800)"
+        },
+        "font-weight-black": {
+          "type": "string",
+          "description": "Black weight (brutalist/display) (number, default: 900)"
+        },
+        "leading-tight": {
+          "type": "string",
+          "description": "Tight line-height (number, default: 1.25)"
+        },
+        "leading-snug": {
+          "type": "string",
+          "description": "Snug line-height (number, default: 1.375)"
+        },
+        "leading-normal": {
+          "type": "string",
+          "description": "Default line-height (number, default: 1.5)"
+        },
+        "leading-relaxed": {
+          "type": "string",
+          "description": "Relaxed line-height (number, default: 1.625)"
+        },
+        "leading-loose": {
+          "type": "string",
+          "description": "Loose line-height (airy editorial) (number, default: 2)"
+        },
+        "tracking-tighter": {
+          "type": "string",
+          "description": "Very tight letter-spacing (display) (length, default: -0.05em)"
+        },
+        "tracking-tight": {
+          "type": "string",
+          "description": "Tight letter-spacing (length, default: -0.02em)"
+        },
+        "tracking-normal": {
+          "type": "string",
+          "description": "Default letter-spacing (length, default: 0em)"
+        },
+        "tracking-wide": {
+          "type": "string",
+          "description": "Wide letter-spacing (length, default: 0.05em)"
+        },
+        "tracking-wider": {
+          "type": "string",
+          "description": "Wider letter-spacing (length, default: 0.1em)"
+        },
+        "tracking-widest": {
+          "type": "string",
+          "description": "Widest letter-spacing (eyebrow/label) (length, default: 0.2em)"
+        },
+        "spacing": {
+          "type": "string",
+          "description": "Base spacing unit; the whole scale is calc(spacing * n) (length, default: 0.25rem)"
+        },
+        "blur-xs": {
+          "type": "string",
+          "description": "Hairline blur / backdrop-blur (length, default: 4px)"
+        },
+        "blur-sm": {
+          "type": "string",
+          "description": "Small blur / backdrop-blur (length, default: 8px)"
+        },
+        "blur-md": {
+          "type": "string",
+          "description": "Medium blur / backdrop-blur (glassmorphism) (length, default: 12px)"
+        },
+        "blur-lg": {
+          "type": "string",
+          "description": "Large blur / backdrop-blur (length, default: 16px)"
+        },
+        "blur-xl": {
+          "type": "string",
+          "description": "Extra-large blur / backdrop-blur (length, default: 24px)"
+        },
+        "blur-2xl": {
+          "type": "string",
+          "description": "Frosted-glass blur / backdrop-blur (length, default: 40px)"
+        },
+        "gradient-primary": {
+          "type": "string",
+          "description": "Optional gradient for primary surfaces (follows the palette) (gradient, default: linear-gradient(135deg, var(--color-primary) 0%, var(--color-accent) 100%))"
+        },
+        "gradient-accent": {
+          "type": "string",
+          "description": "Gradient for accent/secondary surfaces (follows the palette) (gradient, default: linear-gradient(135deg, var(--color-accent) 0%, var(--color-primary) 100%))"
+        },
+        "gradient-surface": {
+          "type": "string",
+          "description": "Subtle background gradient for page/hero (follows the palette) (gradient, default: linear-gradient(180deg, var(--color-surface) 0%, var(--color-surface-sunken) 100%))"
+        },
+        "gradient-text": {
+          "type": "string",
+          "description": "Gradient for clipped headline text (follows the palette) (gradient, default: linear-gradient(135deg, var(--color-primary) 0%, var(--color-accent) 100%))"
+        },
+        "opacity-disabled": {
+          "type": "string",
+          "description": "Opacity for disabled elements (number, default: 0.5)"
+        },
+        "opacity-overlay": {
+          "type": "string",
+          "description": "Opacity for overlay scrims (number, default: 0.6)"
+        },
+        "duration-fast": {
+          "type": "string",
+          "description": "Fast transition (ms) (number, default: 80)"
+        },
+        "duration-default": {
+          "type": "string",
+          "description": "Default transition (ms) (number, default: 200)"
+        },
+        "duration-slow": {
+          "type": "string",
+          "description": "Slow transition (ms) (number, default: 400)"
+        },
+        "ease-default": {
+          "type": "string",
+          "description": "Default easing curve (easing, default: cubic-bezier(0.4, 0, 0.2, 1))"
+        },
+        "ease-snappy": {
+          "type": "string",
+          "description": "Snappy easing (easing, default: cubic-bezier(0.2, 0, 0, 1))"
+        },
+        "ease-smooth": {
+          "type": "string",
+          "description": "Smooth easing (easing, default: cubic-bezier(0.65, 0, 0.35, 1))"
+        },
+        "ease-bounce": {
+          "type": "string",
+          "description": "Playful overshoot easing (easing, default: cubic-bezier(0.68, -0.55, 0.27, 1.55))"
+        }
+      }
+    }
+  }
+}

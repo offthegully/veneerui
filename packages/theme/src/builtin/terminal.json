@@ -1,7 +1,20 @@
 {
+  "$schema": "https://veneerui.dev/schemas/theme-v1.json",
   "name": "Terminal",
   "description": "A CRT phosphor terminal: monospace everything, near-black screen, glowing green text, faint scanlines, thin glowing rules instead of shadows, and snappy linear motion. Amber is the only non-green accent.",
-  "tags": ["dark", "terminal", "monospace", "retro"],
+  "author": {
+    "id": "veneer",
+    "name": "Veneer Team"
+  },
+  "version": "1.0.0",
+  "schemaVersion": 1,
+  "tags": [
+    "dark",
+    "terminal",
+    "monospace",
+    "retro"
+  ],
+  "license": "MIT",
   "tokens": {
     "color-primary": "#2ee66b",
     "color-primary-hover": "#4dff8a",

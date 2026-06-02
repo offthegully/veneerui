@@ -1,7 +1,19 @@
 {
+  "$schema": "https://veneerui.dev/schemas/theme-v1.json",
   "name": "High Contrast",
-  "description": "Black-on-white, thick borders, square corners. An accessibility theme that also proves border-width and radius are real theme axes, not just color.",
-  "tags": ["accessibility", "high-contrast", "light"],
+  "description": "An accessibility theme: pure black on white, 2px borders everywhere, sharp corners, enlarged text, and rings instead of soft shadows. Also proves border-width and radius are real theme axes.",
+  "author": {
+    "id": "veneer",
+    "name": "Veneer Team"
+  },
+  "version": "1.1.0",
+  "schemaVersion": 1,
+  "tags": [
+    "accessibility",
+    "high-contrast",
+    "light"
+  ],
+  "license": "MIT",
   "tokens": {
     "color-primary": "#0000ee",
     "color-primary-hover": "#0000cc",
@@ -21,7 +33,7 @@
     "color-overlay-backdrop": "rgb(0 0 0 / 0.8)",
     "color-text": "#000000",
     "color-text-muted": "#000000",
-    "color-text-subtle": "#262626",
+    "color-text-subtle": "#1a1a1a",
     "color-text-inverse": "#ffffff",
     "color-text-on-primary": "#ffffff",
     "color-border": "#000000",
@@ -51,6 +63,13 @@
     "text-shadow-md": "none",
     "text-shadow-lg": "none",
     "text-shadow-glow": "none",
+    "text-base": "18px",
+    "text-lg": "20px",
+    "text-xl": "24px",
+    "text-2xl": "30px",
+    "text-3xl": "34px",
+    "text-4xl": "40px",
+    "text-5xl": "46px",
     "font-weight-thin": "400",
     "font-weight-normal": "500",
     "font-weight-medium": "600",

@@ -1,7 +1,20 @@
 {
+  "$schema": "https://veneerui.dev/schemas/theme-v1.json",
   "name": "Sunset Paper",
   "description": "Golden hour on paper: the page itself glows like a dusk sky — a warm sun-haze at the horizon fading down through peach into rose — while cream cards float above it. A vivid amber→raspberry→dusk-violet gradient, big rounded corners, a Fraunces display face, and a playful overshoot easing. Leans on the gradient set and a luminous surface.",
-  "tags": ["light", "warm", "playful", "sunset"],
+  "author": {
+    "id": "veneer",
+    "name": "Veneer Team"
+  },
+  "version": "1.1.0",
+  "schemaVersion": 1,
+  "tags": [
+    "light",
+    "warm",
+    "playful",
+    "sunset"
+  ],
+  "license": "MIT",
   "tokens": {
     "color-primary": "#e85d04",
     "color-primary-hover": "#dc5200",

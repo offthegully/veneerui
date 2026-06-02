@@ -1,7 +1,19 @@
 {
+  "$schema": "https://veneerui.dev/schemas/theme-v1.json",
   "name": "Brutalist",
-  "description": "Loud and structural: Archivo Black display, square corners, heavy black borders, hard offset shadows with no blur, and snappy fast motion. Demonstrates the schema's full range from day one.",
-  "tags": ["brutalist", "expressive", "light"],
+  "description": "Thick black borders, zero radii, hard offset shadows with no blur, a heavy display face, tight tracking, and snappy motion. Loud on purpose, and demonstrates the schema's full range.",
+  "author": {
+    "id": "veneer",
+    "name": "Veneer Team"
+  },
+  "version": "1.1.0",
+  "schemaVersion": 1,
+  "tags": [
+    "bold",
+    "high-contrast",
+    "retro"
+  ],
+  "license": "MIT",
   "tokens": {
     "color-primary": "#ff4d00",
     "color-primary-hover": "#e64500",
@@ -68,12 +80,14 @@
     "text-9xl": "150px",
     "tracking-tighter": "-0.06em",
     "tracking-tight": "-0.04em",
+    "tracking-normal": "-0.01em",
     "tracking-wide": "0.08em",
     "tracking-wider": "0.12em",
     "tracking-widest": "0.2em",
     "duration-fast": "60",
     "duration-default": "100",
     "duration-slow": "180",
-    "ease-default": "cubic-bezier(0.2, 0, 0, 1)"
+    "ease-default": "cubic-bezier(0.2, 0, 0, 1)",
+    "ease-snappy": "linear"
   }
 }

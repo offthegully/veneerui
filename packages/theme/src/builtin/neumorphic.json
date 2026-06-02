@@ -1,7 +1,19 @@
 {
+  "$schema": "https://veneerui.dev/schemas/theme-v1.json",
   "name": "Neumorphic",
   "description": "Soft UI: one low-contrast surface color everywhere, shape carved purely with paired light/dark shadows, big radii, slow smooth easing. The shadows do all the work.",
-  "tags": ["soft", "light", "tactile"],
+  "author": {
+    "id": "veneer",
+    "name": "Veneer Team"
+  },
+  "version": "1.0.0",
+  "schemaVersion": 1,
+  "tags": [
+    "soft",
+    "light",
+    "tactile"
+  ],
+  "license": "MIT",
   "tokens": {
     "color-primary": "#6d7cff",
     "color-primary-hover": "#5a6bff",
