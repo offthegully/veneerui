@@ -13,6 +13,7 @@
     "gen:theme": "tsx scripts/generate-theme.ts",
     "gen:builtin": "tsx scripts/gen-builtin.ts",
     "check:builtin": "tsx scripts/gen-builtin.ts --check",
+    "check:generated": "npm run gen:theme && npm run gen:builtin && npm run gen:registry && git diff --exit-code",
     "check:coverage": "tsx scripts/check-coverage.ts",
     "gen:registry": "tsx scripts/build-registry.ts",
     "build:theme": "npm run gen:theme && npm run gen:builtin && npm run build -w @offthegully/veneerui",

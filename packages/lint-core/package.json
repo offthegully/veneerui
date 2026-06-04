@@ -1,17 +1,17 @@
 {
   "name": "@veneerui/lint-core",
   "version": "0.0.0",
-  "description": "Internal shared spec — the hardcoded-value detector, the reserved token-name list, and the themeable-font package table. Consumed by the playground ESLint rule, eslint-plugin-veneer, and the Veneer setup tooling. Plain JS, never published.",
+  "description": "Internal shared spec — the hardcoded-value detector and the themeable-font package table. Consumed by eslint-plugin-veneer, the conformance test, and the Veneer setup tooling. Plain JS, never published.",
   "private": true,
   "type": "module",
   "exports": {
     "./detect": "./detect.js",
-    "./reserved-tokens": "./reserved-tokens.generated.js",
+    "./rule": "./rule.js",
     "./font-packages": "./font-packages.generated.js"
   },
   "files": [
     "detect.js",
-    "reserved-tokens.generated.js",
+    "rule.js",
     "font-packages.generated.js"
   ],
   "scripts": {

@@ -33,7 +33,6 @@ const CATALOG: Record<string, { slug: string; description: string }> = {
   'ThemeShowcase.tsx': { slug: 'showcase', description: 'Demo surface exercising the full token set — handy reference.' },
 };
 
-const fileBySlug = new Map(Object.entries(CATALOG).map(([file, { slug }]) => [slug, file]));
 const slugByFile = new Map(Object.entries(CATALOG).map(([file, { slug }]) => [file, slug]));
 
 /** Infer registry dependencies from `from './Something'` relative imports. */
@@ -69,6 +68,3 @@ for (const file of readdirSync(SRC).sort()) {
 const manifest = { components };
 writeFileSync(join(OUT, 'manifest.json'), JSON.stringify(manifest, null, 2) + '\n');
 console.log(`Done — ${components.length} components → packages/setup-core/registry/`);
-
-// Touch fileBySlug so the inverse map is part of the contract (used by the CLI).
-void fileBySlug;

@@ -71,13 +71,6 @@ export interface ThemeLibrary {
   themes: Theme[];
   enabledIds: string[]; // subset shown in the switcher, in display order
   currentId: string; // the one applied right now (must be enabled)
-  /**
-   * Whether `currentId` is a deliberate pick the visitor made (vs. an auto-shuffled
-   * one). When an app opts into shuffle-until-pinned (see `getAntiFlashScript`),
-   * an unpinned library re-randomizes the theme on every load; selecting one from
-   * the switcher pins it. Absent/false means "not pinned" → keep shuffling.
-   */
-  pinned?: boolean;
 }
 
 /** Current generation of the token schema. Bump on incompatible changes only. */

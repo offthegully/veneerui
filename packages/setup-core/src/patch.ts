@@ -55,6 +55,62 @@ export function addViteAntiFlash(config: string): PatchResult {
   return { content: out, changed: true };
 }
 
+export const ESLINT_PLUGIN = 'eslint-plugin-veneer';
+
+/**
+ * Add Veneer's flat-config preset to an ESLint config so `no-hardcoded-colors`
+ * runs on the project — a stray `bg-blue-500` fails lint instead of silently
+ * shipping an un-themeable island. Inserts the import after the last existing one
+ * and `veneer.configs.recommended` as the first entry of the flat-config array.
+ * Recognizes the shapes the official scaffolders emit (create-vite:
+ * `defineConfig([…])`; create-next-app: `const eslintConfig = […]`) plus the
+ * plain `export default [ … ]` and `tseslint.config(…)` forms; bails on anything
+ * else so the caller can fall back to a manual step.
+ */
+export function addEslintRule(config: string): PatchResult {
+  if (config.includes('eslint-plugin-veneer')) return { content: config, changed: false };
+
+  const anchors = [
+    /export default defineConfig\(\[/,
+    /export default tseslint\.config\(/,
+    /const eslintConfig = \[/,
+    /export default \[/,
+  ];
+  const anchor = anchors.find((re) => re.test(config));
+  if (!anchor) {
+    return { content: config, changed: false, reason: 'no recognizable ESLint flat-config array found' };
+  }
+
+  // Import after the last existing import (or at the top if there are none).
+  const importLine = "import veneer from 'eslint-plugin-veneer'";
+  const importRe = /^import .*$/gm;
+  let last: RegExpExecArray | null = null;
+  let m: RegExpExecArray | null;
+  while ((m = importRe.exec(config))) last = m;
+  const at = last ? last.index + last[0].length : 0;
+  const withImport = last
+    ? config.slice(0, at) + `\n${importLine}` + config.slice(at)
+    : `${importLine}\n${config}`;
+
+  // Add the preset as the first config entry. Order is safe: it only switches the
+  // no-hardcoded-colors rule on, and nothing the scaffolders emit turns it off.
+  const out = withImport.replace(anchor, (s) => `${s}\n  veneer.configs.recommended,`);
+  return { content: out, changed: true };
+}
+
+/** The manual ESLint snippet printed when `addEslintRule` can't find a safe anchor. */
+export function eslintConfigSnippet(): string {
+  return [
+    "import veneer from 'eslint-plugin-veneer'",
+    '',
+    '// add veneer.configs.recommended to your flat-config array, e.g.:',
+    'export default [',
+    '  veneer.configs.recommended,',
+    '  // …your existing config',
+    ']',
+  ].join('\n');
+}
+
 /** The Next.js <head> anti-flash snippet (printed by `init`, not auto-patched). */
 export function nextAntiFlashSnippet(): string {
   return [

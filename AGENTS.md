@@ -268,10 +268,11 @@ Design pitfalls to respect (see `docs/authoring-guide.md`):
 - `docs/` — `authoring-guide.md`, `schema-reference.md` (generated), integration
   guides. `scripts/` — `generate-theme.ts`, `build-registry.ts`,
   `check-coverage.ts`.
-- `experiments/expo-theme-poc` — Veneer theming on **React Native / Expo** via
-  NativeWind (experimental). The token rules in this guide are identical there:
-  same utilities (`bg-primary`, `text-text`, `rounded-md`), same theme JSON, no
-  hardcoded colors. Setup: [`docs/expo.md`](docs/expo.md).
+- **React Native / Expo** — `npm create veneerui --framework expo` scaffolds a
+  Veneer-themed Expo app via **NativeWind v5**. The token rules in this guide are
+  identical there: same utilities (`bg-primary`, `text-text`, `rounded-md`), same
+  theme JSON, no hardcoded colors. The scaffolded templates live in
+  `packages/setup-core/assets/expo/`. Setup: [`docs/expo.md`](docs/expo.md).
 
 ---
 

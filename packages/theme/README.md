@@ -73,15 +73,6 @@ the open **`color-x-*`** namespace — real per-theme variables (consumed via `v
 that pass `no-hardcoded-colors`. See the
 [authoring guide](https://github.com/offthegully/veneerui/blob/main/docs/authoring-guide.md#4-custom-colors-beyond-the-schema-palette).
 
-## Optional: shuffle until pinned
-
-For a showcase, pass `veneer({ shuffleUntilPinned: themes })` (Vite) and
-`<ThemeProvider shuffleIds={...}>` to show a random theme on every visit — applied
-before first paint, so still flash-free — until the visitor selects one, which pins
-it. `useTheme()` exposes `pinned` and `shuffle()` to build the control. Omit it for
-the ordinary "apply the saved theme" behavior. See the
-[integration guide](https://github.com/offthegully/veneerui/blob/main/docs/integration.md#shuffle).
-
 ## License
 
 MIT

@@ -7,8 +7,8 @@ re-skins the tree at runtime.
 
 > **Status: experimental.** NativeWind v5 is pre-release, so expect rough edges. The
 > `veneerui` CLI (`init`, for *existing* apps) is still web-only; Expo support is in the
-> **new-app scaffolder**. A complete reference app lives in
-> [`experiments/expo-theme-poc`](../experiments/expo-theme-poc).
+> **new-app scaffolder** — the templates it writes live in
+> [`packages/setup-core/assets/expo/`](../packages/setup-core/assets/expo).
 
 ## Two ways in
 
@@ -36,12 +36,13 @@ npm i -D tailwindcss @tailwindcss/postcss
 ```
 
 Wire `metro.config.js` (`withNativewind`) and `babel-preset-expo` — copy both from the
-POC (and its `lightningcss` pin).
+scaffolder's templates in [`packages/setup-core/assets/expo/`](../packages/setup-core/assets/expo)
+(and its `lightningcss` pin).
 
 **2. `global.css`** — mind [the two gotchas](#the-two-gotchas) below, then generate it
-from Veneer's published tokens with the POC's `scripts/generate-veneer-tokens.mjs`
-(`npm run gen:tokens`) — it reads `@offthegully/veneerui`'s `tokens.css` + theme JSON, so
-nothing is hand-copied.
+from Veneer's published tokens with the scaffolder's `scripts/generate-veneer-tokens.mjs`
+(`npm run gen:tokens`) — it reads `@offthegully/veneerui`'s published `TOKEN_SCHEMA` +
+`BUILTIN_THEMES`, so nothing is hand-copied.
 
 **3. Switch themes** with NativeWind's provider — the RN analogue of `applyTheme()`:
 

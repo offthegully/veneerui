@@ -49,6 +49,8 @@ export interface SetupPlanInput {
   providerWired: boolean;
   /** Vite: the `veneer()` plugin is present. Next: `<AntiFlashScript/>`. Other: the inline script. */
   antiFlashWired: boolean;
+  /** True once the `veneer/no-hardcoded-colors` ESLint rule is wired. When `false`, the lint step is added. */
+  eslintWired?: boolean;
 }
 
 /** Render an agent-doc list as `` `AGENTS.md` `` / `` `CLAUDE.md` ``, or a default. */
@@ -132,6 +134,28 @@ function antiFlashStep(input: SetupPlanInput, n: number): string[] {
   ];
 }
 
+/** The `### N. …` lint-gate step (shown when the no-hardcoded-colors rule isn't wired). */
+function eslintStep(n: number): string[] {
+  return [
+    `### ${n}. Enable the no-hardcoded-colors lint rule`,
+    '',
+    'So a stray `bg-blue-500` or `#fff` fails lint instead of silently shipping an',
+    'un-themeable island, install the plugin and add its preset to your ESLint flat',
+    'config:',
+    '',
+    '```sh',
+    'npm i -D eslint-plugin-veneer',
+    '```',
+    '',
+    '```js',
+    "import veneer from 'eslint-plugin-veneer'",
+    '// add to your flat-config array:',
+    '//   veneer.configs.recommended,',
+    '```',
+    '',
+  ];
+}
+
 /**
  * Build the setup checklist, or return `null` when nothing manual remains (so
  * `init` can skip writing the file and report a clean setup instead).
@@ -141,7 +165,9 @@ export function buildSetupPlan(input: SetupPlanInput): string | null {
   const needsInterlock = !tokenImportWired;
   const needsProvider = !input.providerWired;
   const needsAntiFlash = !input.antiFlashWired;
-  if (!needsInterlock && !needsProvider && !needsAntiFlash) return null;
+  // Only when explicitly false — an undefined (older caller) means "don't ask".
+  const needsEslint = input.eslintWired === false;
+  if (!needsInterlock && !needsProvider && !needsAntiFlash && !needsEslint) return null;
 
   // Remaining steps, numbered dynamically so a single-step run reads "1.".
   const steps: string[] = [];
@@ -161,6 +187,7 @@ export function buildSetupPlan(input: SetupPlanInput): string | null {
   }
   if (needsProvider) steps.push(...providerStep(input, n++));
   if (needsAntiFlash) steps.push(...antiFlashStep(input, n++));
+  if (needsEslint) steps.push(...eslintStep(n++));
 
   // What init already handled — so the agent/dev has the full picture and does
   // not redo it. (On an unrecognized framework, often just the agent guide.)

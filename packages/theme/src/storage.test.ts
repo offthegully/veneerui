@@ -78,30 +78,6 @@ describe('loadLibrary', () => {
     saveLibrary({ themes: [...BUILTIN_THEMES], enabledIds: BUILTIN_THEMES.map((t) => t.id), currentId: 'editorial' });
     expect(loadLibrary().currentId).toBe('editorial');
   });
-
-  it('defaults to unpinned on a fresh load', () => {
-    expect(loadLibrary().pinned).toBe(false);
-  });
-
-  it('round-trips a pinned selection', () => {
-    saveLibrary({
-      themes: [...BUILTIN_THEMES],
-      enabledIds: BUILTIN_THEMES.map((t) => t.id),
-      currentId: 'editorial',
-      pinned: true,
-    });
-    const lib = loadLibrary();
-    expect(lib.currentId).toBe('editorial');
-    expect(lib.pinned).toBe(true);
-  });
-
-  it('drops the pin when the pinned current is clamped away', () => {
-    // currentId no longer exists → reconciliation clamps it, so the pin no longer applies.
-    saveLibrary({ themes: [...BUILTIN_THEMES], enabledIds: ['ghost'], currentId: 'ghost', pinned: true });
-    const lib = loadLibrary();
-    expect(lib.currentId).toBe(DEFAULT_THEME_ID);
-    expect(lib.pinned).toBe(false);
-  });
 });
 
 describe('loadLibrary with a developer-supplied theme set', () => {

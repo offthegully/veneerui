@@ -14,19 +14,11 @@ import type { Theme, ThemeLibrary } from './types';
 import { applyTheme, withCustomColorFallback } from './apply';
 import { loadLibrary, saveLibrary } from './storage';
 import { BUILTIN_THEMES, DEFAULT_THEME_ID } from './builtin';
-import { SHUFFLE_ATTR } from './anti-flash';
 import { ThemeContext, type ThemeContextValue } from './theme-context';
 
 function pickFallbackId(enabledIds: string[], defaultId: string): string {
   if (enabledIds.includes(defaultId)) return defaultId;
   return enabledIds[0] ?? defaultId;
-}
-
-/** Pick a random id from `pool`, avoiding `avoid` when there's more than one choice. */
-function randomFrom(pool: string[], avoid?: string): string | undefined {
-  if (pool.length === 0) return undefined;
-  const choices = pool.length > 1 ? pool.filter((id) => id !== avoid) : pool;
-  return choices[Math.floor(Math.random() * choices.length)];
 }
 
 export interface ThemeProviderProps {
@@ -46,13 +38,6 @@ export interface ThemeProviderProps {
    * visitors keep whatever set they've enabled, so this seeds, it doesn't pin.
    */
   defaultEnabledIds?: string[];
-  /**
-   * The ids `shuffle()` may pick from (intersected with the enabled set). Pair it
-   * with the `shuffleUntilPinned` pool you pass to the anti-flash plugin so the
-   * in-page shuffle and the per-load shuffle draw from the same themes. Defaults
-   * to the whole enabled set.
-   */
-  shuffleIds?: string[];
 }
 
 export function ThemeProvider({
@@ -60,31 +45,23 @@ export function ThemeProvider({
   themes = BUILTIN_THEMES,
   defaultThemeId = themes[0]?.id ?? DEFAULT_THEME_ID,
   defaultEnabledIds,
-  shuffleIds,
 }: ThemeProviderProps) {
-  const [library, setLibrary] = useState<ThemeLibrary>(() => {
-    const lib = loadLibrary(themes, defaultThemeId, defaultEnabledIds);
-    if (lib.pinned) return lib;
-    // Unpinned: adopt the random pick the anti-flash script already applied to
-    // <html> (recorded in SHUFFLE_ATTR), so the provider agrees with the painted
-    // theme instead of snapping to the default. Absent (no shuffle, or SSR) → keep.
-    const shuffled =
-      typeof document !== 'undefined' ? document.documentElement.getAttribute(SHUFFLE_ATTR) : null;
-    return shuffled && lib.enabledIds.includes(shuffled) ? { ...lib, currentId: shuffled } : lib;
-  });
+  const [library, setLibrary] = useState<ThemeLibrary>(() =>
+    loadLibrary(themes, defaultThemeId, defaultEnabledIds),
+  );
   // The app-owned tier: these ids are non-deletable and define the fallback set.
   const appThemeIds = useMemo(() => new Set(themes.map((t) => t.id)), [themes]);
   // A theme being previewed from the import screen — applied but not yet saved.
   const [preview, setPreview] = useState<Theme | null>(null);
 
   // False during SSR and the first client render, true after mount. The library
-  // above is seeded from localStorage/SHUFFLE_ATTR, which only exist on the
-  // client — so under SSR the server renders the default while the first client
-  // render already holds the persisted/shuffled theme. Exposing this lets
-  // identity-rendering consumers (the switcher) hold a neutral first paint that
-  // matches the server, then reveal the real theme once it flips. CSS variables
-  // are unaffected: applyTheme/the anti-flash script write them to the DOM, not
-  // React's tree, so they never participate in hydration.
+  // above is seeded from localStorage, which only exists on the client — so under
+  // SSR the server renders the default while the first client render already holds
+  // the persisted theme. Exposing this lets identity-rendering consumers (the
+  // switcher) hold a neutral first paint that matches the server, then reveal the
+  // real theme once it flips. CSS variables are unaffected: applyTheme/the
+  // anti-flash script write them to the DOM, not React's tree, so they never
+  // participate in hydration.
   const [hydrated, setHydrated] = useState(false);
   useEffect(() => setHydrated(true), []);
 
@@ -123,27 +100,13 @@ export function ThemeProvider({
     if (applied) applyTheme(applied);
   }, [applied]);
 
-  // Selecting a theme is a deliberate pick: it pins, so shuffle-until-pinned apps
-  // stop re-rolling on reload. Re-selecting the live (shuffled) theme still pins it.
+  // Switch the current theme. No-op if `id` isn't enabled or is already current.
   const setCurrent = useCallback(
     (id: string) =>
       update((lib) =>
-        !lib.enabledIds.includes(id) || (lib.currentId === id && lib.pinned)
-          ? lib
-          : { ...lib, currentId: id, pinned: true },
+        !lib.enabledIds.includes(id) || lib.currentId === id ? lib : { ...lib, currentId: id },
       ),
     [update],
-  );
-
-  // Re-roll to a random theme now and leave it unpinned, so reloads keep shuffling.
-  const shuffle = useCallback(
-    () =>
-      update((lib) => {
-        const pool = (shuffleIds ?? lib.enabledIds).filter((id) => lib.enabledIds.includes(id));
-        const pick = randomFrom(pool, lib.currentId);
-        return pick ? { ...lib, currentId: pick, pinned: false } : lib;
-      }),
-    [update, shuffleIds],
   );
 
   const addTheme = useCallback(
@@ -167,8 +130,6 @@ export function ThemeProvider({
           themes: lib.themes.filter((t) => t.id !== id),
           enabledIds,
           currentId: droppedCurrent ? pickFallbackId(enabledIds, defaultThemeId) : lib.currentId,
-          // Removing the pinned theme falls back to a non-deliberate pick → unpin.
-          pinned: droppedCurrent ? false : lib.pinned,
         };
       }),
     [update, appThemeIds, defaultThemeId],
@@ -184,8 +145,7 @@ export function ThemeProvider({
           : lib.enabledIds.filter((e) => e !== id);
         const keptCurrent = enabledIds.includes(lib.currentId);
         const currentId = keptCurrent ? lib.currentId : pickFallbackId(enabledIds, defaultThemeId);
-        // Disabling the pinned theme falls back to a non-deliberate pick → unpin.
-        return { ...lib, enabledIds, currentId, pinned: keptCurrent ? lib.pinned : false };
+        return { ...lib, enabledIds, currentId };
       }),
     [update, defaultThemeId],
   );
@@ -203,7 +163,6 @@ export function ThemeProvider({
       themes: [...lib.themes.filter((t) => t.id !== p.id), p],
       enabledIds: lib.enabledIds.includes(p.id) ? lib.enabledIds : [...lib.enabledIds, p.id],
       currentId: p.id,
-      pinned: true, // importing and applying a theme is a deliberate pick
     }));
     setPreview(null);
   }, [preview, update]);
@@ -215,14 +174,12 @@ export function ThemeProvider({
       enabledIds: library.enabledIds,
       currentId: library.currentId,
       current,
-      pinned: library.pinned ?? false,
       hydrated,
       enabledThemes: library.enabledIds
         .map((id) => byId.get(id))
         .filter((t): t is Theme => t != null),
       preview,
       setCurrent,
-      shuffle,
       addTheme,
       removeTheme,
       setEnabled,
@@ -236,7 +193,6 @@ export function ThemeProvider({
     preview,
     hydrated,
     setCurrent,
-    shuffle,
     addTheme,
     removeTheme,
     setEnabled,

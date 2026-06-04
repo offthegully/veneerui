@@ -4,7 +4,10 @@ import reactHooks from 'eslint-plugin-react-hooks'
 import reactRefresh from 'eslint-plugin-react-refresh'
 import tseslint from 'typescript-eslint'
 import { defineConfig, globalIgnores } from 'eslint/config'
-import noHardcodedColors from './eslint-rules/no-hardcoded-colors.js'
+// The rule body is shared from lint-core (the same source eslint-plugin-veneer
+// bundles), so the playground dogfoods the exact rule a consumer gets. Imported
+// as plain-JS source — no build step needed, so it works at lint time in CI.
+import noHardcodedColors from '@veneerui/lint-core/rule'
 
 export default defineConfig([
   globalIgnores(['dist']),

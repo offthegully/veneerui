@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  addEslintRule,
   addTokensImport,
   addViteAntiFlash,
   nextAntiFlashSnippet,
@@ -56,6 +57,56 @@ describe('addViteAntiFlash', () => {
 
   it('refuses to edit an unfamiliar config and explains why', () => {
     const out = addViteAntiFlash('export default {}');
+    expect(out.changed).toBe(false);
+    expect(out.reason).toBeTruthy();
+  });
+});
+
+describe('addEslintRule', () => {
+  const viteConfig = [
+    "import js from '@eslint/js'",
+    "import { defineConfig, globalIgnores } from 'eslint/config'",
+    '',
+    'export default defineConfig([',
+    "  globalIgnores(['dist']),",
+    '])',
+    '',
+  ].join('\n');
+
+  const nextConfig = [
+    'import { FlatCompat } from "@eslint/eslintrc";',
+    'const compat = new FlatCompat({ baseDirectory: "." });',
+    '',
+    'const eslintConfig = [',
+    '  ...compat.extends("next/core-web-vitals", "next/typescript"),',
+    '];',
+    'export default eslintConfig;',
+    '',
+  ].join('\n');
+
+  it('adds the import and the preset to a create-vite flat config', () => {
+    const out = addEslintRule(viteConfig);
+    expect(out.changed).toBe(true);
+    expect(out.content).toContain("import veneer from 'eslint-plugin-veneer'");
+    expect(out.content).toMatch(/defineConfig\(\[\n\s*veneer\.configs\.recommended,/);
+  });
+
+  it('adds the preset to a create-next-app flat config', () => {
+    const out = addEslintRule(nextConfig);
+    expect(out.changed).toBe(true);
+    expect(out.content).toContain("import veneer from 'eslint-plugin-veneer'");
+    expect(out.content).toMatch(/const eslintConfig = \[\n\s*veneer\.configs\.recommended,/);
+  });
+
+  it('is idempotent', () => {
+    const once = addEslintRule(viteConfig).content;
+    const twice = addEslintRule(once);
+    expect(twice.changed).toBe(false);
+    expect(twice.content).toBe(once);
+  });
+
+  it('refuses to edit an unfamiliar config and explains why', () => {
+    const out = addEslintRule('module.exports = { rules: {} }');
     expect(out.changed).toBe(false);
     expect(out.reason).toBeTruthy();
   });
