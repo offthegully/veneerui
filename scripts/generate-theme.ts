@@ -16,8 +16,8 @@
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { SCHEMA_VERSION } from '../packages/theme/src/types.ts';
-import { TOKEN_SCHEMA, FONTS } from '../packages/theme/src/schema.ts';
+import { SCHEMA_VERSION, type TokenDef } from '../packages/theme/src/types.ts';
+import { TOKEN_SCHEMA, FONTS, CUSTOM_COLOR_RE } from '../packages/theme/src/schema.ts';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const write = (rel: string, contents: string) => {
@@ -90,6 +90,16 @@ function buildJsonSchema(): string {
         additionalProperties: false,
         required: requiredTokens,
         properties: tokenProps,
+        // Open custom-color namespace (color-x-*). Same regex the validator uses
+        // (imported from schema.ts) so the editor can't green-light a name the
+        // validator would reject. additionalProperties:false + patternProperties
+        // accepts keys matching `properties` OR this pattern, and rejects the rest.
+        patternProperties: {
+          [CUSTOM_COLOR_RE.source]: {
+            type: 'string',
+            description: 'Custom app-defined color (any valid CSS color; themeable as var(--color-x-*))',
+          },
+        },
       },
     },
   };
@@ -107,6 +117,13 @@ function buildReference(): string {
     `Schema generation **${SCHEMA_VERSION}** · **${TOKEN_SCHEMA.length}** tokens. ` +
       'Set any of these in a theme\'s `tokens` object; omitted tokens fall back to the default.',
     '',
+    '> **Custom colors.** Beyond this closed list, a theme may define app-specific ' +
+      'colors under the open **`color-x-<slug>`** namespace (e.g. `color-x-gold`) — ' +
+      'any valid CSS color (no `var()`), up to 64 per theme. They are fully themeable ' +
+      '(`var(--color-x-gold)`, `bg-(--color-x-gold)`) and have no built-in default, so ' +
+      'declare them in your app\'s base theme. See ' +
+      '[authoring-guide.md](./authoring-guide.md#4-custom-colors-beyond-the-schema-palette).',
+    '',
   ];
   for (const category of categories) {
     out.push(`## ${category}`, '', '| Token | Type | Default | Required | Description |', '|---|---|---|---|---|');
@@ -118,6 +135,78 @@ function buildReference(): string {
     out.push('');
   }
   return out.join('\n');
+}
+
+// ── escape-hatches.generated.md ──────────────────────────────────────────────
+// The tokens with NO working Tailwind utility — either bridge:'root' (no v4
+// namespace) or a shadow/text-shadow whose named utility bakes geometry at build
+// time so a runtime theme swap can't update it. These must be consumed through a
+// var() escape hatch or theming silently breaks. The set is DERIVED from the
+// schema (bridge + type), and `assertEscapeCoverage` fails the build if a new
+// root/shadow token isn't classified — so the table can never go stale.
+const needsEscapeHatch = (t: TokenDef): boolean =>
+  t.bridge === 'root' || t.type === 'shadow' || t.type === 'textShadow';
+
+interface EscapeGroup {
+  label: string;
+  /** Representative token shown in the example (asserted to exist). */
+  rep: string;
+  /** The obvious-but-broken class an agent reaches for. */
+  wrong: string;
+  /** The themeable form to use instead. */
+  right: string;
+  /** Which schema tokens this group covers. */
+  match: (t: TokenDef) => boolean;
+  why?: string;
+}
+
+const ESCAPE_GROUPS: EscapeGroup[] = [
+  { label: 'box-shadow', rep: 'shadow-md', wrong: '`shadow-md`, `shadow-card`', right: '`[box-shadow:var(--shadow-md)]`', match: (t) => t.type === 'shadow', why: "Tailwind v4 bakes the named `shadow-*` geometry at build time (only the color is a runtime var), so re-theming wouldn't update it." },
+  { label: 'text-shadow', rep: 'text-shadow-glow', wrong: '`text-shadow-glow`', right: '`[text-shadow:var(--text-shadow-glow)]`', match: (t) => t.type === 'textShadow', why: 'Same build-time bake as box-shadow.' },
+  { label: 'border-width', rep: 'border-width-default', wrong: '`border`, `border-2`', right: '`[border-width:var(--border-width-default)]`', match: (t) => t.name.startsWith('border-width-'), why: 'No Tailwind width utility maps to the token; pair with `border-border` for the color.' },
+  { label: 'duration', rep: 'duration-default', wrong: '`duration-200`', right: '`duration-[calc(var(--duration-default)*1ms)]`', match: (t) => t.name.startsWith('duration-'), why: 'Durations are unitless numbers in ms, hence the `*1ms` in the calc.' },
+  { label: 'gradient', rep: 'gradient-primary', wrong: '—', right: '`bg-(image:--gradient-primary)`', match: (t) => t.type === 'gradient', why: 'Gradient text: `bg-clip-text text-transparent bg-(image:--gradient-text)`.' },
+  { label: 'opacity', rep: 'opacity-disabled', wrong: '`opacity-50`', right: '`opacity-(--opacity-disabled)`', match: (t) => t.name.startsWith('opacity-') },
+];
+
+function assertEscapeCoverage(): void {
+  for (const t of TOKEN_SCHEMA.filter(needsEscapeHatch)) {
+    const n = ESCAPE_GROUPS.filter((g) => g.match(t)).length;
+    if (n !== 1) throw new Error(`escape-hatch: token "${t.name}" matched ${n} groups (expected exactly 1) — add/adjust an ESCAPE_GROUP in generate-theme.ts`);
+  }
+  const overreach = TOKEN_SCHEMA.filter((t) => !needsEscapeHatch(t) && ESCAPE_GROUPS.some((g) => g.match(t)));
+  if (overreach.length) throw new Error(`escape-hatch: ${overreach.map((t) => t.name).join(', ')} have working utilities but matched a group`);
+  for (const g of ESCAPE_GROUPS) {
+    if (!TOKEN_SCHEMA.some((t) => t.name === g.rep)) throw new Error(`escape-hatch: representative token "${g.rep}" for group "${g.label}" is not in the schema`);
+  }
+}
+
+function buildEscapeHatches(): string {
+  assertEscapeCoverage();
+  return [
+    '<!-- AUTO-GENERATED from packages/theme/src/schema.ts by scripts/generate-theme.ts — do not edit. -->',
+    '',
+    '# Escape-hatch tokens',
+    '',
+    'Most tokens are plain Tailwind utilities — just use the class (`bg-primary`,',
+    '`rounded-md`, `text-5xl`, `drop-shadow-lg`). The token groups below are the',
+    'exception: they have **no working utility**, so the obvious class silently breaks',
+    'runtime theming. Use the `var()` form instead.',
+    '',
+    '| Token group | ❌ Breaks theming | ✅ Themeable form |',
+    '|---|---|---|',
+    ...ESCAPE_GROUPS.map((g) => `| ${g.label} | ${g.wrong} | ${g.right} |`),
+    '',
+    ...ESCAPE_GROUPS.filter((g) => g.why).map((g) => `- **${g.label}** — ${g.why}`),
+    '',
+    '`drop-shadow-*` is the exception among shadows: its utility already resolves',
+    '`var(--drop-shadow-*)`, so the `drop-shadow-lg` class is fine.',
+    '',
+    '### Tokens in each group',
+    '',
+    ...ESCAPE_GROUPS.map((g) => `- **${g.label}:** ${TOKEN_SCHEMA.filter(g.match).map((t) => `\`${t.name}\``).join(', ')}`),
+    '',
+  ].join('\n');
 }
 
 // ── reserved-tokens.generated.js ─────────────────────────────────────────────
@@ -214,6 +303,7 @@ write('packages/theme/theme-v1.json', jsonSchema);
 // to /schemas/theme-v1.json. Generated from the same source, so it can't drift.
 write('apps/playground/public/schemas/theme-v1.json', jsonSchema);
 write('docs/schema-reference.md', buildReference());
+write('docs/escape-hatches.generated.md', buildEscapeHatches());
 write('packages/lint-core/reserved-tokens.generated.js', buildReservedTokens());
 write('packages/lint-core/font-packages.generated.js', buildFontPackages());
 write('docs/fonts.md', buildFontsDoc());

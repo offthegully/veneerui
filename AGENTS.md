@@ -93,6 +93,9 @@ These are the cases agents get wrong most often. Use the right-hand form:
 | **gradients** (`gradient-*`) | — | `bg-(image:--gradient-primary)` (or `bg-[image:var(--gradient-primary)]`) |
 | **opacity** (`opacity-disabled/overlay`) | `opacity-50` | `opacity-(--opacity-disabled)` |
 
+The complete, schema-generated list of escape-hatch tokens is in
+[`docs/escape-hatches.generated.md`](docs/escape-hatches.generated.md).
+
 **Why shadows are special:** Tailwind v4's named `shadow-*` / `text-shadow-*`
 utilities *bake their geometry at build time* (only the color is a runtime var),
 so re-setting `--shadow-*` at runtime would not update them. The arbitrary-property
@@ -126,15 +129,23 @@ so an island is never necessary:
 Use these names — they describe *role*, not appearance. Full list with defaults:
 `packages/theme/src/schema.ts` and `docs/schema-reference.md`.
 
+> **Color utilities repeat the family.** The names below are *roles*; the Tailwind
+> color class doubles the family — `text-text-muted` and `border-border` (**not**
+> `text-muted` / `border`, which are undefined classes). `bg-*` and `rounded-*`
+> don't double.
+
 - **Color / brand:** `primary` (+ `-hover`, `-active`, `-subtle`), `accent`
-  (+ states), `success`, `warning`, `danger`, `info`, `focus-ring`.
+  (+ `-hover`, `-active`), and the status colors `success` / `warning` / `danger` /
+  `info` (each + `-hover`, `-active`, `-subtle`), plus `focus-ring`.
   → `bg-primary`, `bg-primary-subtle`, `text-primary`, `bg-success`,
-  `focus-visible:outline-focus-ring`.
+  `hover:bg-danger-hover`, `bg-danger-subtle`, `focus-visible:outline-focus-ring`.
 - **Surfaces (a ladder):** `surface` (page) · `surface-raised` (cards/menus,
   sits *above*) · `surface-sunken` (wells, recedes) · `surface-overlay`
   (menus/modals) · `surface-inverse` · `overlay-backdrop` (scrim).
 - **Text:** `text` (body), `text-muted`, `text-subtle`, `text-inverse`,
-  `text-on-primary` (for text on a primary/accent/status fill).
+  `text-on-primary` (text on a primary/accent fill), and the per-status on-colors
+  `text-on-success` / `text-on-warning` / `text-on-danger` / `text-on-info` (text
+  on the matching status fill — each contrasts with *its* fill, not the page).
 - **Borders:** color `border` / `border-strong` / `border-subtle`; width
   `border-width-thin` / `-default` / `-thick`.
 - **Radii:** `rounded-none` … `rounded-3xl`, `rounded-full`.
@@ -154,6 +165,18 @@ Use these names — they describe *role*, not appearance. Full list with default
 
 To read a token value in JS/TS (e.g. for an inline `style` background swatch),
 use `tokenValue(current, 'color-primary')` from `@offthegully/veneerui` — not a literal.
+
+**Custom colors (open namespace).** Need a color the vocabulary above doesn't have
+— gold/silver/bronze, a brand secondary, a chart series? Don't hardcode it and
+don't overload a semantic token. Define a **`color-x-<slug>`** token (e.g.
+`color-x-gold`) in your app's base theme and consume it as a `var()`:
+`[color:var(--color-x-gold)]` or `bg-(--color-x-gold)` — **never** `text-(--color-x-gold)`
+(`text-` is ambiguous in v4; use the `[color:…]` form, or `text-(color:--color-x-gold)`).
+It's a real per-theme variable — themeable, re-skins on switch, and passes
+`no-hardcoded-colors`. The base theme declares the palette; other themes may recolor
+it; a theme that omits one falls back to the base value. Constraints: a valid CSS
+color, no `var()`, ≤64 per theme. Consume custom colors via `var()`/utilities, not
+`tokenValue`. See `docs/authoring-guide.md` §4.
 
 ---
 
@@ -206,13 +229,14 @@ Design pitfalls to respect (see `docs/authoring-guide.md`):
 - **Surface ladder flips on dark themes:** on light, `surface-raised` is *lighter*
   than `surface`; on dark, raised is *lighter* too (light comes from above) while
   the page is darker — don't just invert a light theme by hand.
-- **`text-on-primary` contrasts with the primary fill, not the page.** A pale
-  primary needs *dark* `text-on-primary`. (White text on a light button is the
-  most common mistake.) It is also the *only* on-fill token, yet it sits on
-  `bg-success` / `-warning` / `-danger` / `-info` too — so it must stay legible on
-  every status fill at once. A value that fixes one fill can break another; if you
-  can't satisfy all of them, keep the status fills tinted close enough in
-  lightness that one on-color works, rather than reaching for a literal.
+- **On-colors contrast with their fill, not the page.** A pale `primary` needs
+  *dark* `text-on-primary` (white text on a light button is the most common
+  mistake). Each status fill has its own on-color — `text-on-success` /
+  `-warning` / `-danger` / `-info` — so set each to contrast with *that* fill;
+  the schema defaults are already tuned to the default fills (dark on the
+  green/amber/sky, white on the red), so you only override where your fill's
+  lightness flips the choice. `text-on-primary` is **not** inherited by the status
+  fills — don't rely on one value covering all of them.
 - **Themes are more than color** — `border-width-*`, `radius-*`, `shadow-*`, type,
   and motion carry most of a theme's character. Tint shadows with the text color,
   not pure black.
@@ -259,8 +283,9 @@ you're not expressing that axis — go back and reference its tokens.
 
 Two traps these surface: on dark/neumorphic themes `surface-raised` is the same
 as or lighter than `surface`, so a card must carry a **shadow**, not rely on
-color to stand out; and one `text-on-primary` serves *every* status fill, so
-black-on-`bg-info` is the contrast risk to watch.
+color to stand out; and each status fill needs its own legible on-color
+(`text-on-success`/`-warning`/`-danger`/`-info`), so a pale `danger` or bright
+`warning` with the wrong on-color is the contrast risk to watch.
 
 ## 9. Definition of done
 

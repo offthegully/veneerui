@@ -16,6 +16,12 @@ which the rule flags. It shares the exact detector behind
 [`veneerui doctor`](https://www.npmjs.com/package/veneerui), so your editor, CI,
 and the migration tooling never disagree about what counts as an island.
 
+That escape hatch also covers **custom `color-x-*` colors** — the namespace an app
+declares for shades the semantic tokens don't name. Consumed as `var()`
+(`[color:var(--color-x-gold)]`, `bg-(--color-x-gold)`), they pass the rule like any
+token. See the
+[authoring guide](https://github.com/offthegully/veneerui/blob/main/docs/authoring-guide.md#4-custom-colors-beyond-the-schema-palette).
+
 ## Install
 
 ```sh

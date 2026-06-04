@@ -47,15 +47,20 @@ unitless numbers in ms, hence the `*1ms` in the calc. Gradient text:
 
 ### Token vocabulary (use role-based names)
 
-- **Brand:** `primary` (+ `-hover`/`-active`/`-subtle`), `accent` (+ states),
-  `success`, `warning`, `danger`, `info`, `focus-ring`.
+- **Brand:** `primary` (+ `-hover`/`-active`/`-subtle`), `accent` (+ states), the
+  status colors `success` / `warning` / `danger` / `info` (each + `-hover`/`-active`/`-subtle`,
+  e.g. `bg-danger-subtle`, `hover:bg-success-hover`), and `focus-ring`.
 - **Surfaces:** `surface` (page) → `surface-raised` (cards, sits above) →
   `surface-sunken` (wells, recedes); plus `surface-overlay`, `surface-inverse`,
   `overlay-backdrop`.
 - **Text color:** `text-text` (body), `text-text-muted`, `text-text-subtle`,
-  `text-text-inverse`, `text-text-on-primary` (text on a primary/accent/status
-  fill). The token family is `text`, so the color utility repeats it — it's
-  `text-text-muted`, **not** `text-muted` (which is an undefined class).
+  `text-text-inverse`, and the on-fill colors `text-text-on-primary` (primary/accent
+  fills) plus `text-text-on-success` / `text-text-on-warning` / `text-text-on-danger`
+  / `text-text-on-info` (each status fill). An on-color contrasts with *its own*
+  fill, so `text-text-on-primary` is **not** reusable for status fills — a pale
+  success/warning/info fill needs *dark* on-text (the defaults already are). The
+  token family is `text`, so the color utility repeats it — `text-text-muted`,
+  **not** `text-muted` (an undefined class).
 - **Borders:** color `border-border` / `border-border-strong` /
   `border-border-subtle` (same doubling — `border-border`, not `border`); width
   tokens `border-width-thin` / `-default` / `-thick`, applied via the
@@ -76,6 +81,18 @@ unitless numbers in ms, hence the `*1ms` in the calc. Gradient text:
 
 Read a token value in JS with `tokenValue(current, 'color-primary')` from
 `@offthegully/veneerui` (e.g. for a `style` swatch) — never a literal.
+
+Need a color the vocabulary above doesn't have — gold/silver/bronze, a brand
+secondary, a chart series? Don't hardcode a hex and don't overload a semantic
+token. Define a **`color-x-<slug>`** token (lowercase slug, e.g. `color-x-gold`,
+`color-x-chart-1`; ≤64 per theme) in your app's base theme and consume it as a
+`var()`: `[color:var(--color-x-gold)]` or `bg-(--color-x-gold)` — **never**
+`text-(--color-x-gold)` (`text-` is ambiguous in v4; use the `[color:…]` form, or
+`text-(color:--color-x-gold)`). It's a real per-theme variable — themeable,
+re-skins on switch, and passes `no-hardcoded-colors`. The value is any valid CSS
+color (no `var()`). The base theme declares the palette; other themes may recolor
+it, and a theme that omits one falls back to the base value, so the UI never
+breaks. `tokenValue` does **not** resolve these — consume them via `var()`/utilities.
 
 ### Component patterns
 
@@ -124,7 +141,7 @@ that each stress one axis and confirm your view **visibly changes**:
 - To ship your own theme, use `defineTheme({ id, name, tokens: { /* ... */ } })`.
   A theme is inert data: it can only set known tokens, can't run code, and may
   only name bundled fonts. Two design traps — on dark themes `surface-raised` is
-  *lighter* than `surface`; and `text-on-primary` must contrast with the primary
-  fill (a pale primary needs *dark* on-primary text).
+  *lighter* than `surface`; and each on-color must contrast with *its* fill (a pale
+  primary needs *dark* `text-on-primary`; likewise each status has its own on-color).
 
 Full token reference and docs: https://github.com/offthegully/veneerui

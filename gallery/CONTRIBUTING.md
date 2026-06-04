@@ -35,10 +35,14 @@ is the security boundary.
   `expression(...)`, and the characters `; { } < >` are rejected outright. A theme
   is inert data; it can never load or execute anything.
 - **Fonts from the bundled set only.** Because `url()` is banned, a theme can't
-  ship a font — it may only *name* one Veneer bundles: Inter, Source Serif 4,
-  Fraunces, EB Garamond, JetBrains Mono, IBM Plex Mono, Archivo Black, MS Sans
-  Serif, Orbitron, Quicksand, plus CSS generic keywords
-  (`serif`, `sans-serif`, `monospace`, `system-ui`, …). Naming anything else is
+  ship a font — it may only *name* one Veneer bundles, plus CSS generic keywords
+  (`serif`, `sans-serif`, `monospace`, `system-ui`, …). The current families and how
+  to load each are in [`docs/fonts.md`](../docs/fonts.md). Naming anything else is
   rejected so themes can't silently fall back to a broken look.
 - **Required tokens present.** `color-primary`, `color-surface`, and `color-text`
   must be set; everything else falls back to a sensible default.
+- **Custom `color-x-*` colors are accepted, never required.** The reserved
+  `color-x-<slug>` namespace lets an *app* define its own themeable colors; each
+  value is validated like any color (a real CSS color, no `var()`). They're
+  app-defined, so a gallery theme need not declare any — see the
+  [authoring guide](../docs/authoring-guide.md#4-custom-colors-beyond-the-schema-palette).

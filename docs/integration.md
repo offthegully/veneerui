@@ -298,6 +298,11 @@ can change as much or as little as you like — only colors for a quick re-skin,
 also radius, shadow, border width, type, and motion for a full redesign; anything
 you omit falls back to the schema default.
 
+**Need a color the schema palette doesn't have** — gold, a brand secondary, a chart
+series? Don't hardcode it: declare a `color-x-*` token in your **base theme** (its
+fallback source) and consume it via `var()`. Full rules in the
+[authoring guide](./authoring-guide.md#4-custom-colors-beyond-the-schema-palette).
+
 To also kill the flash on a visitor's *first-ever* load (before anything is
 saved), pass the same default theme to the anti-flash wiring. It runs before
 React and can't read the provider prop, so keep the two in sync:

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { validateTheme } from './validate';
 import { nodeCheckValue } from './value-check-node';
+import { MAX_CUSTOM_COLORS } from './schema';
 import { SCHEMA_VERSION } from './types';
 
 const base = {
@@ -117,5 +118,64 @@ describe('validateTheme', () => {
     const result = check({ ...base, tokens: { ...base.tokens, 'drop-shadow-lg': 'inset 0 8px 12px 4px #000' } });
     expect(result.valid).toBe(false);
     expect(result.errors.some((e) => e.path === 'tokens.drop-shadow-lg')).toBe(true);
+  });
+
+  describe('custom colors (color-x-*)', () => {
+    it('accepts a well-formed custom color and keeps it in the normalized theme', () => {
+      const result = check({ ...base, tokens: { ...base.tokens, 'color-x-gold': '#d4af37' } });
+      expect(result.valid).toBe(true);
+      expect(result.theme?.tokens['color-x-gold']).toBe('#d4af37');
+    });
+
+    it('is additive: a theme using custom colors still validates as schemaVersion 1', () => {
+      const result = check({ ...base, tokens: { ...base.tokens, 'color-x-bronze': 'oklch(0.6 0.1 60)' } });
+      expect(result.valid).toBe(true);
+      expect(result.theme?.schemaVersion).toBe(SCHEMA_VERSION);
+      expect(SCHEMA_VERSION).toBe(1);
+    });
+
+    it('fails loudly on a malformed custom color name (not a silent drop)', () => {
+      const result = check({ ...base, tokens: { ...base.tokens, 'color-x-Gold': '#d4af37' } });
+      expect(result.valid).toBe(false);
+      expect(result.errors.some((e) => e.path === 'tokens.color-x-Gold')).toBe(true);
+    });
+
+    it('still silently drops truly-unknown (non-color-x) keys', () => {
+      const result = check({ ...base, tokens: { ...base.tokens, 'palette-gold': '#d4af37' } });
+      expect(result.valid).toBe(true);
+      expect(result.theme?.tokens['palette-gold']).toBeUndefined();
+    });
+
+    it('rejects a custom color whose value is not a color', () => {
+      const result = check({ ...base, tokens: { ...base.tokens, 'color-x-gold': 'not-a-color' } });
+      expect(result.valid).toBe(false);
+      expect(result.errors.some((e) => e.path === 'tokens.color-x-gold')).toBe(true);
+    });
+
+    it('rejects var() inside a custom color value', () => {
+      const result = check({ ...base, tokens: { ...base.tokens, 'color-x-gold': 'var(--color-primary)' } });
+      expect(result.valid).toBe(false);
+      expect(result.errors.some((e) => e.path === 'tokens.color-x-gold')).toBe(true);
+    });
+
+    it('rejects a CSS-injection payload in a custom color', () => {
+      const result = check({ ...base, tokens: { ...base.tokens, 'color-x-gold': 'red; } body { display:none' } });
+      expect(result.valid).toBe(false);
+      expect(result.errors.some((e) => e.path === 'tokens.color-x-gold')).toBe(true);
+    });
+
+    it('accepts exactly the cap', () => {
+      const tokens: Record<string, string> = { ...base.tokens };
+      for (let i = 0; i < MAX_CUSTOM_COLORS; i++) tokens[`color-x-c${i}`] = '#ffffff';
+      expect(check({ ...base, tokens }).valid).toBe(true);
+    });
+
+    it('rejects more than the cap', () => {
+      const tokens: Record<string, string> = { ...base.tokens };
+      for (let i = 0; i <= MAX_CUSTOM_COLORS; i++) tokens[`color-x-c${i}`] = '#ffffff';
+      const result = check({ ...base, tokens });
+      expect(result.valid).toBe(false);
+      expect(result.errors.some((e) => /Too many custom colors/.test(e.message))).toBe(true);
+    });
   });
 });

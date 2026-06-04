@@ -6,7 +6,15 @@
  * three points in the system: CI on contribution, client on import, client on apply.
  */
 import { SCHEMA_VERSION, type Theme } from './types';
-import { ALLOWED_FONT_FAMILIES, TOKEN_BY_NAME, TOKEN_SCHEMA } from './schema';
+import {
+  ALLOWED_FONT_FAMILIES,
+  CUSTOM_COLOR_PREFIX,
+  CUSTOM_COLOR_RE,
+  MAX_CUSTOM_COLORS,
+  TOKEN_BY_NAME,
+  TOKEN_SCHEMA,
+  isCustomColorName,
+} from './schema';
 import type { ValueChecker } from './value-check';
 
 export interface ValidationError {
@@ -81,9 +89,49 @@ export function validateTheme(input: unknown, checkValue: ValueChecker): Validat
   }
 
   const cleaned: Record<string, string> = {};
+  let customColorCount = 0;
   for (const [key, raw] of Object.entries(obj.tokens as Record<string, unknown>)) {
     const tokenDef = TOKEN_BY_NAME.get(key);
-    if (!tokenDef) continue; // unknown token names are dropped, not fatal
+    if (!tokenDef) {
+      // Open custom-color namespace: the one place an unknown key is kept rather
+      // than dropped. Everything outside `color-x-*` stays a silent drop (forward-
+      // compatible with future schema additions); a `color-x-`-prefixed key that's
+      // malformed fails loudly, because that's a typo, not a future token.
+      if (!key.startsWith(CUSTOM_COLOR_PREFIX)) continue; // unknown, non-custom → dropped, not fatal
+      if (!isCustomColorName(key)) {
+        fail(`tokens.${key}`, `Malformed custom color name; must match ${CUSTOM_COLOR_RE}`);
+        continue;
+      }
+      // Cap first, before the expensive css value check, so a flood is cheap to reject.
+      if (customColorCount >= MAX_CUSTOM_COLORS) {
+        fail(`tokens.${key}`, `Too many custom colors (max ${MAX_CUSTOM_COLORS})`);
+        continue;
+      }
+      if (typeof raw !== 'string') {
+        fail(`tokens.${key}`, 'Value must be a string');
+        continue;
+      }
+      const value = raw.trim();
+      if (hasDangerousPattern(value)) {
+        fail(`tokens.${key}`, `Value contains a forbidden pattern: ${JSON.stringify(value)}`);
+        continue;
+      }
+      // Reject var(): css-tree (Node/CI) and CSS.supports (browser) disagree on
+      // whether a var() reference is a valid color, and stored themes aren't
+      // re-validated on apply. Forbidding var() keeps custom colors deterministic
+      // across both checkers. (Schema colors share the skew but are curated.)
+      if (/var\s*\(/i.test(value)) {
+        fail(`tokens.${key}`, 'Custom colors may not use var()');
+        continue;
+      }
+      if (!checkValue(value, 'color')) {
+        fail(`tokens.${key}`, `Invalid color value: ${JSON.stringify(value)}`);
+        continue;
+      }
+      cleaned[key] = value;
+      customColorCount++;
+      continue;
+    }
     if (typeof raw !== 'string') {
       fail(`tokens.${key}`, 'Value must be a string');
       continue;

@@ -50,18 +50,23 @@ The colors are not independent. Decide a few anchors and derive the rest.
   *darker* (more emphasis = more ink); on dark backgrounds they go *lighter* (more
   emphasis = more light). Pick three steps of one color, not three different
   colors.
-- **`text-on-primary` depends on the primary, not the theme.** Whatever sits on a
-  primary-colored fill needs to contrast with *that fill*. A light theme with a
-  pale primary still needs dark `text-on-primary`. This is the most common
-  mistake — white text on a light-blue button.
+- **On-colors depend on their fill, not the theme.** Whatever sits on a colored
+  fill needs to contrast with *that fill*. A light theme with a pale primary still
+  needs dark `text-on-primary` — the most common mistake is white text on a
+  light-blue button. Each status fill has its own on-color too: `text-on-success`,
+  `text-on-warning`, `text-on-danger`, `text-on-info`. The schema defaults are
+  tuned to the *default* fills (dark on green/amber/sky, white on red), so you only
+  override the ones whose fill you've shifted in lightness.
 - **Status colors (success/warning/danger/info)** should share the palette's
   temperature and saturation so they read as part of the set, not stock traffic
-  lights.
+  lights. When you do diverge — a pastel danger, a neon warning — set its
+  on-color to match.
 
 ## 3. Remember a theme is more than color
 
 The strongest themes change *structure*. Reach for these before adding more
-colors:
+colors — and if you truly need a new color, use the custom-color namespace (§4),
+not a hardcoded hex:
 
 - **`border-width-*`** — a 2–3px default border is a whole aesthetic (see
   Brutalist, High Contrast).
@@ -91,17 +96,48 @@ colors:
   `font-weight-thin` to `-black`; `tracking-tighter`/`-widest` cover poster-tight
   headlines and spaced-out eyebrow labels.
 
-## 4. Fonts: name, don't load
+## 4. Custom colors (beyond the schema palette)
 
-You can only reference fonts the app bundles — **Inter, Source Serif 4, Fraunces,
-EB Garamond, JetBrains Mono, IBM Plex Mono, Archivo Black, MS Sans Serif, Orbitron,
-Quicksand** — plus CSS generic keywords (`serif`,
-`sans-serif`, `monospace`, `system-ui`, …). This is a hard security rule: themes
-can't load external resources (no `url()`), so naming a font the app doesn't have
-is rejected rather than silently falling back to a broken look. Always end a font
-stack with a generic keyword: `"'Fraunces Variable', serif"`.
+The token list is a closed vocabulary on purpose: any theme can skin any component
+because every theme speaks the same words. When you genuinely need a color outside
+it — medal gold/silver/bronze, a brand secondary, a chart series — don't hardcode a
+hex and don't overload a semantic token (today's "gold = accent" collides the moment
+you need a second extra color). Use the reserved **`color-x-*`** namespace: open,
+app-defined, and fully themeable.
 
-## 5. Contrast minimums
+```json
+"tokens": {
+  "color-x-gold":   "#d4af37",
+  "color-x-silver": "#c0c0c0",
+  "color-x-bronze": "#cd7f32"
+}
+```
+
+- **Name:** `color-x-` + a lowercase slug (letters, digits, hyphens), e.g.
+  `color-x-chart-1`. Up to 64 per theme.
+- **Value:** any valid CSS color. No `var()` (kept a literal so it validates
+  identically in the browser and in CI) and no `url()` — the usual theme value
+  rules apply.
+- **Declare them in your app's base theme.** Schema tokens fall back to a built-in
+  default; custom colors have none, so the base theme is their fallback source.
+  Other themes *may* recolor a custom color, but one that omits it falls back to the
+  base value — the UI never breaks.
+
+Components consume them as a `var()`, which is themeable and passes the
+`no-hardcoded-colors` gate: `[color:var(--color-x-bronze)]`, `bg-(--color-x-gold)`.
+Add an inline fallback for a component that might render under a theme without the
+color: `[color:var(--color-x-bronze,currentColor)]`.
+
+## 5. Fonts: name, don't load
+
+You can only reference fonts the app bundles, plus CSS generic keywords (`serif`,
+`sans-serif`, `monospace`, `system-ui`, …). The current families and how to load
+each are in the generated [`docs/fonts.md`](./fonts.md). This is a hard security
+rule: themes can't load external resources (no `url()`), so naming a font the app
+doesn't have is rejected rather than silently falling back to a broken look. Always
+end a font stack with a generic keyword: `"'Fraunces Variable', serif"`.
+
+## 6. Contrast minimums
 
 Aim for **WCAG AA**: 4.5:1 for body text against its surface, 3:1 for large text
 and for UI borders/icons that carry meaning. Two traps:
@@ -116,7 +152,7 @@ The soft, low-contrast styles (neumorphic especially) are beautiful and often fa
 AA. That's a real tension; if you ship one for production rather than flair, nudge
 `color-text` darker until it passes. Note the tradeoff in your `notes.md`.
 
-## 6. Common pitfalls
+## 7. Common pitfalls
 
 - **Half-committing.** Mixing sharp and round corners, or one heavy border among
   thin ones, reads as a bug. Pick a position and apply it consistently.
@@ -130,7 +166,7 @@ AA. That's a real tension; if you ship one for production rather than flair, nud
 - **Setting tokens you don't mean to.** Every token you include overrides the
   default; if you're not changing it, leave it out.
 
-## 7. Preview loop
+## 8. Preview loop
 
 Open the app → theme switcher → **Manage themes** → drop your file (or paste a raw
 URL). It validates locally and applies live as a preview; tweak the file and drop

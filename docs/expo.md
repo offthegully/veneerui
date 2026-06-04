@@ -83,7 +83,9 @@ Veneer uses `var()` on the web.
 ## What ports, what doesn't
 
 - **Ports cleanly** — color, radius, border width, type, spacing, simple shadows. Same
-  token JSON, same classes.
+  token JSON, same classes. Custom `color-x-*` colors port too — declare them in
+  your base theme and consume them via `var()` (`bg-(--color-x-gold)`); see the
+  [authoring guide](./authoring-guide.md#4-custom-colors-beyond-the-schema-palette).
 - **Degrades** — effect-heavy themes (glassmorphic / neumorphic / neon): RN has no CSS
   blur, gradients, or layered shadows.
 - **Not ported** — Veneer's components (HTML `<div>`-based). Build RN primitives

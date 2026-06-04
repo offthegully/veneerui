@@ -15,6 +15,13 @@ palette utilities (`bg-blue-500`), no arbitrary colors (`bg-[#fff]`), no literal
   `bg-surface-sunken`, `bg-primary`, `bg-accent`, `text-text`, `text-text-muted`,
   `text-text-on-primary`, `border-border`, `rounded-md`, `rounded-lg`, `font-bold`. These
   resolve CSS variables that the provider swaps — so they re-skin live.
+- **Custom colors** — need a color the vocabulary doesn't have (gold/silver/bronze, a
+  brand secondary, a chart series)? Don't hardcode it. Define a `color-x-<slug>` token
+  (e.g. `color-x-gold`) in your app's base theme and consume it as a `var()`:
+  `[color:var(--color-x-gold)]` or `bg-(--color-x-gold)` — **never** `text-(--color-x-gold)`
+  (`text-` is ambiguous; use the `[color:…]` form). It's a real per-theme variable, so it
+  re-skins live like the utilities above. The base theme declares the palette; other
+  themes may recolor it, and one that omits it falls back to the base value.
 - **Border width & shadows** have no Tailwind utility namespace. Read them off the token
   map and apply inline: `style={{ borderWidth, boxShadow }}` using
   `token(theme, "border-width-default")` / `token(theme, "shadow-card")` (see `App.tsx`).

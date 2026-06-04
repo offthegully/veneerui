@@ -11,7 +11,7 @@
  */
 import { useCallback, useEffect, useLayoutEffect, useMemo, useState, type ReactNode } from 'react';
 import type { Theme, ThemeLibrary } from './types';
-import { applyTheme } from './apply';
+import { applyTheme, withCustomColorFallback } from './apply';
 import { loadLibrary, saveLibrary } from './storage';
 import { BUILTIN_THEMES, DEFAULT_THEME_ID } from './builtin';
 import { SHUFFLE_ATTR } from './anti-flash';
@@ -103,9 +103,22 @@ export function ThemeProvider({
     [library.themes, library.currentId],
   );
 
+  // The app's base theme declares the custom-color (`color-x-*`) palette; it's the
+  // fallback source so a theme that never set a custom color can't leave it
+  // undefined (custom colors have no CSS floor, unlike schema tokens).
+  const baseTheme = useMemo(
+    () => themes.find((t) => t.id === defaultThemeId),
+    [themes, defaultThemeId],
+  );
+
   // The preview, while active, outranks the saved current theme on the DOM.
   // Clearing it falls back to `current`, which re-applies and restores the UI.
-  const applied = preview ?? current;
+  // Custom colors absent from the applied theme inherit from the base theme.
+  const target = preview ?? current;
+  const applied = useMemo(
+    () => (target ? withCustomColorFallback(target, baseTheme) : target),
+    [target, baseTheme],
+  );
   useLayoutEffect(() => {
     if (applied) applyTheme(applied);
   }, [applied]);

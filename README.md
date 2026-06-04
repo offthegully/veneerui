@@ -122,6 +122,11 @@ A theme can change as much or as little as you like — only colors for a quick
 re-skin, or radius, shadow, border width, type, and motion for a full redesign.
 Anything you omit falls back to the schema default.
 
+Need a brand color the schema doesn't name — a gold accent, a chart series? Add it
+under the open **`color-x-*`** namespace instead of hardcoding a hex: declare it in
+your base theme and consume it via `var()` (`[color:var(--color-x-gold)]`). See the
+[authoring guide](./docs/authoring-guide.md#4-custom-colors-beyond-the-schema-palette).
+
 ---
 
 ## Migrate an existing app
@@ -177,8 +182,9 @@ import veneer from 'eslint-plugin-veneer'
 export default [veneer.configs.recommended]
 ```
 
-The token vocabulary and the full "looks right but breaks theming" table that
-these tools encode live in **[AGENTS.md](./AGENTS.md)**.
+The token vocabulary lives in **[AGENTS.md](./AGENTS.md)**; the full schema-generated
+"looks right but breaks theming" table is at
+**[docs/escape-hatches.generated.md](./docs/escape-hatches.generated.md)**.
 
 ### Let users bring their own
 
@@ -250,7 +256,7 @@ themes** is how you preview a theme you're working on.
 |---|---|
 | `npm run dev` | Build `@offthegully/veneerui`, then run the playground dev server |
 | `npm run build` | Generate artifacts → build the package, playground, and CLI |
-| `npm run gen:theme` | Regenerate the tokens CSS / JSON Schema / token reference from `TOKEN_SCHEMA` |
+| `npm run gen:theme` | Regenerate the tokens CSS / JSON Schema / token & escape-hatch references from `TOKEN_SCHEMA` |
 | `npm run lint` | ESLint across workspaces (incl. the `veneer/no-hardcoded-colors` rule) |
 | `npm run typecheck` | Type-check every workspace |
 | `npm test` | Vitest across every workspace |

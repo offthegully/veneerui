@@ -2,7 +2,9 @@
 
 # Theme Token Reference
 
-Schema generation **1** · **112** tokens. Set any of these in a theme's `tokens` object; omitted tokens fall back to the default.
+Schema generation **1** · **128** tokens. Set any of these in a theme's `tokens` object; omitted tokens fall back to the default.
+
+> **Custom colors.** Beyond this closed list, a theme may define app-specific colors under the open **`color-x-<slug>`** namespace (e.g. `color-x-gold`) — any valid CSS color (no `var()`), up to 64 per theme. They are fully themeable (`var(--color-x-gold)`, `bg-(--color-x-gold)`) and have no built-in default, so declare them in your app's base theme. See [authoring-guide.md](./authoring-guide.md#4-custom-colors-beyond-the-schema-palette).
 
 ## Colors
 
@@ -16,9 +18,21 @@ Schema generation **1** · **112** tokens. Set any of these in a theme's `tokens
 | `color-accent-hover` | color | `#0891b2` |  | Hover state of accent |
 | `color-accent-active` | color | `#0e7490` |  | Pressed state of accent |
 | `color-success` | color | `#16a34a` |  | Positive / success status |
+| `color-success-hover` | color | `#15803d` |  | Hover state of success |
+| `color-success-active` | color | `#166534` |  | Pressed state of success |
+| `color-success-subtle` | color | `#dcfce7` |  | Tinted background derived from success |
 | `color-warning` | color | `#d97706` |  | Caution / warning status |
+| `color-warning-hover` | color | `#b45309` |  | Hover state of warning |
+| `color-warning-active` | color | `#92400e` |  | Pressed state of warning |
+| `color-warning-subtle` | color | `#fef3c7` |  | Tinted background derived from warning |
 | `color-danger` | color | `#dc2626` |  | Destructive / error status |
+| `color-danger-hover` | color | `#b91c1c` |  | Hover state of danger |
+| `color-danger-active` | color | `#991b1b` |  | Pressed state of danger |
+| `color-danger-subtle` | color | `#fee2e2` |  | Tinted background derived from danger |
 | `color-info` | color | `#0ea5e9` |  | Informational status |
+| `color-info-hover` | color | `#0284c7` |  | Hover state of info |
+| `color-info-active` | color | `#0369a1` |  | Pressed state of info |
+| `color-info-subtle` | color | `#e0f2fe` |  | Tinted background derived from info |
 | `color-focus-ring` | color | `#3b82f6` |  | Focus outline / ring color |
 
 ## Surfaces
@@ -41,6 +55,10 @@ Schema generation **1** · **112** tokens. Set any of these in a theme's `tokens
 | `color-text-subtle` | color | `#9ca3af` |  | Tertiary / placeholder text |
 | `color-text-inverse` | color | `#f9fafb` |  | Text on inverse surfaces |
 | `color-text-on-primary` | color | `#ffffff` |  | Text rendered on primary fills |
+| `color-text-on-success` | color | `#111827` |  | Text rendered on success fills |
+| `color-text-on-warning` | color | `#111827` |  | Text rendered on warning fills |
+| `color-text-on-danger` | color | `#ffffff` |  | Text rendered on danger fills |
+| `color-text-on-info` | color | `#111827` |  | Text rendered on info fills |
 
 ## Borders
 

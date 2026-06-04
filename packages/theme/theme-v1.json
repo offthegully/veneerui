@@ -95,17 +95,65 @@
           "type": "string",
           "description": "Positive / success status (color, default: #16a34a)"
         },
+        "color-success-hover": {
+          "type": "string",
+          "description": "Hover state of success (color, default: #15803d)"
+        },
+        "color-success-active": {
+          "type": "string",
+          "description": "Pressed state of success (color, default: #166534)"
+        },
+        "color-success-subtle": {
+          "type": "string",
+          "description": "Tinted background derived from success (color, default: #dcfce7)"
+        },
         "color-warning": {
           "type": "string",
           "description": "Caution / warning status (color, default: #d97706)"
+        },
+        "color-warning-hover": {
+          "type": "string",
+          "description": "Hover state of warning (color, default: #b45309)"
+        },
+        "color-warning-active": {
+          "type": "string",
+          "description": "Pressed state of warning (color, default: #92400e)"
+        },
+        "color-warning-subtle": {
+          "type": "string",
+          "description": "Tinted background derived from warning (color, default: #fef3c7)"
         },
         "color-danger": {
           "type": "string",
           "description": "Destructive / error status (color, default: #dc2626)"
         },
+        "color-danger-hover": {
+          "type": "string",
+          "description": "Hover state of danger (color, default: #b91c1c)"
+        },
+        "color-danger-active": {
+          "type": "string",
+          "description": "Pressed state of danger (color, default: #991b1b)"
+        },
+        "color-danger-subtle": {
+          "type": "string",
+          "description": "Tinted background derived from danger (color, default: #fee2e2)"
+        },
         "color-info": {
           "type": "string",
           "description": "Informational status (color, default: #0ea5e9)"
+        },
+        "color-info-hover": {
+          "type": "string",
+          "description": "Hover state of info (color, default: #0284c7)"
+        },
+        "color-info-active": {
+          "type": "string",
+          "description": "Pressed state of info (color, default: #0369a1)"
+        },
+        "color-info-subtle": {
+          "type": "string",
+          "description": "Tinted background derived from info (color, default: #e0f2fe)"
         },
         "color-focus-ring": {
           "type": "string",
@@ -154,6 +202,22 @@
         "color-text-on-primary": {
           "type": "string",
           "description": "Text rendered on primary fills (color, default: #ffffff)"
+        },
+        "color-text-on-success": {
+          "type": "string",
+          "description": "Text rendered on success fills (color, default: #111827)"
+        },
+        "color-text-on-warning": {
+          "type": "string",
+          "description": "Text rendered on warning fills (color, default: #111827)"
+        },
+        "color-text-on-danger": {
+          "type": "string",
+          "description": "Text rendered on danger fills (color, default: #ffffff)"
+        },
+        "color-text-on-info": {
+          "type": "string",
+          "description": "Text rendered on info fills (color, default: #111827)"
         },
         "color-border": {
           "type": "string",
@@ -510,6 +574,12 @@
         "ease-bounce": {
           "type": "string",
           "description": "Playful overshoot easing (easing, default: cubic-bezier(0.68, -0.55, 0.27, 1.55))"
+        }
+      },
+      "patternProperties": {
+        "^color-x-[a-z0-9](?:[a-z0-9-]{0,30}[a-z0-9])?$": {
+          "type": "string",
+          "description": "Custom app-defined color (any valid CSS color; themeable as var(--color-x-*))"
         }
       }
     }

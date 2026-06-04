@@ -46,7 +46,7 @@ v4 apps: [Integration guide](https://github.com/offthegully/veneerui/blob/main/d
 
 | Import | What |
 |---|---|
-| `@offthegully/veneerui` | `ThemeProvider`, `useTheme`, `applyTheme`, `defineTheme`, `validateTheme`, `parseAndValidate` / `fetchTheme` / `isFetchableUrl`, `tokenValue`, `browserCheckValue`, `getAntiFlashScript`, `TOKEN_SCHEMA`, `BUILTIN_THEMES`, `SCHEMA_VERSION`, and the `Theme` / `ThemeLibrary` / `TokenDef` types |
+| `@offthegully/veneerui` | `ThemeProvider`, `useTheme`, `applyTheme`, `defineTheme`, `validateTheme`, `parseAndValidate` / `fetchTheme` / `isFetchableUrl`, `tokenValue`, `browserCheckValue`, `getAntiFlashScript`, `TOKEN_SCHEMA`, `BUILTIN_THEMES`, `SCHEMA_VERSION`, `CUSTOM_COLOR_PREFIX` / `CUSTOM_COLOR_RE` / `MAX_CUSTOM_COLORS` / `isCustomColorName`, and the `Theme` / `ThemeLibrary` / `TokenDef` types |
 | `@offthegully/veneerui/tokens.css` | the generated `@theme` / `:root` token block |
 | `@offthegully/veneerui/vite` | `veneer()` — the Vite anti-flash plugin |
 | `@offthegully/veneerui/next` | `<AntiFlashScript />` — the Next anti-flash component |
@@ -67,6 +67,11 @@ only bundled fonts (no `url()`), and contain no dangerous patterns (`url()`,
 `@import`, `javascript:`, `expression()`, `; { } < >`). Because a theme can only
 set declared CSS variables already consumed by compiled utilities, there's no path
 from a theme to new CSS, modified HTML, or executed code.
+
+The token vocabulary is closed on purpose, but apps can define extra colors under
+the open **`color-x-*`** namespace — real per-theme variables (consumed via `var()`)
+that pass `no-hardcoded-colors`. See the
+[authoring guide](https://github.com/offthegully/veneerui/blob/main/docs/authoring-guide.md#4-custom-colors-beyond-the-schema-palette).
 
 ## Optional: shuffle until pinned
 

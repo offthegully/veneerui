@@ -39,10 +39,26 @@ export const TOKEN_SCHEMA: TokenDef[] = [
   def('color-accent', 'color', 'Colors', 'theme', '#06b6d4', 'Secondary emphasis color'),
   def('color-accent-hover', 'color', 'Colors', 'theme', '#0891b2', 'Hover state of accent'),
   def('color-accent-active', 'color', 'Colors', 'theme', '#0e7490', 'Pressed state of accent'),
+  // Status colors mirror primary/accent: a base plus hover/active states and a
+  // -subtle tint for low-emphasis backgrounds (badges, alert banners). Defaults
+  // are palette steps of the base hue; a theme that re-hues a status should re-set
+  // its states too (just like primary).
   def('color-success', 'color', 'Colors', 'theme', '#16a34a', 'Positive / success status'),
+  def('color-success-hover', 'color', 'Colors', 'theme', '#15803d', 'Hover state of success'),
+  def('color-success-active', 'color', 'Colors', 'theme', '#166534', 'Pressed state of success'),
+  def('color-success-subtle', 'color', 'Colors', 'theme', '#dcfce7', 'Tinted background derived from success'),
   def('color-warning', 'color', 'Colors', 'theme', '#d97706', 'Caution / warning status'),
+  def('color-warning-hover', 'color', 'Colors', 'theme', '#b45309', 'Hover state of warning'),
+  def('color-warning-active', 'color', 'Colors', 'theme', '#92400e', 'Pressed state of warning'),
+  def('color-warning-subtle', 'color', 'Colors', 'theme', '#fef3c7', 'Tinted background derived from warning'),
   def('color-danger', 'color', 'Colors', 'theme', '#dc2626', 'Destructive / error status'),
+  def('color-danger-hover', 'color', 'Colors', 'theme', '#b91c1c', 'Hover state of danger'),
+  def('color-danger-active', 'color', 'Colors', 'theme', '#991b1b', 'Pressed state of danger'),
+  def('color-danger-subtle', 'color', 'Colors', 'theme', '#fee2e2', 'Tinted background derived from danger'),
   def('color-info', 'color', 'Colors', 'theme', '#0ea5e9', 'Informational status'),
+  def('color-info-hover', 'color', 'Colors', 'theme', '#0284c7', 'Hover state of info'),
+  def('color-info-active', 'color', 'Colors', 'theme', '#0369a1', 'Pressed state of info'),
+  def('color-info-subtle', 'color', 'Colors', 'theme', '#e0f2fe', 'Tinted background derived from info'),
   def('color-focus-ring', 'color', 'Colors', 'theme', '#3b82f6', 'Focus outline / ring color'),
 
   // ── Surfaces ─────────────────────────────────────────────────────────────────
@@ -59,6 +75,13 @@ export const TOKEN_SCHEMA: TokenDef[] = [
   def('color-text-subtle', 'color', 'Text', 'theme', '#9ca3af', 'Tertiary / placeholder text'),
   def('color-text-inverse', 'color', 'Text', 'theme', '#f9fafb', 'Text on inverse surfaces'),
   def('color-text-on-primary', 'color', 'Text', 'theme', '#ffffff', 'Text rendered on primary fills'),
+  // On-status defaults are each tuned to contrast with that status's *default* fill
+  // (WCAG): the default green/amber/sky need dark text, the default red needs white.
+  // A theme whose fill diverges in lightness should override the matching on-color.
+  def('color-text-on-success', 'color', 'Text', 'theme', '#111827', 'Text rendered on success fills'),
+  def('color-text-on-warning', 'color', 'Text', 'theme', '#111827', 'Text rendered on warning fills'),
+  def('color-text-on-danger', 'color', 'Text', 'theme', '#ffffff', 'Text rendered on danger fills'),
+  def('color-text-on-info', 'color', 'Text', 'theme', '#111827', 'Text rendered on info fills'),
 
   // ── Borders ──────────────────────────────────────────────────────────────────
   def('color-border', 'color', 'Borders', 'theme', '#e5e7eb', 'Default border color'),
@@ -195,6 +218,42 @@ export const TOKEN_SCHEMA: TokenDef[] = [
 export const TOKEN_BY_NAME: ReadonlyMap<string, TokenDef> = new Map(
   TOKEN_SCHEMA.map((t) => [t.name, t]),
 );
+
+/**
+ * Custom (app-defined) colors — the one OPEN corner of an otherwise closed schema.
+ *
+ * `TOKEN_SCHEMA` above is a closed vocabulary; everything else is dropped. But apps
+ * legitimately need colors outside it (medal gold/silver/bronze, a brand secondary,
+ * a chart series). Those live under this reserved namespace so they can never
+ * collide with a current or future schema token, stay fully themeable (a real
+ * `--color-x-*` custom property every theme may recolor), and still pass the
+ * `no-hardcoded-colors` gate when consumed as `var(--color-x-*)`.
+ *
+ * The `color-` prefix is required, not cosmetic: only variables under Tailwind v4's
+ * `--color-*` namespace generate color utilities (`--color-x-gold` → `bg-x-gold`).
+ *
+ * These constants are the single source of truth shared by the validator
+ * (validate.ts), the runtime apply + fallback (apply.ts), and the JSON Schema
+ * generator (scripts/generate-theme.ts) so the rule can't drift between them.
+ */
+export const CUSTOM_COLOR_PREFIX = 'color-x-';
+
+/**
+ * A well-formed custom-color name: `color-x-` + a slug that is lowercase
+ * alphanumeric/hyphen, starts and ends alphanumeric, and is length-capped (~32).
+ * Anchored, so partial matches can't slip through.
+ */
+export const CUSTOM_COLOR_RE = /^color-x-[a-z0-9](?:[a-z0-9-]{0,30}[a-z0-9])?$/;
+
+/**
+ * Per-theme cap on custom colors. This is an anti-DoS bound on the *untrusted*
+ * import path (built-in themes bypass `validateTheme`), deliberately generous —
+ * chart series and category palettes are legitimate — rather than a UX limit.
+ */
+export const MAX_CUSTOM_COLORS = 64;
+
+/** True for a syntactically-valid custom-color token name (`color-x-<slug>`). */
+export const isCustomColorName = (name: string): boolean => CUSTOM_COLOR_RE.test(name);
 
 /**
  * Font families a theme is allowed to name. The `url()` blacklist means a theme

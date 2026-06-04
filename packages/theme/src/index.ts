@@ -24,7 +24,15 @@ export {
   type Origin,
 } from './import-theme';
 
-export { TOKEN_SCHEMA, TOKEN_BY_NAME, ALLOWED_FONT_FAMILIES } from './schema';
+export {
+  TOKEN_SCHEMA,
+  TOKEN_BY_NAME,
+  ALLOWED_FONT_FAMILIES,
+  CUSTOM_COLOR_PREFIX,
+  CUSTOM_COLOR_RE,
+  MAX_CUSTOM_COLORS,
+  isCustomColorName,
+} from './schema';
 export { BUILTIN_THEMES, BUILTIN_IDS, DEFAULT_THEME_ID } from './builtin';
 export { normalizeAuthoredTheme, type AuthoredTheme } from './authored-theme';
 export { defineTheme, type DefineThemeInput } from './define-theme';

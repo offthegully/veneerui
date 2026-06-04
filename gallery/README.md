@@ -46,6 +46,12 @@ for how to pick a coherent palette and the [token reference](../docs/schema-refe
 for every token you can set. Add `"$schema": "https://veneerui.dev/schemas/theme-v1.json"`
 to the top of your file for editor autocomplete and inline validation.
 
+The token list is a closed vocabulary, but an *app* can declare colors outside it
+in the reserved **`color-x-*`** namespace; a gallery theme may recolor them but
+needn't declare any. See
+[Custom colors](../docs/authoring-guide.md#4-custom-colors-beyond-the-schema-palette)
+in the authoring guide.
+
 ## Contributing
 
 See [CONTRIBUTING.md](./CONTRIBUTING.md).
