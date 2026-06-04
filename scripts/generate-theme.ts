@@ -167,6 +167,8 @@ const ESCAPE_GROUPS: EscapeGroup[] = [
   { label: 'duration', rep: 'duration-default', wrong: '`duration-200`', right: '`duration-[calc(var(--duration-default)*1ms)]`', match: (t) => t.name.startsWith('duration-'), why: 'Durations are unitless numbers in ms, hence the `*1ms` in the calc.' },
   { label: 'gradient', rep: 'gradient-primary', wrong: '—', right: '`bg-(image:--gradient-primary)`', match: (t) => t.type === 'gradient', why: 'Gradient text: `bg-clip-text text-transparent bg-(image:--gradient-text)`.' },
   { label: 'opacity', rep: 'opacity-disabled', wrong: '`opacity-50`', right: '`opacity-(--opacity-disabled)`', match: (t) => t.name.startsWith('opacity-') },
+  { label: 'focus ring', rep: 'focus-ring-width', wrong: '`outline-2`, `ring-2`, `outline-offset-2`', right: '`focus-visible:[outline-style:solid] focus-visible:[outline-width:var(--focus-ring-width)] focus-visible:[outline-offset:var(--focus-ring-offset)] focus-visible:outline-focus-ring`', match: (t) => t.name.startsWith('focus-ring-'), why: 'Focus geometry has no Tailwind theme namespace; outline has no preflight `solid` default, so set the style explicitly and pair with `outline-focus-ring` for the color.' },
+  { label: 'icon stroke', rep: 'icon-stroke-width', wrong: '—', right: '`[stroke-width:var(--icon-stroke-width)]`', match: (t) => t.name === 'icon-stroke-width', why: 'CSS `stroke-width` overrides the SVG presentation attribute, so the icon re-weights at runtime.' },
 ];
 
 function assertEscapeCoverage(): void {

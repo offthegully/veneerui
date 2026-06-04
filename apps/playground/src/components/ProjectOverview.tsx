@@ -19,7 +19,8 @@ const interactive =
   'duration-[calc(var(--duration-default)*1ms)] ease-default ' +
   'hover:-translate-y-px active:translate-y-0 active:scale-[0.98] ' +
   'active:duration-[calc(var(--duration-fast)*1ms)] active:ease-snappy ' +
-  'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring';
+  'focus-visible:[outline-style:solid] focus-visible:[outline-width:var(--focus-ring-width)] ' +
+  'focus-visible:[outline-offset:var(--focus-ring-offset)] focus-visible:outline-focus-ring';
 
 // Cards: a subtle lift with border emphasis on hover; `group` lets the icon nudge.
 const card =
@@ -186,7 +187,7 @@ export function ProjectOverview() {
           <button
             type="button"
             onClick={() => setGalleryOpen(true)}
-            className={`inline-flex items-center justify-center rounded-md border-border bg-surface px-5 py-2.5 text-sm font-semibold text-text [box-shadow:var(--shadow-sm)] [border-width:var(--border-width-default)] hover:bg-surface-sunken hover:[box-shadow:var(--shadow-md)] ${interactive}`}
+            className={`inline-flex items-center justify-center rounded-md border-border bg-surface px-5 py-2.5 text-sm font-semibold text-text [box-shadow:var(--shadow-sm)] [border-width:var(--border-width-default)] hover:bg-surface-hover active:bg-surface-active hover:[box-shadow:var(--shadow-md)] ${interactive}`}
           >
             Browse the themes
           </button>
@@ -221,8 +222,8 @@ export function ProjectOverview() {
               className={`flex flex-col gap-3 rounded-xl border-border bg-surface-raised p-6 backdrop-blur-md [box-shadow:var(--shadow-card)] [border-width:var(--border-width-default)] hover:[box-shadow:var(--shadow-lg)] ${card}`}
             >
               <span className="inline-flex size-10 items-center justify-center rounded-lg bg-primary-subtle text-primary transition-transform duration-[calc(var(--duration-default)*1ms)] ease-default group-hover:scale-110">
-                <svg viewBox="0 0 24 24" className="size-5" aria-hidden="true">
-                  <path d={f.path} fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+                <svg viewBox="0 0 24 24" className="size-5 [stroke-width:var(--icon-stroke-width)]" aria-hidden="true">
+                  <path d={f.path} fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
               </span>
               <h3 className="text-lg font-bold text-text">{f.title}</h3>
@@ -290,7 +291,7 @@ export function ProjectOverview() {
                 <h3 className="text-lg font-bold text-text">{doc.title}</h3>
                 <p className="mt-1 text-sm leading-relaxed text-text-muted">{doc.blurb}</p>
               </div>
-              <svg viewBox="0 0 24 24" className="mt-0.5 size-4 shrink-0 text-text-subtle transition-transform group-hover:translate-x-0.5" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="2">
+              <svg viewBox="0 0 24 24" className="mt-0.5 size-4 shrink-0 text-text-subtle transition-transform group-hover:translate-x-0.5 [stroke-width:var(--icon-stroke-width)]" aria-hidden="true" fill="none" stroke="currentColor">
                 <path d="M7 17L17 7M17 7H7M17 7v10" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </a>

@@ -99,7 +99,7 @@ export function ThemeSwitcher({ variant = 'header' }: { variant?: SwitcherVarian
         onClick={() => setOpen((v) => !v)}
         aria-haspopup="listbox"
         aria-expanded={open}
-        className={`flex items-center gap-2 [border-width:var(--border-width-default)] border-border bg-surface-raised px-3 py-2 text-sm font-medium text-text transition-colors hover:bg-surface-sunken ${
+        className={`flex items-center gap-2 [border-width:var(--border-width-default)] border-border bg-surface-raised px-3 py-2 text-sm font-medium text-text transition-colors hover:bg-surface-hover ${
           floating ? 'rounded-full [box-shadow:var(--shadow-lg)]' : 'rounded-md [box-shadow:var(--shadow-sm)]'
         }`}
       >
@@ -135,7 +135,7 @@ export function ThemeSwitcher({ variant = 'header' }: { variant?: SwitcherVarian
                 type="button"
                 onClick={() => shuffle()}
                 aria-pressed={!pinned}
-                className={`flex w-full items-center gap-3 rounded-md px-2 py-2 text-left text-sm transition-colors hover:bg-surface-sunken ${
+                className={`flex w-full items-center gap-3 rounded-md px-2 py-2 text-left text-sm transition-colors hover:bg-surface-hover ${
                   !pinned ? 'bg-surface-sunken' : ''
                 }`}
               >
@@ -167,7 +167,7 @@ export function ThemeSwitcher({ variant = 'header' }: { variant?: SwitcherVarian
                     role="option"
                     aria-selected={selected}
                     onClick={() => select(theme.id)}
-                    className={`flex w-full items-center gap-3 rounded-md px-2 py-2 text-left text-sm transition-colors hover:bg-surface-sunken ${
+                    className={`flex w-full items-center gap-3 rounded-md px-2 py-2 text-left text-sm transition-colors hover:bg-surface-hover ${
                       selected ? 'bg-surface-sunken' : ''
                     }`}
                   >

@@ -39,6 +39,7 @@ export const TOKEN_SCHEMA: TokenDef[] = [
   def('color-accent', 'color', 'Colors', 'theme', '#06b6d4', 'Secondary emphasis color'),
   def('color-accent-hover', 'color', 'Colors', 'theme', '#0891b2', 'Hover state of accent'),
   def('color-accent-active', 'color', 'Colors', 'theme', '#0e7490', 'Pressed state of accent'),
+  def('color-accent-subtle', 'color', 'Colors', 'theme', '#cffafe', 'Tinted background derived from accent'),
   // Status colors mirror primary/accent: a base plus hover/active states and a
   // -subtle tint for low-emphasis backgrounds (badges, alert banners). Defaults
   // are palette steps of the base hue; a theme that re-hues a status should re-set
@@ -65,6 +66,11 @@ export const TOKEN_SCHEMA: TokenDef[] = [
   def('color-surface', 'color', 'Surfaces', 'theme', '#ffffff', 'Default page background', true),
   def('color-surface-raised', 'color', 'Surfaces', 'theme', '#f9fafb', 'Raised elements like cards'),
   def('color-surface-sunken', 'color', 'Surfaces', 'theme', '#f3f4f6', 'Recessed wells / insets'),
+  // Neutral interactive feedback — decoupled from surface-sunken (a well) so a theme
+  // can tune hover/press independently of recessed depth. Used by rows, menu items,
+  // and ghost/outline buttons.
+  def('color-surface-hover', 'color', 'Surfaces', 'theme', '#f3f4f6', 'Hover background for neutral interactive surfaces (rows, menu items, ghost buttons)'),
+  def('color-surface-active', 'color', 'Surfaces', 'theme', '#e5e7eb', 'Pressed background for neutral interactive surfaces'),
   def('color-surface-overlay', 'color', 'Surfaces', 'theme', '#ffffff', 'Floating surfaces like menus & modals'),
   def('color-surface-inverse', 'color', 'Surfaces', 'theme', '#111827', 'Inverted surface (e.g. tooltips)'),
   def('color-overlay-backdrop', 'color', 'Surfaces', 'theme', 'rgb(0 0 0 / 0.5)', 'Scrim behind modals'),
@@ -75,6 +81,9 @@ export const TOKEN_SCHEMA: TokenDef[] = [
   def('color-text-subtle', 'color', 'Text', 'theme', '#9ca3af', 'Tertiary / placeholder text'),
   def('color-text-inverse', 'color', 'Text', 'theme', '#f9fafb', 'Text on inverse surfaces'),
   def('color-text-on-primary', 'color', 'Text', 'theme', '#ffffff', 'Text rendered on primary fills'),
+  def('color-text-on-accent', 'color', 'Text', 'theme', '#111827', 'Text rendered on accent fills'),
+  // On-accent defaults dark (like on-info): the cyan default accent needs dark text
+  // for AA. A theme whose accent is dark must override this to a light value.
   // On-status defaults are each tuned to contrast with that status's *default* fill
   // (WCAG): the default green/amber/sky need dark text, the default red needs white.
   // A theme whose fill diverges in lightness should override the matching on-color.
@@ -90,6 +99,12 @@ export const TOKEN_SCHEMA: TokenDef[] = [
   def('border-width-thin', 'length', 'Borders', 'root', '1px', 'Hairline border width'),
   def('border-width-default', 'length', 'Borders', 'root', '1px', 'Default border width'),
   def('border-width-thick', 'length', 'Borders', 'root', '3px', 'Heavy border for brutalist/emphasis themes'),
+  // Focus-ring geometry. Root tokens (Tailwind v4 has no width namespace for the
+  // ring), consumed via the outline escape hatch:
+  //   focus-visible:[outline-width:var(--focus-ring-width)]
+  //   outline-offset-[var(--focus-ring-offset)] outline-focus-ring
+  def('focus-ring-width', 'length', 'Borders', 'root', '2px', 'Focus outline thickness'),
+  def('focus-ring-offset', 'length', 'Borders', 'root', '2px', 'Gap between the element and its focus outline'),
 
   // ── Radii ────────────────────────────────────────────────────────────────────
   def('radius-none', 'length', 'Radii', 'theme', '0px', 'No rounding (brutalist/sharp)'),
@@ -202,6 +217,10 @@ export const TOKEN_SCHEMA: TokenDef[] = [
   def('gradient-text', 'gradient', 'Effects', 'root', 'linear-gradient(135deg, var(--color-primary) 0%, var(--color-accent) 100%)', 'Gradient for clipped headline text (follows the palette)'),
   def('opacity-disabled', 'number', 'Effects', 'root', '0.5', 'Opacity for disabled elements'),
   def('opacity-overlay', 'number', 'Effects', 'root', '0.6', 'Opacity for overlay scrims'),
+  // Icon line weight (e.g. Lucide's strokeWidth). Root token consumed via
+  // [stroke-width:var(--icon-stroke-width)] — CSS stroke-width overrides the SVG
+  // presentation attribute, so icons re-weight at runtime. thick=brutalist, thin=refined.
+  def('icon-stroke-width', 'number', 'Effects', 'root', '2', 'Icon line weight (SVG stroke-width)'),
 
   // ── Motion ───────────────────────────────────────────────────────────────────
   // Durations have no v4 namespace; consume via duration-(--duration-default).

@@ -42,6 +42,7 @@
     "color-text-subtle": "#8c7857",
     "color-text-inverse": "#f5ecd9",
     "color-text-on-primary": "#fbf2dd",
+    "color-text-on-accent": "#fbf2dd",
     "color-text-on-success": "#ffffff",
     "color-text-on-warning": "#ffffff",
     "color-text-on-info": "#ffffff",

@@ -91,6 +91,10 @@
           "type": "string",
           "description": "Pressed state of accent (color, default: #0e7490)"
         },
+        "color-accent-subtle": {
+          "type": "string",
+          "description": "Tinted background derived from accent (color, default: #cffafe)"
+        },
         "color-success": {
           "type": "string",
           "description": "Positive / success status (color, default: #16a34a)"
@@ -171,6 +175,14 @@
           "type": "string",
           "description": "Recessed wells / insets (color, default: #f3f4f6)"
         },
+        "color-surface-hover": {
+          "type": "string",
+          "description": "Hover background for neutral interactive surfaces (rows, menu items, ghost buttons) (color, default: #f3f4f6)"
+        },
+        "color-surface-active": {
+          "type": "string",
+          "description": "Pressed background for neutral interactive surfaces (color, default: #e5e7eb)"
+        },
         "color-surface-overlay": {
           "type": "string",
           "description": "Floating surfaces like menus & modals (color, default: #ffffff)"
@@ -202,6 +214,10 @@
         "color-text-on-primary": {
           "type": "string",
           "description": "Text rendered on primary fills (color, default: #ffffff)"
+        },
+        "color-text-on-accent": {
+          "type": "string",
+          "description": "Text rendered on accent fills (color, default: #111827)"
         },
         "color-text-on-success": {
           "type": "string",
@@ -242,6 +258,14 @@
         "border-width-thick": {
           "type": "string",
           "description": "Heavy border for brutalist/emphasis themes (length, default: 3px)"
+        },
+        "focus-ring-width": {
+          "type": "string",
+          "description": "Focus outline thickness (length, default: 2px)"
+        },
+        "focus-ring-offset": {
+          "type": "string",
+          "description": "Gap between the element and its focus outline (length, default: 2px)"
         },
         "radius-none": {
           "type": "string",
@@ -546,6 +570,10 @@
         "opacity-overlay": {
           "type": "string",
           "description": "Opacity for overlay scrims (number, default: 0.6)"
+        },
+        "icon-stroke-width": {
+          "type": "string",
+          "description": "Icon line weight (SVG stroke-width) (number, default: 2)"
         },
         "duration-fast": {
           "type": "string",

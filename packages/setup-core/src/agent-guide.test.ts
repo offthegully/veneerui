@@ -39,6 +39,7 @@ describe('shipped agent-guide.md (consumer contract)', () => {
   it('documents every per-status on-color token (the contrast-regression guard)', () => {
     for (const token of [
       'text-text-on-primary',
+      'text-text-on-accent',
       'text-text-on-success',
       'text-text-on-warning',
       'text-text-on-danger',

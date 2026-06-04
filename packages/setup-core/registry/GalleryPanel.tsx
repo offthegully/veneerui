@@ -125,7 +125,7 @@ export function GalleryPanel({ onClose }: { onClose: () => void }) {
             type="button"
             onClick={onClose}
             aria-label="Close"
-            className="-m-1 rounded-md p-1 text-text-muted transition-colors hover:bg-surface-sunken hover:text-text"
+            className="-m-1 rounded-md p-1 text-text-muted transition-colors hover:bg-surface-hover hover:text-text"
           >
             <svg viewBox="0 0 20 20" className="size-5" aria-hidden="true">
               <path d="M5 5l10 10M15 5L5 15" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
@@ -143,7 +143,7 @@ export function GalleryPanel({ onClose }: { onClose: () => void }) {
                 type="button"
                 onClick={() => apply(theme.id)}
                 aria-pressed={isCurrent}
-                className={`group flex flex-col gap-3 rounded-lg [border-width:var(--border-width-default)] bg-surface-raised p-3 text-left transition-colors hover:bg-surface-sunken ${
+                className={`group flex flex-col gap-3 rounded-lg [border-width:var(--border-width-default)] bg-surface-raised p-3 text-left transition-colors hover:bg-surface-hover ${
                   isCurrent ? 'border-primary ring-2 ring-primary' : 'border-border'
                 }`}
               >

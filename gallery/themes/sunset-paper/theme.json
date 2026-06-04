@@ -42,6 +42,7 @@
     "color-text-subtle": "#a08b78",
     "color-text-inverse": "#fdf3e8",
     "color-text-on-primary": "#fffaf2",
+    "color-text-on-accent": "#fffaf2",
     "color-text-on-info": "#ffffff",
     "color-border": "#f0dcc4",
     "color-border-strong": "#e3c4a0",

@@ -37,6 +37,8 @@ silently breaks runtime theming. Use the right-hand form:
 | transition duration | `duration-200` | `duration-[calc(var(--duration-default)*1ms)]` |
 | gradient fill | — | `bg-(image:--gradient-primary)` |
 | token opacity | `opacity-50` | `opacity-(--opacity-disabled)` |
+| focus ring | `outline-2`, `outline-offset-2` | `focus-visible:[outline-style:solid] focus-visible:[outline-width:var(--focus-ring-width)] focus-visible:[outline-offset:var(--focus-ring-offset)] focus-visible:outline-focus-ring` |
+| icon stroke | `strokeWidth="2"` | `[stroke-width:var(--icon-stroke-width)]` |
 
 Why shadows are special: Tailwind v4 bakes the geometry of the named `shadow-*`
 / `text-shadow-*` utilities at build time (only the color is a runtime var), so
@@ -47,18 +49,21 @@ unitless numbers in ms, hence the `*1ms` in the calc. Gradient text:
 
 ### Token vocabulary (use role-based names)
 
-- **Brand:** `primary` (+ `-hover`/`-active`/`-subtle`), `accent` (+ states), the
-  status colors `success` / `warning` / `danger` / `info` (each + `-hover`/`-active`/`-subtle`,
-  e.g. `bg-danger-subtle`, `hover:bg-success-hover`), and `focus-ring`.
+- **Brand:** `primary` (+ `-hover`/`-active`/`-subtle`), `accent` (+ `-hover`/`-active`/`-subtle`),
+  the status colors `success` / `warning` / `danger` / `info` (each + `-hover`/`-active`/`-subtle`,
+  e.g. `bg-danger-subtle`, `hover:bg-success-hover`), and `focus-ring` (color; its ring
+  geometry is `focus-ring-width` / `-offset`, applied via the escape hatch above).
 - **Surfaces:** `surface` (page) → `surface-raised` (cards, sits above) →
-  `surface-sunken` (wells, recedes); plus `surface-overlay`, `surface-inverse`,
-  `overlay-backdrop`.
+  `surface-sunken` (wells, recedes); `surface-hover` / `surface-active` (neutral
+  interactive hover/press for rows, menu items, ghost buttons — distinct from the
+  `sunken` well); plus `surface-overlay`, `surface-inverse`, `overlay-backdrop`.
 - **Text color:** `text-text` (body), `text-text-muted`, `text-text-subtle`,
-  `text-text-inverse`, and the on-fill colors `text-text-on-primary` (primary/accent
-  fills) plus `text-text-on-success` / `text-text-on-warning` / `text-text-on-danger`
-  / `text-text-on-info` (each status fill). An on-color contrasts with *its own*
-  fill, so `text-text-on-primary` is **not** reusable for status fills — a pale
-  success/warning/info fill needs *dark* on-text (the defaults already are). The
+  `text-text-inverse`, and the on-fill colors `text-text-on-primary` (primary fills),
+  `text-text-on-accent` (accent fills), plus `text-text-on-success` / `text-text-on-warning`
+  / `text-text-on-danger` / `text-text-on-info` (each status fill). An on-color contrasts
+  with *its own* fill, so `text-text-on-primary` is **not** reusable for accent or status
+  fills — a pale accent/success/warning/info fill needs *dark* on-text (the defaults
+  already are). The
   token family is `text`, so the color utility repeats it — `text-text-muted`,
   **not** `text-muted` (an undefined class).
 - **Borders:** color `border-border` / `border-border-strong` /
@@ -75,7 +80,8 @@ unitless numbers in ms, hence the `*1ms` in the calc. Gradient text:
   (`p-4.5` → `calc(var(--spacing) * 4.5)`, any decimal), never a bare-px
   `p-[18px]` — that ignores `--spacing` and won't rescale with the theme.
 - **Effects:** `blur-*`, `gradient-primary` / `-accent` / `-surface` / `-text`,
-  `opacity-disabled` / `-overlay`.
+  `opacity-disabled` / `-overlay`, `icon-stroke-width` (SVG stroke weight, via
+  `[stroke-width:var(--icon-stroke-width)]` on the icon).
 - **Motion:** `duration-fast` / `-default` / `-slow`; `ease-default` /
   `-snappy` / `-smooth` / `-bounce`.
 
@@ -142,6 +148,7 @@ that each stress one axis and confirm your view **visibly changes**:
   A theme is inert data: it can only set known tokens, can't run code, and may
   only name bundled fonts. Two design traps — on dark themes `surface-raised` is
   *lighter* than `surface`; and each on-color must contrast with *its* fill (a pale
-  primary needs *dark* `text-on-primary`; likewise each status has its own on-color).
+  primary or accent needs *dark* `text-on-primary` / `text-on-accent`; likewise each
+  status has its own on-color).
 
 Full token reference and docs: https://github.com/offthegully/veneerui

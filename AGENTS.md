@@ -92,6 +92,8 @@ These are the cases agents get wrong most often. Use the right-hand form:
 | **duration** (`duration-*`, unitless ms) | `duration-200` | `duration-[calc(var(--duration-default)*1ms)]` |
 | **gradients** (`gradient-*`) | — | `bg-(image:--gradient-primary)` (or `bg-[image:var(--gradient-primary)]`) |
 | **opacity** (`opacity-disabled/overlay`) | `opacity-50` | `opacity-(--opacity-disabled)` |
+| **focus ring** (`focus-ring-width/-offset`) | `outline-2`, `outline-offset-2` | `focus-visible:[outline-style:solid] focus-visible:[outline-width:var(--focus-ring-width)] focus-visible:[outline-offset:var(--focus-ring-offset)] focus-visible:outline-focus-ring` |
+| **icon stroke** (`icon-stroke-width`) | `strokeWidth="2"` (baked) | `[stroke-width:var(--icon-stroke-width)]` |
 
 The complete, schema-generated list of escape-hatch tokens is in
 [`docs/escape-hatches.generated.md`](docs/escape-hatches.generated.md).
@@ -135,19 +137,25 @@ Use these names — they describe *role*, not appearance. Full list with default
 > don't double.
 
 - **Color / brand:** `primary` (+ `-hover`, `-active`, `-subtle`), `accent`
-  (+ `-hover`, `-active`), and the status colors `success` / `warning` / `danger` /
+  (+ `-hover`, `-active`, `-subtle`), and the status colors `success` / `warning` / `danger` /
   `info` (each + `-hover`, `-active`, `-subtle`), plus `focus-ring`.
   → `bg-primary`, `bg-primary-subtle`, `text-primary`, `bg-success`,
   `hover:bg-danger-hover`, `bg-danger-subtle`, `focus-visible:outline-focus-ring`.
 - **Surfaces (a ladder):** `surface` (page) · `surface-raised` (cards/menus,
-  sits *above*) · `surface-sunken` (wells, recedes) · `surface-overlay`
+  sits *above*) · `surface-sunken` (wells, recedes) · `surface-hover` /
+  `surface-active` (neutral interactive hover/press — rows, menu items, ghost
+  buttons; decoupled from the `sunken` well) · `surface-overlay`
   (menus/modals) · `surface-inverse` · `overlay-backdrop` (scrim).
 - **Text:** `text` (body), `text-muted`, `text-subtle`, `text-inverse`,
-  `text-on-primary` (text on a primary/accent fill), and the per-status on-colors
-  `text-on-success` / `text-on-warning` / `text-on-danger` / `text-on-info` (text
-  on the matching status fill — each contrasts with *its* fill, not the page).
+  `text-on-primary` (text on a primary fill), `text-on-accent` (text on an accent
+  fill), and the per-status on-colors `text-on-success` / `text-on-warning` /
+  `text-on-danger` / `text-on-info` (text on the matching status fill — each
+  contrasts with *its* fill, not the page; `text-on-primary` is **not** reusable
+  for accent or status fills).
 - **Borders:** color `border` / `border-strong` / `border-subtle`; width
-  `border-width-thin` / `-default` / `-thick`.
+  `border-width-thin` / `-default` / `-thick`; focus-ring geometry
+  `focus-ring-width` / `focus-ring-offset` (the `focus-ring` *color* is under
+  Color/brand) — applied via the escape hatch in §3.
 - **Radii:** `rounded-none` … `rounded-3xl`, `rounded-full`.
 - **Type:** families `font-sans` / `font-serif` / `font-mono` / `font-display`;
   sizes `text-xs` … `text-9xl`; weights `font-thin` … `font-black`; line-height
@@ -160,7 +168,8 @@ Use these names — they describe *role*, not appearance. Full list with default
   `min-h-23`) — never a bare-px island like `p-[18px]`, which ignores `--spacing`
   and won't rescale with the theme.
 - **Effects:** `blur-*` (feeds `blur-*` and `backdrop-blur-*`), `gradient-primary`
-  / `-accent` / `-surface` / `-text`, `opacity-disabled` / `-overlay`.
+  / `-accent` / `-surface` / `-text`, `opacity-disabled` / `-overlay`,
+  `icon-stroke-width` (SVG stroke weight, via `[stroke-width:var(--icon-stroke-width)]`).
 - **Motion:** `duration-fast` / `-default` / `-slow`; `ease-*`.
 
 To read a token value in JS/TS (e.g. for an inline `style` background swatch),
@@ -275,10 +284,10 @@ you're not expressing that axis — go back and reference its tokens.
 
 | Theme | Stresses | If your view doesn't change, you're not expressing… |
 |---|---|---|
-| **Brutalist** | borders, hard shadows, radius=0, heavy weights | border-width / shadow / radius |
+| **Brutalist** | borders, hard shadows, radius=0, heavy weights, thick/flush focus ring, heavy icon stroke | border-width / shadow / radius / focus-ring / icon-stroke |
 | **Neumorphic** | shadows only (`surface` ≈ `surface-raised`) | elevation — cards are invisible without a shadow token |
-| **Editorial** | serif type, scale, leading, spacing | `font-display`/`font-serif`, type scale, leading |
-| **High Contrast** | border-width, radius | border tokens |
+| **Editorial** | serif type, scale, leading, spacing, thin icon stroke | `font-display`/`font-serif`, type scale, leading, icon-stroke |
+| **High Contrast** | border-width, radius, thick focus ring | border tokens / focus-ring |
 | **Glassmorphic / Neon Arcade** | blur, gradient, text-shadow/glow | the effect axes |
 
 Two traps these surface: on dark/neumorphic themes `surface-raised` is the same

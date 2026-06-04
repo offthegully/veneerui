@@ -105,7 +105,7 @@ function CTAButtons() {
       </a>
       <a
         href="#"
-        className={`inline-flex items-center justify-center rounded-md border-border bg-surface px-5 py-2.5 text-sm font-semibold text-text [border-width:var(--border-width-default)] hover:bg-surface-sunken ${motion}`}
+        className={`inline-flex items-center justify-center rounded-md border-border bg-surface px-5 py-2.5 text-sm font-semibold text-text [border-width:var(--border-width-default)] hover:bg-surface-hover ${motion}`}
       >
         Live demo
       </a>
@@ -287,7 +287,7 @@ export function LandingPreview() {
                 className={`mt-auto inline-flex items-center justify-center rounded-md px-5 py-2.5 text-sm font-semibold [box-shadow:var(--shadow-sm)] ${motion} ${
                   tier.featured
                     ? 'bg-primary text-text-on-primary hover:bg-primary-hover'
-                    : 'border-border bg-surface text-text [border-width:var(--border-width-default)] hover:bg-surface-sunken'
+                    : 'border-border bg-surface text-text [border-width:var(--border-width-default)] hover:bg-surface-hover'
                 }`}
               >
                 {tier.cta}

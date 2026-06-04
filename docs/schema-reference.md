@@ -2,7 +2,7 @@
 
 # Theme Token Reference
 
-Schema generation **1** · **128** tokens. Set any of these in a theme's `tokens` object; omitted tokens fall back to the default.
+Schema generation **1** · **135** tokens. Set any of these in a theme's `tokens` object; omitted tokens fall back to the default.
 
 > **Custom colors.** Beyond this closed list, a theme may define app-specific colors under the open **`color-x-<slug>`** namespace (e.g. `color-x-gold`) — any valid CSS color (no `var()`), up to 64 per theme. They are fully themeable (`var(--color-x-gold)`, `bg-(--color-x-gold)`) and have no built-in default, so declare them in your app's base theme. See [authoring-guide.md](./authoring-guide.md#4-custom-colors-beyond-the-schema-palette).
 
@@ -17,6 +17,7 @@ Schema generation **1** · **128** tokens. Set any of these in a theme's `tokens
 | `color-accent` | color | `#06b6d4` |  | Secondary emphasis color |
 | `color-accent-hover` | color | `#0891b2` |  | Hover state of accent |
 | `color-accent-active` | color | `#0e7490` |  | Pressed state of accent |
+| `color-accent-subtle` | color | `#cffafe` |  | Tinted background derived from accent |
 | `color-success` | color | `#16a34a` |  | Positive / success status |
 | `color-success-hover` | color | `#15803d` |  | Hover state of success |
 | `color-success-active` | color | `#166534` |  | Pressed state of success |
@@ -42,6 +43,8 @@ Schema generation **1** · **128** tokens. Set any of these in a theme's `tokens
 | `color-surface` | color | `#ffffff` | yes | Default page background |
 | `color-surface-raised` | color | `#f9fafb` |  | Raised elements like cards |
 | `color-surface-sunken` | color | `#f3f4f6` |  | Recessed wells / insets |
+| `color-surface-hover` | color | `#f3f4f6` |  | Hover background for neutral interactive surfaces (rows, menu items, ghost buttons) |
+| `color-surface-active` | color | `#e5e7eb` |  | Pressed background for neutral interactive surfaces |
 | `color-surface-overlay` | color | `#ffffff` |  | Floating surfaces like menus & modals |
 | `color-surface-inverse` | color | `#111827` |  | Inverted surface (e.g. tooltips) |
 | `color-overlay-backdrop` | color | `rgb(0 0 0 / 0.5)` |  | Scrim behind modals |
@@ -55,6 +58,7 @@ Schema generation **1** · **128** tokens. Set any of these in a theme's `tokens
 | `color-text-subtle` | color | `#9ca3af` |  | Tertiary / placeholder text |
 | `color-text-inverse` | color | `#f9fafb` |  | Text on inverse surfaces |
 | `color-text-on-primary` | color | `#ffffff` |  | Text rendered on primary fills |
+| `color-text-on-accent` | color | `#111827` |  | Text rendered on accent fills |
 | `color-text-on-success` | color | `#111827` |  | Text rendered on success fills |
 | `color-text-on-warning` | color | `#111827` |  | Text rendered on warning fills |
 | `color-text-on-danger` | color | `#ffffff` |  | Text rendered on danger fills |
@@ -70,6 +74,8 @@ Schema generation **1** · **128** tokens. Set any of these in a theme's `tokens
 | `border-width-thin` | length | `1px` |  | Hairline border width |
 | `border-width-default` | length | `1px` |  | Default border width |
 | `border-width-thick` | length | `3px` |  | Heavy border for brutalist/emphasis themes |
+| `focus-ring-width` | length | `2px` |  | Focus outline thickness |
+| `focus-ring-offset` | length | `2px` |  | Gap between the element and its focus outline |
 
 ## Radii
 
@@ -171,6 +177,7 @@ Schema generation **1** · **128** tokens. Set any of these in a theme's `tokens
 | `gradient-text` | gradient | `linear-gradient(135deg, var(--color-primary) 0%, var(--color-accent) 100%)` |  | Gradient for clipped headline text (follows the palette) |
 | `opacity-disabled` | number | `0.5` |  | Opacity for disabled elements |
 | `opacity-overlay` | number | `0.6` |  | Opacity for overlay scrims |
+| `icon-stroke-width` | number | `2` |  | Icon line weight (SVG stroke-width) |
 
 ## Motion
 

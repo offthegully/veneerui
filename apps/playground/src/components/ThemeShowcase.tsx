@@ -26,9 +26,9 @@ function Button({ children, variant = 'primary' }: { children: string; variant?:
   const base = `inline-flex items-center justify-center rounded-md px-4 py-2 text-sm font-medium [box-shadow:var(--shadow-sm)] ${motion}`;
   const styles: Record<string, string> = {
     primary: 'bg-primary text-text-on-primary hover:bg-primary-hover',
-    accent: 'bg-accent text-text-on-primary hover:bg-accent-hover',
-    danger: 'bg-danger text-text-on-primary hover:opacity-90',
-    outline: 'border-border bg-surface text-text hover:bg-surface-sunken [border-width:var(--border-width-default)]',
+    accent: 'bg-accent text-text-on-accent hover:bg-accent-hover',
+    danger: 'bg-danger text-text-on-danger hover:opacity-90',
+    outline: 'border-border bg-surface text-text hover:bg-surface-hover active:bg-surface-active [border-width:var(--border-width-default)]',
   };
   return <button type="button" className={`${base} ${styles[variant]}`}>{children}</button>;
 }
@@ -115,10 +115,10 @@ export function ThemeShowcase() {
 
       {/* Status pills */}
       <section className="flex flex-wrap items-center gap-2">
-        <span className="rounded-full bg-success px-3 py-1 text-xs font-medium text-text-on-primary">Success</span>
-        <span className="rounded-full bg-warning px-3 py-1 text-xs font-medium text-text-on-primary">Warning</span>
-        <span className="rounded-full bg-danger px-3 py-1 text-xs font-medium text-text-on-primary">Danger</span>
-        <span className="rounded-full bg-info px-3 py-1 text-xs font-medium text-text-on-primary">Info</span>
+        <span className="rounded-full bg-success px-3 py-1 text-xs font-medium text-text-on-success">Success</span>
+        <span className="rounded-full bg-warning px-3 py-1 text-xs font-medium text-text-on-warning">Warning</span>
+        <span className="rounded-full bg-danger px-3 py-1 text-xs font-medium text-text-on-danger">Danger</span>
+        <span className="rounded-full bg-info px-3 py-1 text-xs font-medium text-text-on-info">Info</span>
       </section>
 
       {/* Palette */}
