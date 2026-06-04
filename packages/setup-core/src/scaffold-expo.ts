@@ -26,11 +26,12 @@ const VENEER_PKG = '@offthegully/veneerui';
 
 /** Native deps installed through `expo install` so versions match the SDK. */
 export const EXPO_NATIVE_DEPS = [
-  // NativeWind isn't in Expo's version map, so PIN it (and its react-native-css peer) to
-  // the verified v5-preview — `expo install` would otherwise float to latest, which can be
-  // a breaking newer preview. Bump these when NativeWind v5 ships stable.
-  'nativewind@^5.0.0-preview.4',
-  'react-native-css@^3.0.7',
+  // NativeWind isn't in Expo's version map, so pin it (and its react-native-css peer) to an
+  // EXACT version. A caret on a prerelease (`^5.0.0-preview.4`) still floats forward — to a
+  // newer preview or the stable release — which is exactly the breaking drift the pin is
+  // meant to prevent. Bump these deliberately (and re-verify) when NativeWind v5 ships stable.
+  'nativewind@5.0.0-preview.4',
+  'react-native-css@3.0.7',
   // SDK-managed — leave unpinned so `expo install` picks versions matching the Expo SDK.
   'react-native-reanimated',
   'react-native-worklets',

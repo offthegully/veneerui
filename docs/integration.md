@@ -208,9 +208,9 @@ import { getAntiFlashScript } from '@offthegully/veneerui'
 <script dangerouslySetInnerHTML={{ __html: getAntiFlashScript() }} />
 ```
 
-`getAntiFlashScript(defaultTokens?, shufflePool?)` returns dependency-free JS
-that applies the saved theme before paint. Pass your default theme's `tokens` map
-to also kill the first-load flash (see [Ship your own themes](#themes)).
+`getAntiFlashScript(defaultTokens?)` returns dependency-free JS that applies the
+saved theme before paint. Pass your default theme's `tokens` map to also kill the
+first-load flash (see [Ship your own themes](#themes)).
 
 **Known to work, not yet first-class** — no CLI auto-wiring and not fully tested
 yet, so expect rough edges and please [report what you hit](https://github.com/offthegully/veneerui/issues):
@@ -250,8 +250,9 @@ for color:
 - Watch the #1 adoption trap: a **shadcn** (or other) `@theme` block redefining a
   token name Veneer owns, which silently shadows it so `bg-primary` only half-works.
 - **[`eslint-plugin-veneer`](../packages/eslint-plugin)** keeps it from
-  regressing — the same detector the conformance test uses, failing CI on the next
-  `bg-blue-500` instead of letting it quietly add an un-themed island.
+  regressing — `init` adds its preset to your ESLint flat config (and `npm create
+  veneerui` installs + wires it for you), so the next `bg-blue-500` fails lint — the
+  same detector the conformance test uses — instead of quietly adding an un-themed island.
 
 The token vocabulary and the full "looks themeable but bakes at build time" table
 live in **[AGENTS.md](../AGENTS.md)** — which `init` drops into your repo so your
@@ -305,9 +306,6 @@ veneer({ defaultTheme: themes[0] })            // Vite:  vite.config.ts plugin
 <AntiFlashScript defaultTheme={themes[0]} />   // Next:  app/layout.tsx <head>
 ```
 
-> Want a random theme on every visit until the visitor picks one? See
-> [Shuffle mode](#shuffle).
-
 ---
 
 ## Fonts
@@ -354,8 +352,8 @@ keeps the whole app re-skinnable. (To add the guide by hand, copy
 ## API
 
 `@offthegully/veneerui` exports the runtime: `ThemeProvider`, `useTheme()` (returns
-`current`, `enabledThemes`, `setCurrent`, `hydrated`, the import/preview actions,
-and — for shuffle — `pinned` and `shuffle()`), `applyTheme`, `defineTheme`,
+`current`, `enabledThemes`, `setCurrent`, `hydrated`, and the import/preview
+actions), `applyTheme`, `defineTheme`,
 `validateTheme`, `parseAndValidate` / `fetchTheme` / `isFetchableUrl`,
 `tokenValue`, `getAntiFlashScript`, `TOKEN_SCHEMA`, `BUILTIN_THEMES`, and the
 `Theme` / `ThemeLibrary` types.
@@ -423,11 +421,10 @@ it's one level deep (it does **not** suppress warnings for `<body>` or anything
 inside) and is required on Next.
 
 **The one case the script can't cover** is a component that renders the *identity*
-of the current theme into React's tree — its `name`, swatches built from its
-specific colors, or a branch keyed on `useTheme().pinned`. Those values are
-client-only (they come from `localStorage`, and for shuffle a per-load random
-pick), so the server renders the default while the first client render already
-holds the real theme — a mismatch.
+of the current theme into React's tree — its `name`, or swatches built from its
+specific colors. Those values are client-only (they come from `localStorage`), so
+the server renders the default while the first client render already holds the
+real theme — a mismatch.
 
 Guard any such component with **`useTheme().hydrated`**: render a stable,
 theme-neutral output while it's `false`, then reveal the real value once it flips
@@ -453,38 +450,5 @@ its trigger, so it's SSR-safe out of the box.
 > re-introduces the mismatch (a server roll vs. a client roll). Let the
 > anti-flash script own the `<html>` variables; never render token values through
 > React.
-
-</details>
-
-<a id="shuffle"></a>
-
-<details>
-<summary><b>Shuffle mode: a random theme until the visitor pins one</b></summary>
-
-For a showcase, show a **random theme on every visit** until the visitor pins one
-by selecting it. It stays flash-free: the anti-flash wiring inlines the pool and
-applies a random pick before first paint. Pass the same pool to both the
-anti-flash wiring and the provider's `shuffleIds`:
-
-```ts
-// Vite — vite.config.ts
-veneer({ shuffleUntilPinned: themes })
-```
-```tsx
-// Next — app/layout.tsx <head>
-<AntiFlashScript shuffleUntilPinned={themes} />
-```
-```tsx
-// both — the provider draws the in-page shuffle from the same pool
-<ThemeProvider themes={themes} shuffleIds={themes.map((t) => t.id)}>
-  {children}
-</ThemeProvider>
-```
-
-Selecting a theme **pins** it (`useTheme().pinned` → `true`) and saves it, which
-stops the shuffle; `useTheme().shuffle()` re-rolls and returns to the unpinned
-state — wire it to a "Shuffle" button. Omit `shuffleUntilPinned` entirely for the
-ordinary behavior (apply the saved theme, no shuffling). The generic form is
-`getAntiFlashScript(undefined, themes.map((t) => ({ id: t.id, tokens: t.tokens })))`.
 
 </details>

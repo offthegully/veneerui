@@ -1,21 +1,20 @@
 /**
- * veneer/no-hardcoded-colors
- *
- * Fails when a component hardcodes a color instead of routing it through a theme
- * token. Three shapes (see ./detect-hardcoded-colors.js):
+ * The `veneer/no-hardcoded-colors` rule body — the single source shared by
+ * eslint-plugin-veneer (which tsup bundles into the published artifact) and the
+ * playground's own ESLint config, so there's exactly one rule definition. It
+ * fails on the three ways a hardcoded color sneaks in:
  *   1. a Tailwind palette utility       — `bg-blue-500`, `text-white`
  *   2. an arbitrary color value         — `bg-[#fff]`, `[color:rgb(...)]`
  *   3. a bare color in an inline style  — `style={{ color: '#333' }}`
- *
- * This is what keeps the Phase-2 conversion from rotting: the next feature that
- * reaches for `bg-blue-500` fails CI instead of quietly adding an un-themed
- * island. The sanctioned escape hatch is a token reference — a semantic utility
- * or `var(--token)` — neither of which this rule flags.
+ * The sanctioned escape hatch is a token reference (a semantic utility or
+ * `var(--token)`), neither of which this flags. The detector is `./detect.js`,
+ * the SAME matcher the conformance test uses, so the editor, CI, and the design
+ * system's own tests can never disagree about what counts as an island.
  */
-import { findClassColorViolations, findBareColorLiterals } from './detect-hardcoded-colors.js';
+import { findClassColorViolations, findBareColorLiterals } from './detect.js';
 
 /** @type {import('eslint').Rule.RuleModule} */
-export default {
+export const noHardcodedColors = {
   meta: {
     type: 'problem',
     docs: {
@@ -75,3 +74,5 @@ export default {
     };
   },
 };
+
+export default noHardcodedColors;

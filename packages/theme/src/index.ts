@@ -37,7 +37,7 @@ export { BUILTIN_THEMES, BUILTIN_IDS, DEFAULT_THEME_ID } from './builtin';
 export { normalizeAuthoredTheme, type AuthoredTheme } from './authored-theme';
 export { defineTheme, type DefineThemeInput } from './define-theme';
 
-export { getAntiFlashScript, SHUFFLE_ATTR, type ShuffleTheme } from './anti-flash';
+export { getAntiFlashScript } from './anti-flash';
 
 export { SCHEMA_VERSION } from './types';
 export type { Theme, ThemeLibrary, TokenDef, TokenType, TokenBridge } from './types';

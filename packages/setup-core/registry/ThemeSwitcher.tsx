@@ -8,13 +8,13 @@
  * border-border, rounded-md, shadow-lg, …) so it re-skins with every theme —
  * it's the first component to follow the Phase 2 adoption contract.
  *
- * SSR-safe: the trigger renders theme *identity* (the current name, its
- * colour swatches, the shuffle badge), all of which come from client-only state
- * (localStorage / a per-load shuffle roll). It gates them on `useTheme().hydrated`
- * so the server and first client render emit an identical, theme-neutral trigger
- * — then reveals the real theme after mount. Without the gate, an SSR host hits a
- * React hydration mismatch on first paint. (On a Next project, `veneerui add`
- * prepends the required `'use client'` directive when it copies this in.)
+ * SSR-safe: the trigger renders theme *identity* (the current name and its colour
+ * swatches), which is client-only state (localStorage). It gates that on
+ * `useTheme().hydrated` so the server and first client render emit an identical,
+ * theme-neutral trigger — then reveals the real theme after mount. Without the
+ * gate, an SSR host hits a React hydration mismatch on first paint. (On a Next
+ * project, `veneerui add` prepends the required `'use client'` directive when it
+ * copies this in.)
  */
 import { useEffect, useRef, useState } from 'react';
 import { useTheme, tokenValue, type Theme } from '@offthegully/veneerui';
@@ -64,7 +64,7 @@ function PlaceholderSwatch() {
 type SwitcherVariant = 'header' | 'floating';
 
 export function ThemeSwitcher({ variant = 'header' }: { variant?: SwitcherVariant } = {}) {
-  const { enabledThemes, currentId, current, pinned, hydrated, setCurrent, shuffle } = useTheme();
+  const { enabledThemes, currentId, current, hydrated, setCurrent } = useTheme();
   const floating = variant === 'floating';
   const [open, setOpen] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
@@ -103,18 +103,11 @@ export function ThemeSwitcher({ variant = 'header' }: { variant?: SwitcherVarian
           floating ? 'rounded-full [box-shadow:var(--shadow-lg)]' : 'rounded-md [box-shadow:var(--shadow-sm)]'
         }`}
       >
-        {/* Identity (swatches / name / shuffle badge) is client-only state; hold a
-            theme-neutral trigger until mount so the server and first client render
-            match, then reveal the real theme. See the file header. */}
+        {/* Identity (swatches / name) is client-only state; hold a theme-neutral
+            trigger until mount so the server and first client render match, then
+            reveal the real theme. See the file header. */}
         {hydrated ? <Swatches theme={current} /> : <PlaceholderSwatch />}
         <span>{hydrated ? current.name : 'Theme'}</span>
-        {/* When unpinned the theme re-rolls each visit — flag it so "it changed" reads
-            as intentional, not a bug. Pick one from the list to lock it in. */}
-        {hydrated && !pinned && (
-          <span aria-label="Shuffling — pick a theme to keep it" title="Shuffling — pick a theme to keep it">
-            🎲
-          </span>
-        )}
         <svg viewBox="0 0 20 20" className="size-4 text-text-muted" aria-hidden="true">
           <path d="M6 8l4 4 4-4" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
@@ -128,36 +121,6 @@ export function ThemeSwitcher({ variant = 'header' }: { variant?: SwitcherVarian
           }`}
         >
           <ul className="max-h-80 overflow-auto p-1">
-            {/* Shuffle: re-roll now and stay unpinned, so it keeps changing each
-                visit. Highlighted while active; selecting any theme below pins it. */}
-            <li>
-              <button
-                type="button"
-                onClick={() => shuffle()}
-                aria-pressed={!pinned}
-                className={`flex w-full items-center gap-3 rounded-md px-2 py-2 text-left text-sm transition-colors hover:bg-surface-hover ${
-                  !pinned ? 'bg-surface-sunken' : ''
-                }`}
-              >
-                <span aria-hidden="true" className="inline-flex size-6 shrink-0 items-center justify-center text-base">
-                  🎲
-                </span>
-                <span className="min-w-0 flex-1">
-                  <span className="block truncate font-medium text-text">Shuffle</span>
-                  <span className="block truncate text-xs text-text-muted">
-                    {pinned ? 'Surprise me each visit' : 'Random each visit · pick one to keep'}
-                  </span>
-                </span>
-                {!pinned && (
-                  <svg viewBox="0 0 20 20" className="size-4 shrink-0 text-primary" aria-hidden="true">
-                    <path d="M5 10l3.5 3.5L15 6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                )}
-              </button>
-            </li>
-            <li aria-hidden="true">
-              <div className="my-1 border-t border-border" />
-            </li>
             {enabledThemes.map((theme) => {
               const selected = theme.id === currentId;
               return (
@@ -178,9 +141,7 @@ export function ThemeSwitcher({ variant = 'header' }: { variant?: SwitcherVarian
                         <span className="block truncate text-xs text-text-muted">{theme.description}</span>
                       )}
                     </span>
-                    {/* Check only when pinned: an unpinned current theme is the live
-                        shuffle pick, not a saved choice — the 🎲 row carries the check. */}
-                    {selected && pinned && (
+                    {selected && (
                       <svg viewBox="0 0 20 20" className="size-4 shrink-0 text-primary" aria-hidden="true">
                         <path d="M5 10l3.5 3.5L15 6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                       </svg>

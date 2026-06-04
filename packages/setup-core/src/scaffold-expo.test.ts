@@ -78,9 +78,9 @@ describe('patchExpoPackageJson', () => {
 
 describe('expo deps', () => {
   it('pins the NativeWind stack (not in Expo SDK map) and floats the SDK-managed deps', () => {
-    // nativewind + react-native-css are pinned (expo install would otherwise float them)
-    expect(EXPO_NATIVE_DEPS).toContain('nativewind@^5.0.0-preview.4');
-    expect(EXPO_NATIVE_DEPS).toContain('react-native-css@^3.0.7');
+    // nativewind + react-native-css are EXACT-pinned — a caret on a prerelease still floats
+    expect(EXPO_NATIVE_DEPS).toContain('nativewind@5.0.0-preview.4');
+    expect(EXPO_NATIVE_DEPS).toContain('react-native-css@3.0.7');
     // SDK-managed deps stay unpinned so expo install matches the SDK
     expect(EXPO_NATIVE_DEPS).toContain('react-native-worklets'); // reanimated 4 peer
     expect(EXPO_NATIVE_DEPS).toContain('react-native-safe-area-context');

@@ -21,9 +21,13 @@ export interface Detection {
   hasTailwind: boolean;
   /** True when `react` is a dependency — used to gate help for unrecognized frameworks. */
   hasReact: boolean;
+  /** True when `eslint-plugin-veneer` is already a dependency. */
+  hasEslintPlugin: boolean;
   viteConfigPath?: string;
   globalCssPath?: string;
   entryPath?: string;
+  /** The project's ESLint flat config, if one exists — where the lint gate is wired. */
+  eslintConfigPath?: string;
   componentsDir: string;
 }
 
@@ -40,6 +44,7 @@ const VITE_CSS = ['src/index.css', 'src/main.css', 'src/app.css', 'src/styles/in
 const NEXT_CSS = ['app/globals.css', 'src/app/globals.css', 'styles/globals.css', 'app/global.css'];
 const VITE_ENTRY = ['src/main.tsx', 'src/main.jsx', 'src/index.tsx'];
 const NEXT_ENTRY = ['app/layout.tsx', 'src/app/layout.tsx', 'app/layout.jsx'];
+const ESLINT_CONFIGS = ['eslint.config.js', 'eslint.config.mjs', 'eslint.config.ts', 'eslint.config.cjs'];
 
 function firstExisting(root: string, candidates: string[]): string | undefined {
   return candidates.find((c) => existsSync(join(root, c)));
@@ -83,9 +88,11 @@ export function detect(root: string): Detection {
     hasVeneerTheme: '@offthegully/veneerui' in allDeps,
     hasTailwind: 'tailwindcss' in allDeps,
     hasReact: 'react' in allDeps,
+    hasEslintPlugin: 'eslint-plugin-veneer' in allDeps,
     viteConfigPath: framework === 'vite' ? firstExisting(root, VITE_CONFIGS) : undefined,
     globalCssPath: findGlobalCss(root, cssCandidates),
     entryPath: firstExisting(root, entryCandidates),
+    eslintConfigPath: firstExisting(root, ESLINT_CONFIGS),
     componentsDir: usesSrcDir ? 'src/components' : 'components',
   };
 }

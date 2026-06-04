@@ -46,8 +46,6 @@ playground under a different theme:
 - **User-imported & user-authored themes.** Let people drop a `theme.json` or
   paste a URL — it's validated and previewed live before they save it, alongside
   your built-ins.
-- **Showcase mode.** Shuffle a random theme on each visit to flaunt the range,
-  until the visitor pins one.
 
 ---
 
@@ -60,7 +58,7 @@ in a theme switcher, so it runs themed from the first commit with no manual step
 ```sh
 npm create veneerui@latest my-app
 # → pick Vite, Next.js, or Expo; it scaffolds, installs, wires the tokens + provider +
-#   anti-flash (or NativeWind, on Expo), and adds a ThemeSwitcher
+#   anti-flash (or NativeWind, on Expo) + the no-hardcoded-colors lint gate, adds a ThemeSwitcher
 cd my-app && npm run dev
 ```
 
@@ -75,7 +73,7 @@ the CLI does the wiring:
 
 ```sh
 npm i @offthegully/veneerui
-npx veneerui init            # wire tokens + provider + anti-flash, write the agent guide
+npx veneerui init            # wire tokens + provider + anti-flash + lint gate, write the agent guide
 npx veneerui add switcher    # copy a ThemeSwitcher into your components
 ```
 

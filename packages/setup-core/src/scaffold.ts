@@ -31,6 +31,8 @@ export type PackageManager = 'npm' | 'pnpm' | 'yarn' | 'bun';
 /** The runtime the scaffolded app installs. Pin only the runtime; `add`/wiring is in-process. */
 const RUNTIME_PKG = '@offthegully/veneerui';
 const TAILWIND_PKGS = ['tailwindcss', '@tailwindcss/vite'];
+// The no-hardcoded-colors lint gate, installed dev-only; runInit wires the preset.
+const ESLINT_PKG = 'eslint-plugin-veneer';
 // Just the switcher (it pulls in its own panels). The full ThemeShowcase stays in
 // the playground/docs — a new app shouldn't ship a demo component to delete.
 const STARTER_COMPONENTS = ['switcher'];
@@ -176,9 +178,9 @@ export function runScaffold(opts: ScaffoldOptions): { appDir: string } {
 
   if (opts.dryRun) {
     log(`Would scaffold:  ${cmd} ${args.join(' ')}   (cwd: ${opts.parentDir})`);
-    log('Then install Veneer and run the same `veneerui init` wiring an existing app uses');
-    log('(tokens + <ThemeProvider> + anti-flash), add a switcher + showcase, and drop a');
-    log('token-driven starter page.');
+    log('Then install Veneer + eslint-plugin-veneer and run the same `veneerui init` wiring');
+    log('an existing app uses (tokens + <ThemeProvider> + anti-flash + the lint gate), add a');
+    log('switcher, and drop a token-driven starter page.');
     if (opts.agent) log(`Then hand off to: ${opts.agent === 'auto' ? 'an installed agent' : opts.agent}.`);
     return { appDir };
   }
@@ -193,6 +195,8 @@ export function runScaffold(opts: ScaffoldOptions): { appDir: string } {
     log('\nInstalling Veneer…');
     if (opts.framework === 'vite') run(opts.pm, installArgs(opts.pm, TAILWIND_PKGS, true), appDir);
     run(opts.pm, installArgs(opts.pm, [RUNTIME_PKG], false), appDir);
+    // The lint gate (dev): eslint-plugin-veneer, enabled by runInit's wireEslint.
+    run(opts.pm, installArgs(opts.pm, [ESLINT_PKG], true), appDir);
   }
 
   // Wire Veneer through the SAME engine `veneerui init` uses — tokens, provider,

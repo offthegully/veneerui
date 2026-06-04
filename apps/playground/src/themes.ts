@@ -63,13 +63,3 @@ const galleryThemes: Theme[] = BUILTIN_THEMES.filter((t) => !DEFAULT_IDS.include
  * Module-level constant so the ThemeProvider seed is stable.
  */
 export const APP_THEMES: Theme[] = [...defaults, ...galleryThemes];
-
-/**
- * The pool a first-time visitor is randomly dropped into: every gallery theme,
- * in gallery order. It excludes the two neutral package defaults so a fresh
- * visitor always lands on a *distinctive* theme (the point of the showcase),
- * while Light/Dark stay in the switcher as the obvious way back. Derived from the
- * same `BUILTIN_THEMES` the flash-free script (vite.config) reads, so the two
- * pools always agree.
- */
-export const APP_SHUFFLE_THEME_IDS: string[] = galleryThemes.map((t) => t.id);

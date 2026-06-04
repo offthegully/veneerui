@@ -6,10 +6,6 @@
  *                                            autocomplete; shipped as
  *                                            @offthegully/veneerui/theme-v1.json)
  *   - docs/schema-reference.md              (human reference, grouped by category)
- *   - packages/lint-core/reserved-tokens.generated.js
- *                                           (the token names Veneer owns — a shadcn
- *                                            @theme block redefining one silently
- *                                            shadows it)
  *
  * Run: `npm run gen:theme`. CI re-runs it and fails if the working tree changed,
  * which guarantees the artifacts always match the schema.
@@ -212,22 +208,6 @@ function buildEscapeHatches(): string {
   ].join('\n');
 }
 
-// ── reserved-tokens.generated.js ─────────────────────────────────────────────
-// The bare token names (no leading `--`) Veneer owns. Emitted as plain JS (zero-dep,
-// no build step) for any tooling that needs to spot a project @theme block redefining
-// one of these — the common shadcn coexistence trap, where the redefinition silently
-// shadows Veneer's token.
-function buildReservedTokens(): string {
-  const names = TOKEN_SCHEMA.map((t) => t.name);
-  return [
-    '// AUTO-GENERATED from packages/theme/src/schema.ts by scripts/generate-theme.ts — do not edit.',
-    'export const RESERVED_TOKEN_NAMES = Object.freeze([',
-    ...names.map((n) => `  ${JSON.stringify(n)},`),
-    ']);',
-    '',
-  ].join('\n');
-}
-
 // ── font-packages.generated.js ───────────────────────────────────────────────
 // The installable fonts (family → Fontsource package + import recipe). Emitted
 // as plain JS so the zero-dep CLI bundles it for `veneerui add fonts`. Self-hosted
@@ -307,7 +287,6 @@ write('packages/theme/theme-v1.json', jsonSchema);
 write('apps/playground/public/schemas/theme-v1.json', jsonSchema);
 write('docs/schema-reference.md', buildReference());
 write('docs/escape-hatches.generated.md', buildEscapeHatches());
-write('packages/lint-core/reserved-tokens.generated.js', buildReservedTokens());
 write('packages/lint-core/font-packages.generated.js', buildFontPackages());
 write('docs/fonts.md', buildFontsDoc());
 console.log(`Done — ${TOKEN_SCHEMA.length} tokens, ${FONTS.length} fonts.`);

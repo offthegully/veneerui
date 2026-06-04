@@ -19,8 +19,10 @@ import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { detect, type Detection } from './detect';
 import {
+  addEslintRule,
   addTokensImport,
   addViteAntiFlash,
+  eslintConfigSnippet,
   nextAntiFlashSnippet,
   providerSnippet,
 } from './patch';
@@ -54,6 +56,8 @@ export function runInit(opts: InitOptions): void {
   if (!det.hasVeneerTheme) log('   → run: npm i @offthegully/veneerui');
   else log('   ✓ @offthegully/veneerui already a dependency');
   if (!det.hasTailwind) log('   ! Tailwind v4 not found — Veneer requires it (npm i tailwindcss @tailwindcss/vite).');
+  if (!det.hasEslintPlugin) log('   → run: npm i -D eslint-plugin-veneer  (the no-hardcoded-colors lint gate)');
+  else log('   ✓ eslint-plugin-veneer already a dependency');
 
   // 2 — token @import in the global stylesheet.
   log('2. Token CSS');
@@ -79,14 +83,19 @@ export function runInit(opts: InitOptions): void {
   if (det.framework === 'vite') wireViteEntry(opts, det, log);
   else wireNextEntry(opts, det, log);
 
-  // 4 — agent guide so AI coding tools write themeable components.
-  log('\n4. Agent guide (so AI tools write themeable components)');
+  // 4 — the lint gate: enable veneer/no-hardcoded-colors so a stray bg-blue-500
+  // fails lint/CI instead of silently shipping an un-themeable island.
+  log('\n4. Lint gate (no hardcoded colors)');
+  wireEslint(opts, det, log);
+
+  // 5 — agent guide so AI coding tools write themeable components.
+  log('\n5. Agent guide (so AI tools write themeable components)');
   const agentDocs = writeAgentGuide(opts, log);
 
-  // 5 — the finish-setup hand-off: whatever the patchers couldn't apply is written
+  // 6 — the finish-setup hand-off: whatever the patchers couldn't apply is written
   // to a portable, self-removing VENEER-SETUP.md. Skipped once everything is wired
   // (the common case on a fresh app), so a re-run stays clean.
-  log('\n5. Finish setup');
+  log('\n6. Finish setup');
   const plan = buildSetupPlan({
     framework: det.framework as 'vite' | 'next',
     entryPath: det.entryPath,
@@ -96,6 +105,7 @@ export function runInit(opts: InitOptions): void {
     tokenImportWired: !!det.globalCssPath,
     providerWired: isProviderWired(opts.root, det),
     antiFlashWired: isAntiFlashWired(opts.root, det),
+    eslintWired: isEslintWired(opts.root, det),
   });
   writeSetupFile(opts, plan, log);
 
@@ -186,6 +196,36 @@ function wireNextEntry(opts: InitOptions, det: Detection, log: (line: string) =>
 }
 
 /**
+ * Enable the `veneer/no-hardcoded-colors` rule in the project's ESLint flat
+ * config — the executable half of the token contract (the agent guide is the
+ * prose half). Patches the config the scaffolders emit; on an unfamiliar shape it
+ * prints the snippet and step 6 records it in VENEER-SETUP.md.
+ */
+function wireEslint(opts: InitOptions, det: Detection, log: (line: string) => void): void {
+  if (!det.eslintConfigPath) {
+    log('   ! no ESLint flat config found — add the veneer preset manually:');
+    indent(log, eslintConfigSnippet());
+    return;
+  }
+  const abs = join(opts.root, det.eslintConfigPath);
+  const before = readFileSync(abs, 'utf8');
+  if (before.includes('eslint-plugin-veneer')) {
+    log(`   ✓ ${det.eslintConfigPath} already enables veneer/no-hardcoded-colors`);
+    return;
+  }
+  const { content, changed, reason } = addEslintRule(before);
+  if (!changed) {
+    log(`   ! couldn't edit ${det.eslintConfigPath} (${reason}) — add it manually:`);
+    indent(log, eslintConfigSnippet());
+  } else if (opts.dryRun) {
+    log(`   → would add veneer.configs.recommended to ${det.eslintConfigPath}`);
+  } else {
+    writeFileSync(abs, content);
+    log(`   ✓ added veneer.configs.recommended to ${det.eslintConfigPath}`);
+  }
+}
+
+/**
  * Anything that isn't Vite or Next. The CLI can't auto-wire the framework, but
  * Veneer's runtime is just React 19 + Tailwind v4, so a plausible React + Tailwind
  * project still gets the agent guide and a *generic* VENEER-SETUP.md (the manual
@@ -229,6 +269,7 @@ function runOtherFramework(opts: InitOptions, det: Detection, log: (line: string
     tokenImportWired,
     providerWired: false,
     antiFlashWired: false,
+    eslintWired: false,
   });
   writeSetupFile(opts, plan, log);
 
@@ -308,4 +349,9 @@ function isAntiFlashWired(root: string, det: Detection): boolean {
   }
   const candidates = [det.entryPath, 'app/layout.tsx', 'src/app/layout.tsx'];
   return candidates.some((c) => (readRel(root, c) ?? '').includes('AntiFlashScript'));
+}
+
+/** Is the veneer ESLint preset already in the project's flat config? */
+function isEslintWired(root: string, det: Detection): boolean {
+  return (readRel(root, det.eslintConfigPath) ?? '').includes('eslint-plugin-veneer');
 }
