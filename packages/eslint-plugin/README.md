@@ -12,9 +12,10 @@ token migration: it fails on the three ways a hardcoded color sneaks back in.
 
 The sanctioned escape hatch is a **token reference** — a semantic utility
 (`bg-primary`, `text-text-muted`, `border-border`) or `var(--token)` — neither of
-which the rule flags. It shares the exact detector behind
-[`veneerui doctor`](https://www.npmjs.com/package/veneerui), so your editor, CI,
-and the migration tooling never disagree about what counts as an island.
+which the rule flags. It shares the exact detector behind Veneer's
+[conformance test](https://github.com/offthegully/veneerui/blob/main/apps/playground/src/conformance.test.ts),
+so your editor, CI, and the design-system's own tests never disagree about what
+counts as an island.
 
 That escape hatch also covers **custom `color-x-*` colors** — the namespace an app
 declares for shades the semantic tokens don't name. Consumed as `var()`

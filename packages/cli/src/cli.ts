@@ -8,8 +8,6 @@ import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { runInit, runAdd, runFonts } from '@veneerui/setup-core';
 import { runList } from './list';
-import { runDoctor } from './doctor';
-import { runMigrate } from './migrate';
 
 interface Parsed {
   command?: string;
@@ -65,8 +63,6 @@ Usage:
   veneerui init [--dry-run] [--cwd <path>]      Wire Veneer into this project
   veneerui add <component…> [--force] [--dir d] Copy UI components into your project
   veneerui add fonts                            Print install + imports for the built-in themes' fonts
-  veneerui doctor [--cwd <path>]                Report how much of your UI is themeable today
-  veneerui migrate [--dry-run] [--cwd <path>]   Rewrite the mechanical gotchas to themeable tokens
   veneerui list                                 List available components
   veneerui --version | --help
 
@@ -75,8 +71,6 @@ Examples:
   npx veneerui add switcher
   npx veneerui add switcher banner --dir src/ui
   npx veneerui add fonts
-  npx veneerui doctor
-  npx veneerui migrate --dry-run
 
 Every change init makes is also documented in docs/integration.md, and the
 remaining manual steps are written to VENEER-SETUP.md, so you can always finish
@@ -103,12 +97,6 @@ function main(): void {
       // component copy — route it before the registry resolver.
       if (p.positionals[0] === 'fonts') runFonts({ root: p.root });
       else runAdd(p.positionals, { root: p.root, dir: p.dir, force: p.force, dryRun: p.dryRun });
-      break;
-    case 'doctor':
-      runDoctor({ root: p.root });
-      break;
-    case 'migrate':
-      runMigrate({ root: p.root, dryRun: p.dryRun });
       break;
     case 'list':
       runList();

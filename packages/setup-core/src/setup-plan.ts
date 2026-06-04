@@ -213,8 +213,6 @@ export function buildSetupPlan(input: SetupPlanInput): string | null {
     '',
     'Each of these should pass:',
     '',
-    '- `npx veneerui doctor` — confirms the tokens are imported (and reports how much',
-    '  of your UI is themeable today)',
     '- your typecheck / build (e.g. `npm run typecheck`, `npm run build`)',
     '- `npm run dev` — the app renders with no console errors, on the default theme',
     '',

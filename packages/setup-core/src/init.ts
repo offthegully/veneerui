@@ -270,13 +270,12 @@ function writeSetupFile(opts: InitOptions, plan: string | null, log: (line: stri
   log(`       "Finish the Veneer setup in ${SETUP_FILE}, then verify it and delete the file."`);
 }
 
-/** The shared closing note: Veneer only re-skins token-driven styles; point at doctor. */
+/** The shared closing note: Veneer only re-skins token-driven styles; point at AGENTS.md. */
 function printOutro(log: (line: string) => void): void {
   log('\nVeneer only themes elements that use token utilities (bg-surface, text-text, …).');
-  log('On an existing app, `npx veneerui doctor` reports how much is themeable today and');
-  log('`npx veneerui migrate` converts the mechanical gotchas. The token rules — what a');
-  log('theme can change, and the gotchas that silently break it — are in the AGENTS.md');
-  log('guide written above; skim it before building UI.');
+  log('On an existing app, existing styles re-skin once they move onto tokens. The token');
+  log('rules — what a theme can change, and the gotchas that silently break it — are in');
+  log('the AGENTS.md guide written above; skim it before building UI.');
 }
 
 function indent(log: (s: string) => void, block: string): void {

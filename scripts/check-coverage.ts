@@ -1,9 +1,9 @@
 /**
- * Token-coverage / "inert axis" report — the counterpart to `veneerui doctor`.
+ * Token-coverage / "inert axis" report — the counterpart to the island detector.
  *
- * `doctor` (and the eslint rule + conformance test) answer "does my UI contain
- * hardcoded *islands*?" — bad values that are present. This answers the silent,
- * opposite question: "which whole theme *axes* does my UI reference *nowhere*?"
+ * The eslint rule and conformance test answer "does my UI contain hardcoded
+ * *islands*?" — bad values that are present. This answers the silent, opposite
+ * question: "which whole theme *axes* does my UI reference *nowhere*?"
  * — good tokens that are absent. A theme can only change what a component opts
  * into: if no element ever writes a box-shadow token, the elevation axis is
  * inert and Neumorphic/Brutalist render your cards as flat rectangles. Nothing

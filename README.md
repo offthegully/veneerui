@@ -82,7 +82,7 @@ npx veneerui add switcher    # copy a ThemeSwitcher into your components
 `init` writes any entry-file steps it won't patch blindly to a self-removing
 `VENEER-SETUP.md` — finish them by hand, or tell your agent *"finish the Veneer setup
 in VENEER-SETUP.md."* One catch: existing styles won't re-skin until they move onto
-tokens — `veneerui doctor` and `migrate` make that a [measured task](#migrate-an-existing-app).
+tokens — [a deliberate task](#move-existing-styles-onto-tokens), not an automatic one.
 
 However you start, Veneer rests on **three framework-agnostic invariants**: (1)
 `@import "@offthegully/veneerui/tokens.css";` after `@import "tailwindcss";` (so
@@ -129,34 +129,15 @@ your base theme and consume it via `var()` (`[color:var(--color-x-gold)]`). See 
 
 ---
 
-## Migrate an existing app
+## Move existing styles onto tokens
 
 Wiring Veneer in is the easy 10%. The real work is **moving your existing styles
 onto tokens** — Veneer only re-skins elements that use token utilities
 (`bg-surface`, `text-text`, `border-border`), so a freshly-wired app mostly won't
-change until its hardcoded colors, baked shadows, and fixed sizes are migrated.
-Three tools make that a measured task instead of a surprise.
+change until its hardcoded colors, baked shadows, and fixed sizes move onto tokens.
 
-**See how far you have to go.** `veneerui doctor` scans your project and reports
-roughly what share of your UI is themeable today, broken down by what's blocking it:
-
-```text
-$ npx veneerui doctor
-  ~31% themeable — 9 of 13 file(s) still hold 37 un-themed island(s):
-       17  border-width
-       11  box-shadow
-        6  opacity
-        3  arbitrary-size
-  ⚠ 2 @theme token collision(s) — these silently shadow Veneer's tokens:
-       app/globals.css: --color-primary
-```
-
-That last warning is the most common adoption trap: a **shadcn** (or other)
-`@theme` block redefining a token name Veneer owns silently shadows it, so
-`bg-primary` half-works. `doctor` calls those out by name.
-
-**Do the mechanical 80%.** `veneerui migrate` rewrites the deterministic gotchas
-in place — the ones that *look* themeable but bake at build time:
+The trap is the styles that *look* themeable but bake at build time. Rewrite those
+to the token form:
 
 | Hardcoded | Veneer-themeable form |
 |---|---|
@@ -164,17 +145,17 @@ in place — the ones that *look* themeable but bake at build time:
 | `border`, `border-2` | `[border-width:var(--border-width-default)]` |
 | `duration-200` | `duration-[calc(var(--duration-default)*1ms)]` |
 
-Rewrites are scoped to `className` / `class` attributes, so a utility-looking
-token in prose, a comment, or a data array is never touched. It never guesses the
-judgment calls — which palette maps to `bg-primary` vs
+Hardcoded colors are the judgment calls — which palette maps to `bg-primary` vs
 `bg-accent`, whether a surface is raised or sunken, which scale step an arbitrary
-size rounds to — it **flags** those with a `file:line` for you to finish. Run
-`veneerui migrate --dry-run` to preview.
+size rounds to — so there's no mechanical rewrite; you pick the semantic token.
+Watch for the most common adoption trap: a **shadcn** (or other) `@theme` block
+that redefines a token name Veneer owns silently shadows it, so `bg-primary` only
+half-works.
 
 **Keep it from regressing.** Add
 [`eslint-plugin-veneer`](./packages/eslint-plugin) — the same hardcoded-color
-detector `doctor` uses, enforced in your editor and CI so the next `bg-blue-500`
-fails the build instead of quietly adding an un-themed island.
+detector the conformance test uses, enforced in your editor and CI so the next
+`bg-blue-500` fails the build instead of quietly adding an un-themed island.
 
 ```js
 // eslint.config.js
@@ -280,8 +261,9 @@ components.
   [other frameworks](./docs/integration.md#other))
 - **React Native / Expo** (experimental) — the same tokens and utilities on native
   via NativeWind ([Expo quickstart](./docs/expo.md))
-- **Migrate an existing app** — `veneerui doctor` / `veneerui migrate` and
+- **Move existing styles onto tokens** — the gotchas table and
   [`eslint-plugin-veneer`](./packages/eslint-plugin)
+  ([guide](#move-existing-styles-onto-tokens))
 - **Author a theme** — the [authoring guide](./docs/authoring-guide.md) and the
   generated [token reference](./docs/schema-reference.md)
 - **Fonts** — the family ↔ Fontsource mapping and the `font-sans` footgun in

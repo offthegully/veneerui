@@ -5,7 +5,7 @@ Veneer publishes **four** packages from this monorepo:
 | Package | Dir | What it is |
 |---|---|---|
 | `@offthegully/veneerui` | `packages/theme` | the runtime + tokens (a dependency apps install) |
-| `veneerui` | `packages/cli` | the `init`/`add`/`doctor`/`migrate` CLI for existing apps (`npx veneerui`) |
+| `veneerui` | `packages/cli` | the `init`/`add`/`list` CLI for existing apps (`npx veneerui`) |
 | `create-veneerui` | `packages/create-veneerui` | the `npm create veneerui` scaffolder for new apps |
 | `eslint-plugin-veneer` | `packages/eslint-plugin` | the `veneer/no-hardcoded-colors` ESLint rule |
 
