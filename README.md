@@ -68,21 +68,7 @@ verifies the setup with whatever coding-agent CLI you have installed (`claude`,
 any AI tool. From there you keep building by *prompting*: the generated `AGENTS.md`
 teaches the agent to drive every surface from tokens.
 
-**Already have an app? (Beta)** Add Veneer on top, shadcn-style — keep your project,
-the CLI does the wiring:
-
-```sh
-npm i @offthegully/veneerui
-npx veneerui init            # wire tokens + provider + anti-flash + lint gate, write the agent guide
-npx veneerui add switcher    # copy a ThemeSwitcher into your components
-```
-
-`init` writes any entry-file steps it won't patch blindly to a self-removing
-`VENEER-SETUP.md` — finish them by hand, or tell your agent *"finish the Veneer setup
-in VENEER-SETUP.md."* One catch: existing styles won't re-skin until they move onto
-tokens — [a deliberate task](#move-existing-styles-onto-tokens), not an automatic one.
-
-However you start, Veneer rests on **three framework-agnostic invariants**: (1)
+Under the hood, Veneer rests on **three framework-agnostic invariants**: (1)
 `@import "@offthegully/veneerui/tokens.css";` after `@import "tailwindcss";` (so
 Tailwind v4 generates the token utilities Veneer overrides at runtime), (2) wrap the
 app root in `<ThemeProvider>`, and (3) run the anti-flash script before first paint.
@@ -127,45 +113,7 @@ your base theme and consume it via `var()` (`[color:var(--color-x-gold)]`). See 
 
 ---
 
-## Move existing styles onto tokens
-
-Wiring Veneer in is the easy 10%. The real work is **moving your existing styles
-onto tokens** — Veneer only re-skins elements that use token utilities
-(`bg-surface`, `text-text`, `border-border`), so a freshly-wired app mostly won't
-change until its hardcoded colors, baked shadows, and fixed sizes move onto tokens.
-
-The trap is the styles that *look* themeable but bake at build time. Rewrite those
-to the token form:
-
-| Hardcoded | Veneer-themeable form |
-|---|---|
-| `shadow-lg` | `[box-shadow:var(--shadow-lg)]` |
-| `border`, `border-2` | `[border-width:var(--border-width-default)]` |
-| `duration-200` | `duration-[calc(var(--duration-default)*1ms)]` |
-
-Hardcoded colors are the judgment calls — which palette maps to `bg-primary` vs
-`bg-accent`, whether a surface is raised or sunken, which scale step an arbitrary
-size rounds to — so there's no mechanical rewrite; you pick the semantic token.
-Watch for the most common adoption trap: a **shadcn** (or other) `@theme` block
-that redefines a token name Veneer owns silently shadows it, so `bg-primary` only
-half-works.
-
-**Keep it from regressing.** Add
-[`eslint-plugin-veneer`](./packages/eslint-plugin) — the same hardcoded-color
-detector the conformance test uses, enforced in your editor and CI so the next
-`bg-blue-500` fails the build instead of quietly adding an un-themed island.
-
-```js
-// eslint.config.js
-import veneer from 'eslint-plugin-veneer'
-export default [veneer.configs.recommended]
-```
-
-The token vocabulary lives in **[AGENTS.md](./AGENTS.md)**; the full schema-generated
-"looks right but breaks theming" table is at
-**[docs/escape-hatches.generated.md](./docs/escape-hatches.generated.md)**.
-
-### Let users bring their own
+## Let users bring their own
 
 Users browse your set in a switcher, or open **Manage themes** to pick from a
 gallery, drop a `theme.json`, or paste a URL — every theme is validated and
@@ -215,14 +163,15 @@ attack surface.
 ## Local development
 
 This is an npm **workspace** monorepo: `packages/theme` (the `@offthegully/veneerui`
-runtime), `packages/cli` (the `veneerui` CLI), `packages/eslint-plugin`
-(`eslint-plugin-veneer`), `packages/lint-core` (the private, shared
-hardcoded-value detector + conversion table the CLI/plugin/conformance test all
-reuse), and `apps/playground`. Clone it to hack on Veneer itself or to preview
+runtime), `packages/cli` (the `veneerui` CLI), `packages/create-veneerui` (the
+`npm create veneerui` scaffolder), `packages/eslint-plugin` (`eslint-plugin-veneer`),
+the private `packages/lint-core` (the shared hardcoded-color detector the
+plugin/playground/conformance test reuse) and `packages/setup-core` (the shared
+`init`/scaffold logic), and `apps/playground`. Clone it to hack on Veneer itself or to preview
 themes against the live playground. **Prerequisites:** Node 20+ and npm.
 
 ```sh
-git clone https://github.com/offthegully/veneerui.git && cd veneer
+git clone https://github.com/offthegully/veneerui.git && cd veneerui
 npm install
 npm run dev          # builds @offthegully/veneerui, then runs the playground at http://localhost:5173
 ```
@@ -239,7 +188,6 @@ themes** is how you preview a theme you're working on.
 | `npm run lint` | ESLint across workspaces (incl. the `veneer/no-hardcoded-colors` rule) |
 | `npm run typecheck` | Type-check every workspace |
 | `npm test` | Vitest across every workspace |
-| `npm run check:coverage` | Report which theme *axes* the UI references nowhere (silently-inert axes) |
 
 `packages/theme/src/schema.ts` is the single source of truth — the canonical
 `TOKEN_SCHEMA`. `npm run gen:theme` regenerates everything downstream (tokens CSS,
@@ -253,15 +201,15 @@ components.
 
 ## Further reading
 
-- **Add Veneer to your app** — `npm create veneerui` for a new app, or the
-  [integration guide](./docs/integration.md) to add it to an existing one
+- **Add Veneer to your app** — `npm create veneerui` scaffolds a new app, then the
+  [integration guide](./docs/integration.md) covers the per-framework wiring
   ([Vite](./docs/integration.md#vite) · [Next.js](./docs/integration.md#nextjs) ·
   [other frameworks](./docs/integration.md#other))
 - **React Native / Expo** (experimental) — the same tokens and utilities on native
   via NativeWind ([Expo quickstart](./docs/expo.md))
-- **Move existing styles onto tokens** — the gotchas table and
-  [`eslint-plugin-veneer`](./packages/eslint-plugin)
-  ([guide](#move-existing-styles-onto-tokens))
+- **Write themeable components** — the "looks right but breaks theming" gotchas in
+  [docs/escape-hatches.generated.md](./docs/escape-hatches.generated.md) and the
+  [`eslint-plugin-veneer`](./packages/eslint-plugin) lint gate
 - **Author a theme** — the [authoring guide](./docs/authoring-guide.md) and the
   generated [token reference](./docs/schema-reference.md)
 - **Fonts** — the family ↔ Fontsource mapping and the `font-sans` footgun in

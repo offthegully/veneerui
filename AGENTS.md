@@ -41,8 +41,6 @@ Three things follow from this, and they're the part agents miss:
 `packages/theme/src/schema.ts` (`TOKEN_SCHEMA`) is the **single source of truth**
 for every token. `npm run gen:theme` regenerates the tokens CSS, JSON Schema, and
 `docs/schema-reference.md` from it — never hand-edit those generated outputs.
-`npm run check:coverage` lists any axis your UI references *nowhere* (so you know
-which themes are currently no-ops on your surfaces).
 
 ---
 
@@ -262,12 +260,12 @@ Design pitfalls to respect (see `docs/authoring-guide.md`):
   scan `node_modules`, so UI is *copied* into a consuming app (shadcn-style), not
   imported.
 - `apps/playground` — the dev harness / demo site. `src/components/` holds the
-  rendered UI (`ProjectOverview`, `ThemeShowcase`, `ThemeSwitcher`, …). The
-  `veneer/no-hardcoded-colors` lint rule lives in `eslint-rules/`.
+  rendered UI (`ProjectOverview`, `ThemeShowcase`, `ThemeSwitcher`, …).
+- `packages/lint-core` — the shared `veneer/no-hardcoded-colors` rule
+  (`rule.js`), reused by `eslint-plugin-veneer` and the playground's lint config.
 - `gallery/themes/<slug>/theme.json` — the canonical example themes.
 - `docs/` — `authoring-guide.md`, `schema-reference.md` (generated), integration
-  guides. `scripts/` — `generate-theme.ts`, `build-registry.ts`,
-  `check-coverage.ts`.
+  guides. `scripts/` — `generate-theme.ts`, `gen-builtin.ts`, `build-registry.ts`.
 - **React Native / Expo** — `npm create veneerui --framework expo` scaffolds a
   Veneer-themed Expo app via **NativeWind v5**. The token rules in this guide are
   identical there: same utilities (`bg-primary`, `text-text`, `rounded-md`), same
@@ -314,7 +312,6 @@ Then run from the repo root:
 npm run lint            # incl. veneer/no-hardcoded-colors — fails on any island
 npm run typecheck
 npm test                # incl. conformance.test.ts (no islands + drastic re-skin)
-npm run check:coverage  # lists any theme axis your UI references nowhere
 ```
 
 If you changed tokens in `schema.ts`, also run `npm run gen:theme` and commit the

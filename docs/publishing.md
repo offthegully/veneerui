@@ -124,8 +124,8 @@ All three live in `packages/setup-core/src/scaffold-expo.ts`:
 
 | Pin | Where | Why pinned |
 |---|---|---|
-| `nativewind@^5.0.0-preview.4` | `EXPO_NATIVE_DEPS` | not in Expo's SDK version map; `expo install` would float it to latest |
-| `react-native-css@^3.0.7` | `EXPO_NATIVE_DEPS` | NativeWind's peer; same floating risk |
+| `nativewind@5.0.0-preview.4` | `EXPO_NATIVE_DEPS` | not in Expo's SDK version map, and a caret floats on prereleases — so it's pinned exact |
+| `react-native-css@3.0.7` | `EXPO_NATIVE_DEPS` | NativeWind's peer; same floating risk, pinned exact |
 | `lightningcss` `1.30.1` | `patchExpoPackageJson` override | a known NativeWind-v5-preview build gotcha |
 
 When NativeWind v5 advances (or ships **stable**): bump these, re-run the live

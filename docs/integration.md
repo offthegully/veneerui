@@ -234,29 +234,18 @@ import `getAntiFlashScript` only where it's allowed — or use the dedicated
 
 ## Add to an existing app (Beta)
 
-Wiring Veneer in is the easy 10%. The real work is **moving your current styles
-onto tokens**: Veneer only re-skins elements that already use token utilities
-(`bg-surface`, `text-text`, `border-border`), so a freshly-wired existing app
-mostly won't change until its hardcoded colors, baked shadows, and fixed sizes
-are migrated. This path works today but is rougher than a fresh start — we're
-actively smoothing it. The task is mechanical for the gotchas and a judgment call
-for color:
-
-- Rewrite the styles that *look* themeable but bake at build time — `shadow-md` →
-  `[box-shadow:var(--shadow-md)]`, `border` → `[border-width:var(--border-width-default)]`,
-  `duration-200` → the calc form. Hardcoded colors are the judgment calls (which
-  palette maps to `bg-primary` vs `bg-accent`, whether a surface is raised or
-  sunken), so you pick the semantic token rather than rewriting blindly.
-- Watch the #1 adoption trap: a **shadcn** (or other) `@theme` block redefining a
-  token name Veneer owns, which silently shadows it so `bg-primary` only half-works.
-- **[`eslint-plugin-veneer`](../packages/eslint-plugin)** keeps it from
-  regressing — `init` adds its preset to your ESLint flat config (and `npm create
-  veneerui` installs + wires it for you), so the next `bg-blue-500` fails lint — the
-  same detector the conformance test uses — instead of quietly adding an un-themed island.
-
-The token vocabulary and the full "looks themeable but bakes at build time" table
-live in **[AGENTS.md](../AGENTS.md)** — which `init` drops into your repo so your
-coding agent follows them too ([below](#agent)).
+`veneerui init` wires the [three invariants](#interlock) into an existing React 19 +
+Tailwind v4 app and adds the [`eslint-plugin-veneer`](../packages/eslint-plugin) gate
+— it patches the common create-vite / create-next shapes in place, and anything it
+can't patch safely lands in a [`VENEER-SETUP.md`](#agent). But wiring is the easy 10%:
+the real work is **moving your current styles onto tokens**. Veneer only re-skins
+elements that already use token utilities (`bg-surface`, `text-text`,
+`border-border`), so hardcoded colors, baked shadows (`shadow-md` →
+`[box-shadow:var(--shadow-md)]`), and fixed sizes must each move onto the token form —
+a judgment call for color, mechanical for the gotchas. The token vocabulary and the
+full "looks themeable but bakes at build time" table live in
+**[AGENTS.md](../AGENTS.md)**, which `init` drops into your repo so your coding agent
+can drive the migration. This path works today but is rougher than a fresh start.
 
 ---
 
