@@ -1,26 +1,21 @@
 /// <reference types="vitest/config" />
-import { readFileSync, readdirSync } from 'node:fs'
-import { fileURLToPath } from 'node:url'
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 import { veneer } from '@offthegully/veneerui/vite'
+import { BUILTIN_THEMES } from '@offthegully/veneerui/themes'
 
-// Every gallery theme is a first-visit shuffle candidate. Enumerate the gallery
-// directory off disk and read each theme's tokens, so the anti-flash plugin can
-// inline them and apply a random one before first paint. themes.ts is the runtime
-// source of truth; it globs the *same* directory (APP_SHUFFLE_THEME_IDS), so the
-// two pools always see the same set — a new theme.json joins both with no wiring.
-const galleryDir = fileURLToPath(new URL('../../gallery/themes/', import.meta.url))
-const shufflePool = readdirSync(galleryDir, { withFileTypes: true })
-  .filter((entry) => entry.isDirectory())
-  .map((entry) => {
-    const url = new URL(`../../gallery/themes/${entry.name}/theme.json`, import.meta.url)
-    const { tokens } = JSON.parse(readFileSync(fileURLToPath(url), 'utf8')) as {
-      tokens: Record<string, string>
-    }
-    return { id: entry.name, tokens }
-  })
+// Every gallery theme is a first-visit shuffle candidate. The package ships the
+// full theme set as BUILTIN_THEMES; the anti-flash plugin only needs `{ id, tokens }`
+// to inline them and apply a random one before first paint. Exclude the two neutral
+// defaults so a fresh visitor lands on a *distinctive* theme. themes.ts derives
+// APP_SHUFFLE_THEME_IDS from the same BUILTIN_THEMES, so the two pools always agree.
+// (Importing the built package means `build:theme` must run first — it already does
+// in the `dev`/`build` scripts, the same dependency main.tsx's package imports rely on.)
+const DEFAULT_IDS = ['default-light', 'default-dark']
+const shufflePool = BUILTIN_THEMES
+  .filter((t) => !DEFAULT_IDS.includes(t.id))
+  .map((t) => ({ id: t.id, tokens: t.tokens }))
 
 // https://vite.dev/config/
 export default defineConfig({

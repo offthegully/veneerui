@@ -1,7 +1,7 @@
 {
   "name": "veneerui",
   "version": "0.1.4",
-  "description": "CLI to add Veneer UI theming to an existing React + Tailwind v4 app (init, add, doctor, migrate). For a new app, use `npm create veneerui`.",
+  "description": "CLI to add Veneer UI theming to an existing React + Tailwind v4 app (init, add, list). For a new app, use `npm create veneerui`.",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -20,12 +20,11 @@
   ],
   "scripts": {
     "build": "tsup",
-    "test": "vitest run",
+    "test": "vitest run --passWithNoTests",
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
     "@types/node": "^24.12.4",
-    "@veneerui/lint-core": "*",
     "@veneerui/setup-core": "*",
     "tsup": "^8.5.0",
     "typescript": "~6.0.2",

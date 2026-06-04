@@ -14,6 +14,3 @@ scaffold inject it into a project's `AGENTS.md`) and the copy-in registry compon
   the correct on-fill text color for each fill (`text-text-on-accent`/`-on-success`/etc.,
   fixing white-on-light-fill contrast) and `surface-hover` for neutral interactive hovers,
   so `veneerui add` copies the corrected, more-themeable versions.
-
-`veneerui doctor` also warns on the new reserved token names (it reads the regenerated
-reserved-token list).

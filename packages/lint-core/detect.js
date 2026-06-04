@@ -2,9 +2,8 @@
  * Shared hardcoded-color detector.
  *
  * One definition of "hardcoded color", consumed by every Veneer enforcer:
- *   - the `veneer/no-hardcoded-colors` ESLint rule (playground + eslint-plugin-veneer),
- *   - the conformance test (`apps/playground/src/conformance.test.ts`), and
- *   - the `veneerui doctor` command.
+ *   - the `veneer/no-hardcoded-colors` ESLint rule (playground + eslint-plugin-veneer), and
+ *   - the conformance test (`apps/playground/src/conformance.test.ts`).
  *
  * The contract (see AGENTS.md): components express every visual value through a
  * semantic token utility (`bg-primary`, `text-text-muted`, `border-border`, …)

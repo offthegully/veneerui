@@ -14,8 +14,6 @@ npm i @offthegully/veneerui
 npx veneerui init            # wire Veneer into this project
 npx veneerui add switcher    # copy a ThemeSwitcher into your components
 npx veneerui add fonts       # print install + imports for the built-in themes' fonts
-npx veneerui doctor          # see how much of your UI is themeable today
-npx veneerui migrate         # rewrite the mechanical gotchas to tokens
 ```
 
 ## Commands
@@ -25,16 +23,14 @@ npx veneerui migrate         # rewrite the mechanical gotchas to tokens
 | `veneerui init` | Detect Vite/Next, add `@import "@offthegully/veneerui/tokens.css"` to your global stylesheet, wire the anti-flash (Vite: the `veneer()` plugin; Next: `<AntiFlashScript/>` in the layout `<head>`), and wrap your root in `<ThemeProvider>`. Patches the entry files when it recognizes their shape, else leaves that step in `VENEER-SETUP.md`. Idempotent; supports `--dry-run`. |
 | `veneerui add <component…>` | Copy UI components (and their registry dependencies) into your project. They import their logic from `@offthegully/veneerui`; you own and can restyle the markup. On a **Next** project it prepends `'use client'` (RSC needs it; inert elsewhere). `--force` overwrites; `--dir <path>` sets the target. |
 | `veneerui add fonts` | Print the `npm i` command and exact `@fontsource` import lines for every family the built-in themes name, plus the `font-sans` footgun. Themes can only *name* a font — the app must load it — and the family must match exactly; this removes the guesswork. See [docs/fonts.md](https://github.com/offthegully/veneerui/blob/main/docs/fonts.md). |
-| `veneerui doctor` | Scan the project and report roughly **how much of your UI is themeable today** — counts hardcoded colors, baked shadows, fixed widths, and arbitrary sizes, and warns about `@theme` blocks (e.g. shadcn) that redefine reserved Veneer token names. The honest reality-check: `init` only wires Veneer in; this tells you how much migration is left. |
-| `veneerui migrate` | Rewrite the deterministic gotchas inside `className`s (`shadow-md` → `[box-shadow:var(--shadow-md)]`, `border` → `[border-width:var(--border-width-default)]`, `duration-200` → the calc form) and **flag** the judgment calls (which palette → which semantic color, which scale step) for you to finish. `--dry-run` previews. |
 | `veneerui list` | List the components available to `add`. |
 
 Flags: `--cwd <path>` to target another directory, `--dry-run`, `--force`,
 `--dir <path>`.
 
-To stop new islands from creeping back in after a migration, add
+To stop new islands from creeping back in, add
 [`eslint-plugin-veneer`](https://github.com/offthegully/veneerui/tree/main/packages/eslint-plugin)
-— the same hardcoded-color detector `doctor` uses, enforced in your editor and CI.
+— the same hardcoded-color detector the conformance test uses, enforced in your editor and CI.
 
 ## Components
 

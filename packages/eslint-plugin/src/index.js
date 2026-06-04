@@ -9,9 +9,9 @@
  * The sanctioned escape hatch is a token reference (a semantic utility or
  * `var(--token)`), neither of which this flags.
  *
- * The matching logic is `@veneerui/lint-core` — the SAME detector behind
- * `veneerui doctor` and the conformance test — so the editor, CI, and the
- * migration tooling can never disagree about what counts as an island.
+ * The matching logic is `@veneerui/lint-core` — the SAME detector behind the
+ * conformance test — so the editor, CI, and the design-system's own tests can
+ * never disagree about what counts as an island.
  */
 import { findClassColorViolations, findBareColorLiterals } from '@veneerui/lint-core/detect';
 

@@ -239,30 +239,23 @@ onto tokens**: Veneer only re-skins elements that already use token utilities
 (`bg-surface`, `text-text`, `border-border`), so a freshly-wired existing app
 mostly won't change until its hardcoded colors, baked shadows, and fixed sizes
 are migrated. This path works today but is rougher than a fresh start — we're
-actively smoothing it. Three tools make it a measured task, not a surprise:
+actively smoothing it. The task is mechanical for the gotchas and a judgment call
+for color:
 
-```sh
-npx veneerui doctor    # how much of your UI is themeable today, by blocker
-npx veneerui migrate   # rewrite the mechanical gotchas to tokens  (--dry-run to preview)
-```
-
-- **`doctor`** scans the project and reports the share of files free of un-themed
-  *islands* — hardcoded colors, baked `shadow-*`, fixed `border` widths,
-  arbitrary sizes — broken down by what's blocking each. It also flags the #1
-  adoption trap: a **shadcn** (or other) `@theme` block redefining a token name
-  Veneer owns, which silently shadows it so `bg-primary` only half-works.
-- **`migrate`** rewrites the deterministic 1:1 gotchas inside `className`s —
-  `shadow-md` → `[box-shadow:var(--shadow-md)]`, `border` →
-  `[border-width:var(--border-width-default)]`, `duration-200` → the calc form —
-  and **flags** (never guesses) the judgment calls: which palette maps to
-  `bg-primary` vs `bg-accent`, whether a surface is raised or sunken.
+- Rewrite the styles that *look* themeable but bake at build time — `shadow-md` →
+  `[box-shadow:var(--shadow-md)]`, `border` → `[border-width:var(--border-width-default)]`,
+  `duration-200` → the calc form. Hardcoded colors are the judgment calls (which
+  palette maps to `bg-primary` vs `bg-accent`, whether a surface is raised or
+  sunken), so you pick the semantic token rather than rewriting blindly.
+- Watch the #1 adoption trap: a **shadcn** (or other) `@theme` block redefining a
+  token name Veneer owns, which silently shadows it so `bg-primary` only half-works.
 - **[`eslint-plugin-veneer`](../packages/eslint-plugin)** keeps it from
-  regressing — the same detector `doctor` uses, failing CI on the next
+  regressing — the same detector the conformance test uses, failing CI on the next
   `bg-blue-500` instead of letting it quietly add an un-themed island.
 
 The token vocabulary and the full "looks themeable but bakes at build time" table
-these tools encode live in **[AGENTS.md](../AGENTS.md)** — which `init` drops
-into your repo so your coding agent follows them too ([below](#agent)).
+live in **[AGENTS.md](../AGENTS.md)** — which `init` drops into your repo so your
+coding agent follows them too ([below](#agent)).
 
 ---
 
