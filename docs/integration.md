@@ -19,7 +19,7 @@ per framework, and the agent hand-off.
 - **[Create a new app](#new-app)** — one command scaffolds and wires everything. **Recommended.**
 - **[Add to an existing app](#existing)** — works today; your styles won't re-skin
   until they move onto tokens. **Beta.**
-- **[React Native / Expo](./expo.md)** — `npm create veneerui my-app --framework expo`
+- **[React Native / Expo](./expo.md)** — `npm create veneerui@latest my-app -- --framework expo`
   scaffolds a themed Expo app; same tokens and utilities on native via NativeWind.
   **Experimental.**
 - **The invariants & per-framework wiring:** [interlock](#interlock) · [Vite](#vite) ·
@@ -61,6 +61,13 @@ rest with the token utilities (`bg-surface`, `text-text`, `rounded-md`, …).
 | `--agent[=claude\|codex]` | after wiring, hand off to an installed agent to finish/customize ([below](#agent)) |
 | `--pm <npm\|pnpm\|yarn\|bun>` | override the detected package manager |
 | `--no-install` · `--dry-run` | as named |
+
+> **With npm, put the flags after a `--` separator** so npm forwards them to the
+> scaffolder instead of consuming them itself:
+> `npm create veneerui@latest my-app -- --framework next`. Without the `--`, npm
+> swallows `--framework` / `--pm` / `--dry-run` (you'll see an `Unknown cli config`
+> warning) and the scaffold silently falls back to its defaults (Vite) — so a
+> `--framework next` / `--framework expo` without `--` gives you a **Vite** app.
 
 **Another framework?** (Remix, Astro, TanStack Start, …) Scaffold it with that
 framework's own tool, then run `npx veneerui init` inside it: Veneer's runtime is
@@ -111,7 +118,7 @@ lands per framework — also the recipe if you're wiring by hand.
 import { veneer } from '@offthegully/veneerui/vite'
 
 export default defineConfig({
-  plugins: [react(), tailwindcss(), veneer()],
+  plugins: [veneer(), tailwindcss(), react()],
 })
 ```
 
@@ -184,6 +191,16 @@ Next project (they use hooks; the directive is inert elsewhere). There's one
 Next-specific hydration footgun for components that render theme *identity* —
 the bundled `ThemeSwitcher` already handles it; see the [SSR notes](#ssr) before
 writing your own.
+
+> **Fonts on a fresh Next app — the one thing to undo.** `create-next-app` pins
+> `next/font` (Geist) on the document and writes `body { font-family: … }` plus a
+> `--font-sans: var(--font-geist-sans)` mapping into `app/globals.css`. Those
+> override Veneer's `font-sans` token, so **body text won't follow a theme's font**
+> — a serif or mono theme re-skins only the headings that opt into `font-display`,
+> and the body stays Geist. To let type theme fully, drop the `next/font` class from
+> `<body>` and remove the `body { font-family }` rule and the `--font-sans` /
+> `--font-mono` lines from `app/globals.css`. (Color, radius, border, and shadow
+> theming are unaffected.) See [Fonts](#fonts).
 
 <a id="other"></a>
 

@@ -8,6 +8,7 @@ import {
   EXPO_TEMPLATE_FILES,
   EXPO_NATIVE_DEPS,
   EXPO_DEV_DEPS,
+  EXPO_SDK_TEMPLATE,
   expoDevInstallArgs,
 } from './scaffold-expo';
 
@@ -15,10 +16,10 @@ const assetDir = fileURLToPath(new URL('../assets/expo/', import.meta.url));
 const asset = (f: string): string => readFileSync(join(assetDir, f), 'utf8');
 
 describe('buildExpoScaffoldCommand', () => {
-  it('delegates to create-expo-app (blank-typescript), non-interactive, with -- for npm', () => {
+  it('delegates to create-expo-app (SDK-pinned template), non-interactive, with -- for npm', () => {
     expect(buildExpoScaffoldCommand('npm', 'my-app')).toEqual({
       cmd: 'npm',
-      args: ['create', 'expo-app@latest', 'my-app', '--', '--yes', '--template', 'blank-typescript'],
+      args: ['create', 'expo-app@latest', 'my-app', '--', '--yes', '--template', EXPO_SDK_TEMPLATE],
     });
     expect(buildExpoScaffoldCommand('pnpm', 'my-app').args).toEqual([
       'create',
@@ -26,8 +27,10 @@ describe('buildExpoScaffoldCommand', () => {
       'my-app',
       '--yes',
       '--template',
-      'blank-typescript',
+      EXPO_SDK_TEMPLATE,
     ]);
+    // pinned, not @latest — the newest SDK's Metro breaks NativeWind-v5-preview bundling
+    expect(EXPO_SDK_TEMPLATE).toMatch(/@sdk-\d+$/);
   });
 
   it('uses a bare tool name for yarn (no @latest)', () => {
@@ -84,6 +87,9 @@ describe('expo deps', () => {
     // SDK-managed deps stay unpinned so expo install matches the SDK
     expect(EXPO_NATIVE_DEPS).toContain('react-native-worklets'); // reanimated 4 peer
     expect(EXPO_NATIVE_DEPS).toContain('react-native-safe-area-context');
+    // babel.config.js loads babel-preset-expo by bare name; it must be a direct dep
+    // (npm may nest the transitive copy under expo/node_modules and Babel won't find it)
+    expect(EXPO_NATIVE_DEPS).toContain('babel-preset-expo');
     expect(EXPO_DEV_DEPS).toContain('tailwindcss');
     expect(EXPO_DEV_DEPS).toContain('@offthegully/veneerui'); // the codegen's data source
   });

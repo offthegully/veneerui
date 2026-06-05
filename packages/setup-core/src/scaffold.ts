@@ -16,7 +16,7 @@ import { spawnSync } from 'node:child_process';
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { detect } from './detect';
-import { addTailwindVite } from './entry-patch';
+import { addTailwindVite, stripNextFont, stripNextFontCss, setNextTitle } from './entry-patch';
 import { runInit } from './init';
 import { runAdd } from './add';
 import { runAgentHandoff, type AgentChoice } from './agent';
@@ -166,6 +166,48 @@ function writeStarterPage(appDir: string, framework: WebFramework, log: (l: stri
   }
 }
 
+/** Title-case an app dir name for the page `<title>` (`my-app` → `My App`). */
+function titleFromName(name: string): string {
+  return name.replace(/[-_]+/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()).trim() || name;
+}
+
+/**
+ * Undo two create-next-app defaults that fight Veneer on a fresh Next app: the
+ * `next/font` (Geist) pin — which overrides the `font-sans` token and silently
+ * disables font theming, so body text won't follow a serif/mono theme — and the
+ * leftover "Create Next App" page title. Each patch is anchored and bails quietly on
+ * an unfamiliar shape, so an upstream template reshape just leaves the file as-is.
+ */
+function normalizeNextScaffold(appDir: string, name: string, log: (l: string) => void): void {
+  const det = detect(appDir);
+  const layoutRel = det.entryPath ?? 'app/layout.tsx';
+  const layoutAbs = join(appDir, layoutRel);
+  if (existsSync(layoutAbs)) {
+    const noFont = stripNextFont(readFileSync(layoutAbs, 'utf8'));
+    const titled = setNextTitle(noFont.content, titleFromName(name));
+    if (noFont.changed || titled.changed) {
+      writeFileSync(layoutAbs, titled.content);
+      const bits = [
+        noFont.changed && 'removed the next/font pin (font tokens now theme)',
+        titled.changed && 'set the page title',
+      ]
+        .filter(Boolean)
+        .join(' + ');
+      log(`  ✓ ${bits} in ${layoutRel}`);
+    }
+  }
+  if (det.globalCssPath) {
+    const cssAbs = join(appDir, det.globalCssPath);
+    if (existsSync(cssAbs)) {
+      const css = stripNextFontCss(readFileSync(cssAbs, 'utf8'));
+      if (css.changed) {
+        writeFileSync(cssAbs, css.content);
+        log(`  ✓ cleared the create-next-app font override in ${det.globalCssPath}`);
+      }
+    }
+  }
+}
+
 /** Scaffold + wire a fresh app. Returns the created app directory. */
 export function runScaffold(opts: ScaffoldOptions): { appDir: string } {
   // Expo (React Native) takes a wholly separate native path — Veneer's web runtime
@@ -208,6 +250,9 @@ export function runScaffold(opts: ScaffoldOptions): { appDir: string } {
   runAdd(STARTER_COMPONENTS, { root: appDir, log: () => {} });
   log('  ✓ added a ThemeSwitcher');
   writeStarterPage(appDir, opts.framework, log);
+
+  // Next ships create-next-app defaults that fight Veneer — undo them on a fresh app.
+  if (opts.framework === 'next') normalizeNextScaffold(appDir, opts.name, log);
 
   if (opts.agent) {
     const noGit = !existsSync(join(appDir, '.git'));

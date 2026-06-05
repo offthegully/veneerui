@@ -9,13 +9,23 @@ re-skins the tree at runtime.
 > `veneerui` CLI (`init`, for *existing* apps) is still web-only; Expo support is in the
 > **new-app scaffolder** — the templates it writes live in
 > [`packages/setup-core/assets/expo/`](../packages/setup-core/assets/expo).
+>
+> **Known issue — version drift with the latest Expo SDK.** The scaffolder delegates
+> to `create-expo-app@latest`, which now produces **Expo SDK 56 / React Native 0.85**,
+> but the pinned `nativewind@5.0.0-preview.4` + `react-native-css@3.0.7` (the newest
+> published preview) don't yet bundle on that Metro — `expo export`/run fails with
+> `AssertionError: Chunk containing module not found: …/react-native-css/…/index.cjs`.
+> Until NativeWind v5 supports RN 0.85, pin the scaffold to a **tested Expo SDK** (the
+> SDK the templates were validated against) rather than `@latest`. Always run the
+> Expo smoke test end-to-end (it must actually scaffold Expo — see the `--` separator
+> note in [integration.md](./integration.md#new-app)) when bumping any of these pins.
 
 ## Two ways in
 
 ### Option A — new app: scaffold it (recommended)
 
 ```sh
-npm create veneerui@latest my-app --framework expo
+npm create veneerui@latest my-app -- --framework expo
 cd my-app
 npm start          # press i (iOS) / a (Android), or scan with Expo Go
 ```

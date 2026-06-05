@@ -49,7 +49,7 @@ restyle freely. The runtime logic still comes from the `@offthegully/veneerui` d
 so there's no duplicated behavior.
 
 `veneerui init` (adding Veneer to an **existing** app) is web-only (Vite / Next). For a
-**new Expo (React Native)** app, `npm create veneerui@latest my-app --framework expo`
+**new Expo (React Native)** app, `npm create veneerui@latest my-app -- --framework expo`
 scaffolds and wires it through NativeWind (experimental) — see the
 [Expo guide](https://github.com/offthegully/veneerui/blob/main/docs/expo.md).
 

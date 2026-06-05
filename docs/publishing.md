@@ -129,7 +129,7 @@ All three live in `packages/setup-core/src/scaffold-expo.ts`:
 | `lightningcss` `1.30.1` | `patchExpoPackageJson` override | a known NativeWind-v5-preview build gotcha |
 
 When NativeWind v5 advances (or ships **stable**): bump these, re-run the live
-end-to-end smoke test (`npm create veneerui@latest tmp-app --framework expo`, then
+end-to-end smoke test (`npm create veneerui@latest tmp-app -- --framework expo`, then
 `npm start` boots a themed app), update `scaffold-expo.test.ts`, and rebuild
 `create-veneerui`. The SDK-managed deps (`react-native-reanimated`,
 `react-native-worklets`, `react-native-safe-area-context`) stay **unpinned** so

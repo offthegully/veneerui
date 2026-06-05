@@ -63,9 +63,11 @@ export const ESLINT_PLUGIN = 'eslint-plugin-veneer';
  * shipping an un-themeable island. Inserts the import after the last existing one
  * and `veneer.configs.recommended` as the first entry of the flat-config array.
  * Recognizes the shapes the official scaffolders emit (create-vite:
- * `defineConfig([…])`; create-next-app: `const eslintConfig = […]`) plus the
- * plain `export default [ … ]` and `tseslint.config(…)` forms; bails on anything
- * else so the caller can fall back to a manual step.
+ * `export default defineConfig([…])`; current create-next-app:
+ * `const eslintConfig = defineConfig([…])`; older create-next-app:
+ * `const eslintConfig = […]`) plus the plain `export default [ … ]` and
+ * `tseslint.config(…)` forms; bails on anything else so the caller can fall back
+ * to a manual step.
  */
 export function addEslintRule(config: string): PatchResult {
   if (config.includes('eslint-plugin-veneer')) return { content: config, changed: false };
@@ -73,6 +75,7 @@ export function addEslintRule(config: string): PatchResult {
   const anchors = [
     /export default defineConfig\(\[/,
     /export default tseslint\.config\(/,
+    /const eslintConfig = defineConfig\(\[/,
     /const eslintConfig = \[/,
     /export default \[/,
   ];

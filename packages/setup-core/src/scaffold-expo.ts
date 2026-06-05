@@ -33,6 +33,12 @@ export const EXPO_NATIVE_DEPS = [
   'nativewind@5.0.0-preview.4',
   'react-native-css@3.0.7',
   // SDK-managed — leave unpinned so `expo install` picks versions matching the Expo SDK.
+  // babel-preset-expo: our babel.config.js loads it by bare name, but it's only a
+  // *transitive* dep of `expo` and npm may nest it under expo/node_modules (not hoist
+  // it), so Babel can't resolve it from the project root and Metro fails to construct
+  // its transformer ("Cannot find module 'babel-preset-expo'"). Installing it as a
+  // direct dep forces a resolvable, SDK-matched copy.
+  'babel-preset-expo',
   'react-native-reanimated',
   'react-native-worklets',
   'react-native-safe-area-context',
@@ -73,6 +79,16 @@ export const EXPO_TEMPLATE_FILES: ReadonlyArray<{ asset: string; dest: string }>
 const EXPO_ASSET_DIR = fileURLToPath(new URL('../assets/expo/', import.meta.url));
 
 /**
+ * The Expo SDK the Veneer Expo templates are validated against — PINNED, not `@latest`.
+ * NativeWind v5-preview + react-native-css don't yet bundle on the newest SDK's Metro
+ * (SDK 56 / RN 0.85 fails with `Chunk containing module not found: …react-native-css…`),
+ * so the scaffold targets the last SDK they work on (SDK 55 / RN 0.83). Bump this — and
+ * re-run the Expo smoke test end-to-end — when NativeWind v5 supports a newer RN.
+ * See docs/publishing.md and docs/expo.md.
+ */
+export const EXPO_SDK_TEMPLATE = 'blank-typescript@sdk-55';
+
+/**
  * The delegation command — pure, so a flag change is a one-line, unit-tested edit.
  * npm needs `--` to pass flags through; yarn classic dislikes the `@latest` tag.
  * `--no-install` is added when we'll skip dependency install.
@@ -86,8 +102,8 @@ export function buildExpoScaffoldCommand(
   const sep = pm === 'npm' ? ['--'] : [];
   // `--yes` is critical: create-expo-app prompts "Select an Expo SDK version" in a TTY
   // even with `--template`, which blocks (and EOF-cancels) non-interactive/agent runs.
-  // `--yes` takes the default (latest SDK); the explicit `--template` still overrides it.
-  const flags = ['--yes', '--template', 'blank-typescript', ...(install ? [] : ['--no-install'])];
+  // `--yes` takes the default; the explicit `--template` (SDK-pinned) still overrides it.
+  const flags = ['--yes', '--template', EXPO_SDK_TEMPLATE, ...(install ? [] : ['--no-install'])];
   return { cmd: pm, args: ['create', tool, name, ...sep, ...flags] };
 }
 

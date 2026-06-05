@@ -12,7 +12,7 @@ import { fileURLToPath } from 'node:url';
 import { cancel, intro, isCancel, outro, select, text } from '@clack/prompts';
 import { resolvePm, runScaffold } from '@veneerui/setup-core';
 import type { ScaffoldFramework } from '@veneerui/setup-core';
-import { parse, validateName } from './args';
+import { parse, validateName, type Parsed } from './args';
 
 type FrameworkChoice = ScaffoldFramework | 'other';
 
@@ -72,8 +72,37 @@ function otherGuidance(): string {
   ].join('\n');
 }
 
+/**
+ * npm only forwards flags to `npm create <pkg>` after a `--` separator
+ * (`npm create veneerui my-app -- --framework next`). Without it, npm treats
+ * `--framework`/`--pm`/… as unknown config, drops them from argv, and exposes each as
+ * an `npm_config_*` env var instead — so the bare `--framework next` form would otherwise
+ * silently fall back to the default (Vite), the most common first-run gotcha. Backfill any
+ * flag that never reached argv from that env, and delete the vars so the nested npm calls
+ * we spawn (create-vite/-next/-expo, npm install) don't re-warn "Unknown env config".
+ */
+function recoverSwallowedFlags(o: Parsed): void {
+  const take = (key: string): string | undefined => {
+    const k = `npm_config_${key}`;
+    const v = process.env[k];
+    delete process.env[k];
+    return v || undefined;
+  };
+  const fw = take('framework');
+  const pm = take('pm');
+  const agent = take('agent');
+  const dryRun = take('dry_run');
+  const install = take('install');
+  if (o.framework === undefined && fw && fw !== 'true') o.framework = fw;
+  if (o.pm === undefined && pm && pm !== 'true') o.pm = pm;
+  if (o.agent === undefined && agent) o.agent = (agent === 'true' ? 'auto' : agent) as Parsed['agent'];
+  if (!o.dryRun && dryRun === 'true') o.dryRun = true;
+  if (o.install && install === 'false') o.install = false;
+}
+
 async function main(): Promise<void> {
   const o = parse(process.argv.slice(2));
+  recoverSwallowedFlags(o);
   if (o.version) return void console.log(version());
   if (o.help) return void console.log(HELP);
 

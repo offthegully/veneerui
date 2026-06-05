@@ -81,7 +81,7 @@ because Tailwind v4 doesn't scan `node_modules`.)
 > paint for you. [SSR details →](./docs/integration.md#ssr)
 
 > **React Native / Expo (experimental).** `npm create veneerui@latest my-app
-> --framework expo` scaffolds a themed Expo app. The same tokens and utilities
+> -- --framework expo` scaffolds a themed Expo app. The same tokens and utilities
 > (`bg-primary`, `text-text`, `rounded-md`) run on native via NativeWind — one theme JSON
 > for web *and* app. [Expo quickstart →](./docs/expo.md)
 

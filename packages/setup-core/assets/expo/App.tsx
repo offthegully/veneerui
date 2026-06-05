@@ -13,7 +13,10 @@ export default function App() {
     <SafeAreaProvider>
       <ThemeProvider>
         <StatusBar style="auto" />
-        <SafeAreaView className="flex-1 bg-surface">
+        {/* NativeWind v5-preview doesn't auto-wire react-native-safe-area-context's
+            SafeAreaView, so its `className` (incl. flex-1) is ignored — without an
+            inline flex:1 the layout collapses to zero height and renders blank. */}
+        <SafeAreaView style={{ flex: 1 }} className="flex-1 bg-surface">
           <Showcase />
         </SafeAreaView>
       </ThemeProvider>

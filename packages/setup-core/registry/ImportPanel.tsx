@@ -166,7 +166,7 @@ export function ImportPanel({ onClose }: { onClose: () => void }) {
         {/* Errors */}
         {errors.length > 0 && (
           <div className="mt-4 rounded-md [border-width:var(--border-width-default)] border-danger bg-surface px-3 py-2 text-sm text-danger">
-            <p className="font-medium">Couldn't import this theme:</p>
+            <p className="font-medium">Could not import this theme:</p>
             <ul className="mt-1 list-inside list-disc space-y-0.5 text-xs">
               {errors.slice(0, 8).map((e, i) => (
                 <li key={i}>

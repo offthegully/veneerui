@@ -98,6 +98,28 @@ describe('addEslintRule', () => {
     expect(out.content).toMatch(/const eslintConfig = \[\n\s*veneer\.configs\.recommended,/);
   });
 
+  // The current create-next-app wraps the array in defineConfig() from "eslint/config".
+  const nextConfigDefineConfig = [
+    'import { defineConfig, globalIgnores } from "eslint/config";',
+    'import nextVitals from "eslint-config-next/core-web-vitals";',
+    'import nextTs from "eslint-config-next/typescript";',
+    '',
+    'const eslintConfig = defineConfig([',
+    '  ...nextVitals,',
+    '  ...nextTs,',
+    '  globalIgnores([".next/**"]),',
+    ']);',
+    'export default eslintConfig;',
+    '',
+  ].join('\n');
+
+  it('adds the preset to the current create-next-app defineConfig() flat config', () => {
+    const out = addEslintRule(nextConfigDefineConfig);
+    expect(out.changed).toBe(true);
+    expect(out.content).toContain("import veneer from 'eslint-plugin-veneer'");
+    expect(out.content).toMatch(/const eslintConfig = defineConfig\(\[\n\s*veneer\.configs\.recommended,/);
+  });
+
   it('is idempotent', () => {
     const once = addEslintRule(viteConfig).content;
     const twice = addEslintRule(once);

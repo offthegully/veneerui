@@ -4,6 +4,9 @@ import {
   createNextProviders,
   wireNextLayout,
   wrapEntryWithProvider,
+  stripNextFont,
+  stripNextFontCss,
+  setNextTitle,
 } from './entry-patch';
 
 // Literal output of `npm create vite@latest -- --template react-ts`.
@@ -159,5 +162,67 @@ describe('wireNextLayout (app/layout.tsx)', () => {
     const r = wireNextLayout('export default function L({children}){ return children }');
     expect(r.changed).toBe(false);
     expect(r.reason).toMatch(/html/);
+  });
+});
+
+// Literal output of `create-next-app --ts --tailwind --app`.
+const NEXT_GLOBALS = `@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
+`;
+
+describe('stripNextFont (app/layout.tsx)', () => {
+  it('removes the next/font import, the Font({…}) consts, and the ${x.variable} classes', () => {
+    const out = stripNextFont(NEXT_LAYOUT);
+    expect(out.changed).toBe(true);
+    expect(out.content).not.toMatch(/next\/font/);
+    expect(out.content).not.toMatch(/geist/i);
+    expect(out.content).not.toMatch(/\.variable/);
+    // the rest of the className survives
+    expect(out.content).toMatch(/className=\{`\s*antialiased`\}/);
+  });
+
+  it('is idempotent and a no-op when there is no next/font', () => {
+    const once = stripNextFont(NEXT_LAYOUT).content;
+    expect(stripNextFont(once).changed).toBe(false);
+    expect(stripNextFont('export default function L(){ return null }').changed).toBe(false);
+  });
+});
+
+describe('stripNextFontCss (app/globals.css)', () => {
+  it('removes the geist font remap and the hard body font-family', () => {
+    const out = stripNextFontCss(NEXT_GLOBALS);
+    expect(out.changed).toBe(true);
+    expect(out.content).not.toMatch(/--font-sans:\s*var\(--font-geist/);
+    expect(out.content).not.toMatch(/--font-mono:\s*var\(--font-geist/);
+    expect(out.content).not.toMatch(/font-family:\s*Arial/);
+    // unrelated rules survive
+    expect(out.content).toMatch(/--color-background: var\(--background\)/);
+    expect(stripNextFontCss(out.content).changed).toBe(false); // idempotent
+  });
+});
+
+describe('setNextTitle (app/layout.tsx)', () => {
+  it('replaces the default title and preserves a custom one', () => {
+    const out = setNextTitle(NEXT_LAYOUT, 'My App');
+    expect(out.changed).toBe(true);
+    expect(out.content).toMatch(/title:\s*"My App"/);
+    expect(setNextTitle(out.content, 'My App').changed).toBe(false); // custom title untouched
   });
 });

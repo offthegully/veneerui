@@ -26,6 +26,10 @@ installed).
 **Flags:** `--framework <vite|next|expo>` · `--pm <npm|pnpm|yarn|bun>` · `--no-install` ·
 `--dry-run` · `--yes`
 
+> With npm, pass flags after a `--` separator so they reach the scaffolder, e.g.
+> `npm create veneerui@latest my-app -- --framework next`. (Without `--`, npm
+> consumes `--framework`/`--pm` itself and the scaffold falls back to Vite.)
+
 **Expo (React Native)** is **experimental** — it scaffolds via `create-expo-app` and wires
 Veneer through NativeWind (the same token utilities as the web). See the
 [Expo guide](https://github.com/offthegully/veneerui/blob/main/docs/expo.md).

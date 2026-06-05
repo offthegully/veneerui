@@ -122,3 +122,56 @@ export function addTailwindVite(config: string): PatchResult {
   out = out.replace(/plugins:\s*\[/, (s) => `${s}tailwindcss(), `);
   return { content: out, changed: true };
 }
+
+/**
+ * Remove create-next-app's `next/font` (Geist) wiring from `app/layout.tsx`. A
+ * framework font pinned on the document overrides Veneer's `font-sans` token and
+ * **silently disables all font theming** (body text won't follow a serif/mono
+ * theme — see docs/fonts.md). Strips the `next/font` import, the `const x =
+ * Font({…})` blocks, and the `${x.variable}` class references — all-or-nothing, so
+ * it never leaves a dangling reference; bails (→ keeps the documented note) on an
+ * unfamiliar shape. Idempotent: re-runs are no-ops once `next/font` is gone.
+ */
+export function stripNextFont(src: string): PatchResult {
+  if (!/from\s*["']next\/font\//.test(src)) return { content: src, changed: false };
+  const imp = src.match(/^import\s*\{([^}]*)\}\s*from\s*["']next\/font\/[^"']+["'];?[ \t]*\n/m);
+  if (!imp) return { content: src, changed: false, reason: 'unrecognized next/font import shape' };
+  const fns = imp[1]
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean);
+  const blocks: { re: RegExp; varName: string }[] = [];
+  for (const fn of fns) {
+    const m = src.match(new RegExp(`const\\s+(\\w+)\\s*=\\s*${fn}\\(\\{[\\s\\S]*?\\}\\);`));
+    if (!m) return { content: src, changed: false, reason: `no const block for next/font font ${fn}` };
+    blocks.push({ re: new RegExp(`const\\s+\\w+\\s*=\\s*${fn}\\(\\{[\\s\\S]*?\\}\\);\\n*`), varName: m[1] });
+  }
+  let out = src.replace(imp[0], '');
+  for (const b of blocks) out = out.replace(b.re, '');
+  for (const b of blocks) out = out.replace(new RegExp(`\\$\\{${b.varName}\\.variable\\}\\s*`, 'g'), '');
+  return { content: out, changed: out !== src };
+}
+
+/**
+ * Remove create-next-app's font overrides from `app/globals.css`: the
+ * `--font-sans`/`--font-mono` remap to the Geist vars (which redefines Veneer's
+ * token) and the hard `body { font-family: … }` rule (which wins over the token on
+ * body text). Leaves the rest of the stylesheet untouched. Idempotent.
+ */
+export function stripNextFontCss(css: string): PatchResult {
+  let out = css;
+  out = out.replace(/^[ \t]*--font-sans:\s*var\(--font-geist-sans\);[ \t]*\n/m, '');
+  out = out.replace(/^[ \t]*--font-mono:\s*var\(--font-geist-mono\);[ \t]*\n/m, '');
+  out = out.replace(/^[ \t]*font-family:\s*Arial[^;]*;[ \t]*\n/m, '');
+  return { content: out, changed: out !== css };
+}
+
+/**
+ * Replace create-next-app's default `title: "Create Next App"` metadata with the
+ * app's own name. Only touches the known default, so a user-set title is preserved.
+ */
+export function setNextTitle(src: string, title: string): PatchResult {
+  const re = /title:\s*["']Create Next App["']/;
+  if (!re.test(src)) return { content: src, changed: false };
+  return { content: src.replace(re, `title: ${JSON.stringify(title)}`), changed: true };
+}
