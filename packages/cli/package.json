@@ -1,6 +1,6 @@
 {
   "name": "veneerui",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "CLI to add Veneer UI theming to an existing React + Tailwind v4 app (init, add, list). For a new app, use `npm create veneerui`.",
   "license": "MIT",
   "repository": {
