@@ -167,6 +167,33 @@ export function stripNextFontCss(css: string): PatchResult {
 }
 
 /**
+ * Remove create-next-app's own color system from `app/globals.css` so Veneer's
+ * tokens fully own the surface. The template ships, after the Tailwind import,
+ * a `:root { --background; --foreground }` pair, an `@theme inline` block that mints
+ * non-Veneer `bg-background` / `text-foreground` utilities, a
+ * `@media (prefers-color-scheme: dark)` flip, and a `body { background; color }`
+ * rule. Together they pin the page surface to a fixed light/dark value independent
+ * of the chosen theme — so any element not wrapped in `bg-surface` (and the body
+ * itself, on overscroll) shows through un-themed. Each removal is anchored and
+ * idempotent; this runs on a fresh scaffold only, where the shapes are
+ * create-next-app's own (never a user's).
+ */
+export function stripNextColorSystem(css: string): PatchResult {
+  let out = css;
+  // Top-level `:root { … --background … --foreground … }` (the indented `:root`
+  // inside the @media block below is removed along with it).
+  out = out.replace(/^:root\s*\{[^}]*--background[^}]*\}\n*/m, '');
+  // `@theme inline { … }` — the source of the fake-themeable `bg-background` utilities.
+  out = out.replace(/^@theme\s+inline\s*\{[^}]*\}\n*/m, '');
+  // `@media (prefers-color-scheme: dark) { :root { … } }` — an OS dark-mode flip that
+  // would override the chosen theme's surface.
+  out = out.replace(/^@media\s*\(prefers-color-scheme:\s*dark\)\s*\{[\s\S]*?\}\s*\}\n*/m, '');
+  // `body { background: …; color: … }` — pins the body surface independent of theme.
+  out = out.replace(/^body\s*\{[^}]*\}\n*/m, '');
+  return { content: out, changed: out !== css };
+}
+
+/**
  * Replace create-next-app's default `title: "Create Next App"` metadata with the
  * app's own name. Only touches the known default, so a user-set title is preserved.
  */

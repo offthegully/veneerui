@@ -53,7 +53,7 @@ export function runInit(opts: InitOptions): void {
 
   // 1 — dependencies (we never auto-install; we instruct).
   log('1. Dependencies');
-  if (!det.hasVeneerTheme) log('   → run: npm i @offthegully/veneerui');
+  if (!det.hasVeneerTheme) log('   → run: npm i @offthegully/veneerui  (before `npm run dev`)');
   else log('   ✓ @offthegully/veneerui already a dependency');
   if (!det.hasTailwind) log('   ! Tailwind v4 not found — Veneer requires it (npm i tailwindcss @tailwindcss/vite).');
   if (!det.hasEslintPlugin) log('   → run: npm i -D eslint-plugin-veneer  (the no-hardcoded-colors lint gate)');
@@ -248,7 +248,7 @@ function runOtherFramework(opts: InitOptions, det: Detection, log: (line: string
   }
 
   log('\n1. Dependencies');
-  if (!det.hasVeneerTheme) log('   → run: npm i @offthegully/veneerui');
+  if (!det.hasVeneerTheme) log('   → run: npm i @offthegully/veneerui  (before `npm run dev`)');
   else log('   ✓ @offthegully/veneerui already a dependency');
   if (!det.hasTailwind) log('   ! Tailwind v4 not found — Veneer requires it (npm i tailwindcss).');
 

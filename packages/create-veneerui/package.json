@@ -1,7 +1,7 @@
 {
   "name": "create-veneerui",
   "version": "0.2.0",
-  "description": "Scaffold a new themed Vite or Next + Tailwind v4 app, wired for Veneer UI — `npm create veneerui@latest`.",
+  "description": "Scaffold a new themed Vite, Next, or Expo + Tailwind v4 app, wired for Veneer UI — `npm create veneerui@latest`.",
   "license": "MIT",
   "repository": {
     "type": "git",

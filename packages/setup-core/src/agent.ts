@@ -120,7 +120,7 @@ export function runAgentHandoff(opts: AgentHandoffOptions): AgentHandoffResult {
   try {
     const res = spawnSync(cmd, args, { cwd: opts.root, stdio: 'inherit' });
     if (res.status === 0) return { invoked: true, agent };
-    log(`\n${agent} exited with status ${res.status ?? '?'}. Finish the remaining steps manually:`);
+    log(`\n${agent} exited with status ${res.status ?? 'unknown'}. Finish the remaining steps manually:`);
     printSetupPrompt(log);
     return { invoked: true, agent, failed: true };
   } catch (err) {
