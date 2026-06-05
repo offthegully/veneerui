@@ -20,6 +20,7 @@ import { addTailwindVite, stripNextFont, stripNextFontCss, stripNextColorSystem,
 import { runInit } from './init';
 import { runAdd } from './add';
 import { runAgentHandoff, type AgentChoice } from './agent';
+import { SETUP_FILE } from './setup-plan';
 import { runScaffoldExpo } from './scaffold-expo';
 
 /** Frameworks wired through the shared web path (create-vite / create-next-app + runInit). */
@@ -259,9 +260,17 @@ export function runScaffold(opts: ScaffoldOptions): { appDir: string } {
   // Next ships create-next-app defaults that fight Veneer — undo them on a fresh app.
   if (opts.framework === 'next') normalizeNextScaffold(appDir, opts.name, log);
 
+  // Hand off to an agent only when init left manual steps in VENEER-SETUP.md. On a
+  // fully-wired scaffold (the common Vite/Next case) that file is never written —
+  // so a handoff would just spend an LLM session re-verifying deterministic wiring,
+  // pointed at a file that doesn't exist. Skip it and say why.
   if (opts.agent) {
-    const noGit = !existsSync(join(appDir, '.git'));
-    runAgentHandoff({ root: appDir, agent: opts.agent, noGit, log });
+    if (existsSync(join(appDir, SETUP_FILE))) {
+      const noGit = !existsSync(join(appDir, '.git'));
+      runAgentHandoff({ root: appDir, agent: opts.agent, noGit, log });
+    } else {
+      log('\n✓ Veneer was fully wired automatically — no manual steps, so no agent handoff is needed.');
+    }
   }
 
   return { appDir };

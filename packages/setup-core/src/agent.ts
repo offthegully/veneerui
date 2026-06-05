@@ -18,11 +18,17 @@ export type AgentName = 'claude' | 'codex';
 /** What the user asked for: a specific agent, or `auto` to use whatever's installed. */
 export type AgentChoice = AgentName | 'auto';
 
-/** The one prompt — used both to drive an agent and as the printed fallback. */
+/**
+ * The one prompt — used both to drive an agent and as the printed fallback.
+ * Verify is deliberately scoped to typecheck + build (commands that exit on their
+ * own): an agent must never start a dev server, which blocks forever and hangs the
+ * non-interactive run. A human can still smoke-test `npm run dev` themselves.
+ */
 export const SETUP_PROMPT =
   `Finish the Veneer setup described in ${SETUP_FILE} for this project, then verify it ` +
-  `(typecheck/build, and the dev server renders with no console errors on the default theme) ` +
-  `and delete ${SETUP_FILE} when done.`;
+  `by running the project's typecheck and production build (e.g. \`npm run build\`) and ` +
+  `confirming both pass. Do not start the dev server or any other long-running process ` +
+  `(\`npm run dev\`, \`vite\`, and \`next dev\` never exit). Delete ${SETUP_FILE} when done.`;
 
 /** Is a binary on PATH? Cross-platform (`which`/`where`), never throws. */
 export function hasBinary(bin: string): boolean {
@@ -49,18 +55,29 @@ export function resolveAgent(choice: AgentChoice, has: (bin: string) => boolean 
  * The exact non-interactive command for an agent. The prompt is a single argv
  * element (never shell-interpolated), so a quirky project name can't inject.
  *   - claude: headless `-p`, auto-accepting edits, with Bash for the verify step.
+ *             `--bare` is opt-in (caller sets it only with an API key present):
+ *             bare mode skips OAuth/keychain, so it requires `ANTHROPIC_API_KEY`
+ *             and otherwise fails a subscription login with "Not logged in".
  *   - codex:  `exec` in a workspace-write sandbox (no cwd flag — caller sets cwd);
  *             `--skip-git-repo-check` when the project has no git repo.
  */
 export function buildAgentCommand(
   agent: AgentName,
   prompt: string,
-  opts: { noGit?: boolean } = {},
+  opts: { noGit?: boolean; bare?: boolean } = {},
 ): { cmd: string; args: string[] } {
   if (agent === 'claude') {
     return {
       cmd: 'claude',
-      args: ['-p', prompt, '--permission-mode', 'acceptEdits', '--allowedTools', 'Read,Edit,Bash', '--bare'],
+      args: [
+        '-p',
+        prompt,
+        '--permission-mode',
+        'acceptEdits',
+        '--allowedTools',
+        'Read,Edit,Bash',
+        ...(opts.bare ? ['--bare'] : []),
+      ],
     };
   }
   return {
@@ -114,7 +131,10 @@ export function runAgentHandoff(opts: AgentHandoffOptions): AgentHandoffResult {
     return { invoked: false };
   }
 
-  const { cmd, args } = buildAgentCommand(agent, SETUP_PROMPT, { noGit: opts.noGit });
+  // `--bare` skips OAuth/keychain, so only opt in when an API key is present;
+  // otherwise a subscription-logged-in user would get "Not logged in" and bail.
+  const bare = !!process.env.ANTHROPIC_API_KEY;
+  const { cmd, args } = buildAgentCommand(agent, SETUP_PROMPT, { noGit: opts.noGit, bare });
   log(`\nHanding off to ${agent} to finish setup (it will edit files in this project):`);
   log(`  ${display(cmd, args)}\n`);
   try {

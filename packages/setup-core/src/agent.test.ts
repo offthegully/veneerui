@@ -6,10 +6,17 @@ describe('SETUP_PROMPT', () => {
     expect(SETUP_PROMPT).toContain('VENEER-SETUP.md');
     expect(SETUP_PROMPT).toMatch(/verify/i);
   });
+
+  it('verifies via typecheck/build, not a dev server (which never exits and hangs the run)', () => {
+    expect(SETUP_PROMPT).toMatch(/build/i);
+    // It must explicitly steer the agent away from the blocking dev server.
+    expect(SETUP_PROMPT).toMatch(/do not start the dev server/i);
+    expect(SETUP_PROMPT).toMatch(/npm run dev/);
+  });
 });
 
 describe('buildAgentCommand', () => {
-  it('builds the headless claude invocation with auto-accepted edits', () => {
+  it('builds the headless claude invocation with auto-accepted edits (no --bare by default)', () => {
     const { cmd, args } = buildAgentCommand('claude', 'do the thing');
     expect(cmd).toBe('claude');
     expect(args).toEqual([
@@ -19,8 +26,14 @@ describe('buildAgentCommand', () => {
       'acceptEdits',
       '--allowedTools',
       'Read,Edit,Bash',
-      '--bare',
     ]);
+    // bare mode skips OAuth/keychain — off by default so subscription logins work.
+    expect(args).not.toContain('--bare');
+  });
+
+  it('adds --bare only when explicitly opted in (an API key is present)', () => {
+    const { args } = buildAgentCommand('claude', 'do the thing', { bare: true });
+    expect(args).toContain('--bare');
   });
 
   it('builds the codex exec invocation in a workspace-write sandbox', () => {
