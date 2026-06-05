@@ -36,6 +36,6 @@
     "typescript": "~6.0.2"
   },
   "dependencies": {
-    "@offthegully/veneerui": "^0.1.1"
+    "@offthegully/veneerui": "^0.2.0"
   }
 }
