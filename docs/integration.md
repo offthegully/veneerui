@@ -62,12 +62,20 @@ rest with the token utilities (`bg-surface`, `text-text`, `rounded-md`, …).
 | `--pm <npm\|pnpm\|yarn\|bun>` | override the detected package manager |
 | `--no-install` · `--dry-run` | as named |
 
-> **With npm, put the flags after a `--` separator** so npm forwards them to the
-> scaffolder instead of consuming them itself:
+> **With npm, prefer the `--` separator** so npm forwards every flag straight to the
+> scaffolder instead of consuming some itself:
 > `npm create veneerui@latest my-app -- --framework next`. Without the `--`, npm
-> swallows `--framework` / `--pm` / `--dry-run` (you'll see an `Unknown cli config`
-> warning) and the scaffold silently falls back to its defaults (Vite) — so a
-> `--framework next` / `--framework expo` without `--` gives you a **Vite** app.
+> treats `--framework` / `--pm` / `--dry-run` as unknown config (you'll see an
+> `Unknown cli config` warning). The scaffolder recovers `--framework` from either
+> form — so `npm create veneerui@latest my-app --framework next` and `--framework=next`
+> both still give you a Next app — but the `--` is the reliable way to pass `--pm` /
+> `--agent` / `--dry-run` too.
+
+> **Scaffold warnings are mostly upstream.** `create-next-app` and `create-expo-app`
+> print their own npm noise during install — a couple of "moderate severity" audit
+> advisories on Next, and a wall of deprecation warnings plus more advisories on Expo.
+> These come from *their* dependency trees, not Veneer; they're expected and safe to
+> ignore — the app still builds and runs.
 
 **Another framework?** (Remix, Astro, TanStack Start, …) Scaffold it with that
 framework's own tool, then run `npx veneerui init` inside it: Veneer's runtime is

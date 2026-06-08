@@ -73,13 +73,29 @@ function otherGuidance(): string {
 }
 
 /**
- * npm only forwards flags to `npm create <pkg>` after a `--` separator
- * (`npm create veneerui my-app -- --framework next`). Without it, npm treats
- * `--framework`/`--pm`/… as unknown config, drops them from argv, and exposes each as
- * an `npm_config_*` env var instead — so the bare `--framework next` form would otherwise
- * silently fall back to the default (Vite), the most common first-run gotcha. Backfill any
- * flag that never reached argv from that env, and delete the vars so the nested npm calls
- * we spawn (create-vite/-next/-expo, npm install) don't re-warn "Unknown env config".
+ * The framework npm left as a stray positional when it swallowed a bare
+ * `--framework <name>`. The space form (`--framework next`, no `--`) sets
+ * `npm_config_framework=true` and detaches the value as a positional; the first
+ * positional is the project name, so a later one matching a known framework is the
+ * lost value.
+ */
+function strayFramework(): string | undefined {
+  const rest = process.argv.slice(2).filter((a) => !a.startsWith('-')).slice(1);
+  return rest.find((a) => a === 'vite' || a === 'next' || a === 'expo' || a === 'other');
+}
+
+/**
+ * Recover flags npm swallowed when they weren't passed after a `--` separator.
+ * `npm create <pkg>` only forwards flags to the created tool after `--`
+ * (`npm create veneerui my-app -- --framework next`). Without it npm consumes
+ * `--framework`/`--pm`/… as unknown config and exposes each as an `npm_config_*` env
+ * var — but how the *value* survives depends on the form:
+ *   - `--framework=next` (equals): npm keeps it → `npm_config_framework=next`.
+ *   - `--framework next` (space):  npm sets `npm_config_framework=true` and detaches
+ *     `next` as a stray positional, so the value survives only in argv.
+ * We recover it either way (instead of silently falling back to the default, Vite —
+ * the most common first-run gotcha), and delete the vars so the nested npm calls we
+ * spawn (create-vite/-next/-expo, npm install) don't re-warn "Unknown env config".
  */
 function recoverSwallowedFlags(o: Parsed): void {
   const take = (key: string): string | undefined => {
@@ -93,7 +109,7 @@ function recoverSwallowedFlags(o: Parsed): void {
   const agent = take('agent');
   const dryRun = take('dry_run');
   const install = take('install');
-  if (o.framework === undefined && fw && fw !== 'true') o.framework = fw;
+  if (o.framework === undefined && fw) o.framework = fw === 'true' ? strayFramework() : fw;
   if (o.pm === undefined && pm && pm !== 'true') o.pm = pm;
   if (o.agent === undefined && agent) o.agent = (agent === 'true' ? 'auto' : agent) as Parsed['agent'];
   if (!o.dryRun && dryRun === 'true') o.dryRun = true;

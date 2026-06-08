@@ -35,6 +35,9 @@ config, a token codegen, a `ThemeProvider` + `ThemeSwitcher`, and a token-driven
 screen — and runs `npm run gen:tokens` so it boots themed. Tap the switcher and watch it
 re-skin; build screens from the token utilities (see the app's `AGENTS.md`).
 
+> **Use Node LTS** (20 or 22). Expo and Metro target the active LTS lines; a newer
+> non-LTS Node can surface odd Metro/bundler warnings.
+
 ### Option B — add to an existing Expo app
 
 **1. Install** (Expo SDK 56+, React 19):
@@ -97,6 +100,12 @@ Veneer uses `var()` on the web.
   token JSON, same classes. Custom `color-x-*` colors port too — declare them in
   your base theme and consume them via `var()` (`bg-(--color-x-gold)`); see the
   [authoring guide](./authoring-guide.md#4-custom-colors-beyond-the-schema-palette).
+- **Fonts must be installed** — a theme only *names* a font; native has no automatic
+  web-font loading, so a serif/mono theme falls back to the system face until you
+  install the family (e.g. an `@expo-google-fonts/*` package) and load it. Color,
+  radius, border, and spacing re-skin regardless. The scaffold's demo themes
+  (light/dark, brutalist, high-contrast, terminal) are picked to read well with no
+  extra font install.
 - **Degrades** — effect-heavy themes (glassmorphic / neumorphic / neon): RN has no CSS
   blur, gradients, or layered shadows.
 - **Not ported** — Veneer's components (HTML `<div>`-based). Build RN primitives

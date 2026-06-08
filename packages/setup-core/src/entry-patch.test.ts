@@ -6,6 +6,7 @@ import {
   wrapEntryWithProvider,
   stripNextFont,
   stripNextFontCss,
+  stripNextColorSystem,
   setNextTitle,
 } from './entry-patch';
 
@@ -215,6 +216,57 @@ describe('stripNextFontCss (app/globals.css)', () => {
     // unrelated rules survive
     expect(out.content).toMatch(/--color-background: var\(--background\)/);
     expect(stripNextFontCss(out.content).changed).toBe(false); // idempotent
+  });
+});
+
+// Literal `app/globals.css` from create-next-app 16 (Next 16), after init's token
+// @import is added — the @theme inline + :root + @media + body color system Veneer
+// must strip so its own surface tokens win.
+const NEXT16_GLOBALS = `@import "tailwindcss";
+@import "@offthegully/veneerui/tokens.css";
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+}
+`;
+
+describe('stripNextColorSystem (app/globals.css)', () => {
+  it('removes create-next-app\'s :root vars, @theme inline, prefers-color-scheme, and body color rule', () => {
+    const out = stripNextColorSystem(NEXT16_GLOBALS);
+    expect(out.changed).toBe(true);
+    // the Tailwind + Veneer token imports survive
+    expect(out.content).toContain('@import "tailwindcss";');
+    expect(out.content).toContain('@import "@offthegully/veneerui/tokens.css";');
+    // every piece of the create-next-app color system is gone
+    expect(out.content).not.toMatch(/--background/);
+    expect(out.content).not.toMatch(/--foreground/);
+    expect(out.content).not.toMatch(/@theme inline/);
+    expect(out.content).not.toMatch(/prefers-color-scheme/);
+    expect(out.content).not.toMatch(/^body\s*\{/m);
+  });
+
+  it('is idempotent and a no-op on a clean stylesheet', () => {
+    const once = stripNextColorSystem(NEXT16_GLOBALS).content;
+    expect(stripNextColorSystem(once).changed).toBe(false);
+    expect(stripNextColorSystem('@import "tailwindcss";\n').changed).toBe(false);
   });
 });
 

@@ -16,10 +16,11 @@ import { spawnSync } from 'node:child_process';
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { detect } from './detect';
-import { addTailwindVite, stripNextFont, stripNextFontCss, setNextTitle } from './entry-patch';
+import { addTailwindVite, stripNextFont, stripNextFontCss, stripNextColorSystem, setNextTitle } from './entry-patch';
 import { runInit } from './init';
 import { runAdd } from './add';
 import { runAgentHandoff, type AgentChoice } from './agent';
+import { SETUP_FILE } from './setup-plan';
 import { runScaffoldExpo } from './scaffold-expo';
 
 /** Frameworks wired through the shared web path (create-vite / create-next-app + runInit). */
@@ -172,11 +173,14 @@ function titleFromName(name: string): string {
 }
 
 /**
- * Undo two create-next-app defaults that fight Veneer on a fresh Next app: the
+ * Undo the create-next-app defaults that fight Veneer on a fresh Next app: the
  * `next/font` (Geist) pin — which overrides the `font-sans` token and silently
- * disables font theming, so body text won't follow a serif/mono theme — and the
- * leftover "Create Next App" page title. Each patch is anchored and bails quietly on
- * an unfamiliar shape, so an upstream template reshape just leaves the file as-is.
+ * disables font theming, so body text won't follow a serif/mono theme — the
+ * template's own color system in `globals.css` (`--background`/`--foreground`, the
+ * `@theme inline` block, the `body { … }` rule, and the `prefers-color-scheme` flip),
+ * which would pin the page surface independent of the chosen theme, and the leftover
+ * "Create Next App" page title. Each patch is anchored and bails quietly on an
+ * unfamiliar shape, so an upstream template reshape just leaves the file as-is.
  */
 function normalizeNextScaffold(appDir: string, name: string, log: (l: string) => void): void {
   const det = detect(appDir);
@@ -199,10 +203,12 @@ function normalizeNextScaffold(appDir: string, name: string, log: (l: string) =>
   if (det.globalCssPath) {
     const cssAbs = join(appDir, det.globalCssPath);
     if (existsSync(cssAbs)) {
-      const css = stripNextFontCss(readFileSync(cssAbs, 'utf8'));
-      if (css.changed) {
-        writeFileSync(cssAbs, css.content);
-        log(`  ✓ cleared the create-next-app font override in ${det.globalCssPath}`);
+      const noFont = stripNextFontCss(readFileSync(cssAbs, 'utf8'));
+      const noColor = stripNextColorSystem(noFont.content);
+      if (noFont.changed || noColor.changed) {
+        writeFileSync(cssAbs, noColor.content);
+        const bits = [noFont.changed && 'font', noColor.changed && 'color'].filter(Boolean);
+        log(`  ✓ cleared the create-next-app ${bits.join(' + ')} override${bits.length > 1 ? 's' : ''} in ${det.globalCssPath}`);
       }
     }
   }
@@ -254,9 +260,17 @@ export function runScaffold(opts: ScaffoldOptions): { appDir: string } {
   // Next ships create-next-app defaults that fight Veneer — undo them on a fresh app.
   if (opts.framework === 'next') normalizeNextScaffold(appDir, opts.name, log);
 
+  // Hand off to an agent only when init left manual steps in VENEER-SETUP.md. On a
+  // fully-wired scaffold (the common Vite/Next case) that file is never written —
+  // so a handoff would just spend an LLM session re-verifying deterministic wiring,
+  // pointed at a file that doesn't exist. Skip it and say why.
   if (opts.agent) {
-    const noGit = !existsSync(join(appDir, '.git'));
-    runAgentHandoff({ root: appDir, agent: opts.agent, noGit, log });
+    if (existsSync(join(appDir, SETUP_FILE))) {
+      const noGit = !existsSync(join(appDir, '.git'));
+      runAgentHandoff({ root: appDir, agent: opts.agent, noGit, log });
+    } else {
+      log('\n✓ Veneer was fully wired automatically — no manual steps, so no agent handoff is needed.');
+    }
   }
 
   return { appDir };
