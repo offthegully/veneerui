@@ -7,23 +7,24 @@
 import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { detect, type Framework } from './detect';
+import { getProfile } from './profiles';
 import { loadManifest, readComponentSource, resolveWithDeps } from './registry';
 
 /**
  * Hooks/state that make a component a client component under React Server
- * Components. The registry ships framework-neutral source (no directive); only
- * Next's RSC compiler needs `'use client'`, and it's inert everywhere else, so
- * we inject it only when the target project is Next — keeping Vite/Remix/CSR
- * copies pristine.
+ * Components. The registry ships framework-neutral source (no directive); only an
+ * RSC compiler (Next) needs `'use client'`, and it's inert everywhere else, so we
+ * inject it only for profiles flagged `needsUseClient` — keeping
+ * Vite/React-Router/CSR copies pristine.
  */
 const CLIENT_HOOK_RE = /\buse(?:Theme|State|Effect|Ref|Id|LayoutEffect|Memo|Callback|Reducer|Context)\b/;
 
 /**
- * Prepend `'use client'` to a copied component for a Next target if it uses
- * hooks and doesn't already declare a directive. Pure and idempotent.
+ * Prepend `'use client'` to a copied component for an RSC target if it uses hooks
+ * and doesn't already declare a directive. Pure and idempotent.
  */
 export function withClientDirective(source: string, framework: Framework): string {
-  if (framework !== 'next') return source;
+  if (!getProfile(framework)?.needsUseClient) return source;
   if (/^\s*['"]use client['"]/.test(source)) return source;
   if (!CLIENT_HOOK_RE.test(source)) return source;
   return `'use client';\n\n${source}`;

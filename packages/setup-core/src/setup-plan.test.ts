@@ -125,6 +125,25 @@ describe('buildSetupPlan', () => {
     expect(md).toContain('2. Apply the saved theme before first paint');
   });
 
+  it('React Router, nothing wired: provider names root.tsx + generic head script, NO untested caveat', () => {
+    const md = buildSetupPlan({
+      ...base,
+      framework: 'react-router',
+      entryPath: 'app/root.tsx',
+      globalCssPath: 'app/app.css',
+      providerWired: false,
+      antiFlashWired: false,
+    })!;
+    expect(md).toContain('1. Wrap your app root in `<ThemeProvider>`');
+    expect(md).toContain('In `app/root.tsx`');
+    // SSR roots use the inlined getAntiFlashScript, not the Vite plugin or /next adapter
+    expect(md).toContain('2. Apply the saved theme before first paint');
+    expect(md).toContain('getAntiFlashScript');
+    expect(md).not.toContain("import { veneer } from '@offthegully/veneerui/vite'");
+    // it's first-class now — must NOT carry the "not fully tested" caveat
+    expect(md).not.toContain('not fully');
+  });
+
   it('names the agent docs so the file tells you to leave them in place', () => {
     const md = buildSetupPlan({
       ...base,

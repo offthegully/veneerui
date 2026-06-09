@@ -18,6 +18,7 @@
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { detect, type Detection } from './detect';
+import { getProfile } from './profiles';
 import {
   addEslintRule,
   addTokensImport,
@@ -25,8 +26,9 @@ import {
   eslintConfigSnippet,
   nextAntiFlashSnippet,
   providerSnippet,
+  ssrRootSnippet,
 } from './patch';
-import { createNextProviders, wireNextLayout, wrapEntryWithProvider } from './entry-patch';
+import { createNextProviders, wireNextLayout, wireSsrRoot, wrapEntryWithProvider } from './entry-patch';
 import { agentDocTargets, readAgentGuide, upsertAgentGuide } from './agents';
 import { buildSetupPlan, EXPERIMENTAL_FRAMEWORKS, SETUP_FILE } from './setup-plan';
 
@@ -78,10 +80,13 @@ export function runInit(opts: InitOptions): void {
 
   // 3 — provider + anti-flash. These patch the entry files when their shape is
   // recognized; when it isn't, they bail and print the snippet, and step 5
-  // records it in VENEER-SETUP.md for you (or your agent) to finish.
+  // records it in VENEER-SETUP.md for you (or your agent) to finish. The wiring
+  // *shape* is the framework profile's `wiring` axis — not a vite/next binary.
   log('3. Provider + anti-flash');
-  if (det.framework === 'vite') wireViteEntry(opts, det, log);
-  else wireNextEntry(opts, det, log);
+  const wiring = getProfile(det.framework)?.wiring;
+  if (wiring === 'vite-spa') wireViteEntry(opts, det, log);
+  else if (wiring === 'next-app') wireNextEntry(opts, det, log);
+  else wireSsrRootEntry(opts, det, log);
 
   // 4 — the lint gate: enable veneer/no-hardcoded-colors so a stray bg-blue-500
   // fails lint/CI instead of silently shipping an un-themeable island.
@@ -97,7 +102,7 @@ export function runInit(opts: InitOptions): void {
   // (the common case on a fresh app), so a re-run stays clean.
   log('\n6. Finish setup');
   const plan = buildSetupPlan({
-    framework: det.framework as 'vite' | 'next',
+    framework: det.framework,
     entryPath: det.entryPath,
     globalCssPath: det.globalCssPath,
     viteConfigPath: det.viteConfigPath,
@@ -192,6 +197,37 @@ function wireNextEntry(opts: InitOptions, det: Detection, log: (line: string) =>
   } else {
     writeFileSync(layoutAbs, content);
     log(`   ✓ wired ${layoutRel} (providers + anti-flash + suppressHydrationWarning)`);
+  }
+}
+
+/**
+ * SSR root document (React Router 7, TanStack Start, …): wrap `{children}` in
+ * `<ThemeProvider>` and inline the anti-flash `<script>` in the root `<head>` —
+ * no separate providers file or `/next` adapter (these frameworks have no RSC
+ * boundary). Patches the root when its shape is recognized; bails (→ manual plan)
+ * otherwise.
+ */
+function wireSsrRootEntry(opts: InitOptions, det: Detection, log: (line: string) => void): void {
+  if (!det.entryPath) {
+    log('   ! no root document found — wrap your root + add the anti-flash script manually:');
+    indent(log, ssrRootSnippet());
+    return;
+  }
+  const abs = join(opts.root, det.entryPath);
+  const before = readFileSync(abs, 'utf8');
+  if (before.includes('ThemeProvider') && before.includes('getAntiFlashScript')) {
+    log(`   ✓ ${det.entryPath} already wired (provider + anti-flash)`);
+    return;
+  }
+  const { content, changed, reason } = wireSsrRoot(before);
+  if (!changed) {
+    log(`   ! couldn't wire ${det.entryPath} (${reason}) — add it manually:`);
+    indent(log, ssrRootSnippet());
+  } else if (opts.dryRun) {
+    log(`   → would wire ${det.entryPath} (provider + anti-flash + suppressHydrationWarning)`);
+  } else {
+    writeFileSync(abs, content);
+    log(`   ✓ wired ${det.entryPath} (provider + anti-flash + suppressHydrationWarning)`);
   }
 }
 
@@ -342,13 +378,21 @@ function isProviderWired(root: string, det: Detection): boolean {
   return candidates.some((c) => (readRel(root, c) ?? '').includes('ThemeProvider'));
 }
 
-/** Is anti-flash wired? Vite: the plugin import in the config. Next: the head script. */
+/**
+ * Is anti-flash wired? Keyed on the profile's anti-flash placement axis:
+ * `vite-index-html` ⇒ the `veneer()` plugin import in the Vite config;
+ * `head-script` ⇒ the script in the document head — `AntiFlashScript` (Next) or an
+ * inlined `getAntiFlashScript()` (SSR roots like RR7).
+ */
 function isAntiFlashWired(root: string, det: Detection): boolean {
-  if (det.framework === 'vite') {
+  if (getProfile(det.framework)?.antiFlash === 'vite-index-html') {
     return (readRel(root, det.viteConfigPath) ?? '').includes('@offthegully/veneerui/vite');
   }
-  const candidates = [det.entryPath, 'app/layout.tsx', 'src/app/layout.tsx'];
-  return candidates.some((c) => (readRel(root, c) ?? '').includes('AntiFlashScript'));
+  const candidates = [det.entryPath, 'app/layout.tsx', 'src/app/layout.tsx', 'app/root.tsx'];
+  return candidates.some((c) => {
+    const src = readRel(root, c) ?? '';
+    return src.includes('AntiFlashScript') || src.includes('getAntiFlashScript');
+  });
 }
 
 /** Is the veneer ESLint preset already in the project's flat config? */

@@ -76,6 +76,25 @@ describe('buildScaffoldCommand', () => {
     expect(buildScaffoldCommand('next', 'pnpm', 'a').args).toContain('--use-pnpm');
     expect(buildScaffoldCommand('next', 'bun', 'a').args).toContain('--use-bun');
   });
+
+  it('delegates React Router to create-react-router, non-interactive, with -- for npm', () => {
+    expect(buildScaffoldCommand('react-router', 'npm', 'my-app')).toEqual({
+      cmd: 'npm',
+      args: ['create', 'react-router@latest', 'my-app', '--', '--yes', '--no-git-init'],
+    });
+    expect(buildScaffoldCommand('react-router', 'pnpm', 'my-app')).toEqual({
+      cmd: 'pnpm',
+      args: ['create', 'react-router@latest', 'my-app', '--yes', '--no-git-init'],
+    });
+  });
+
+  it('uses a bare tool name for yarn on React Router (no @latest)', () => {
+    expect(buildScaffoldCommand('react-router', 'yarn', 'a').args.slice(0, 3)).toEqual([
+      'create',
+      'react-router',
+      'a',
+    ]);
+  });
 });
 
 describe('installArgs', () => {
@@ -107,5 +126,13 @@ describe('starterPage', () => {
     const next = starterPage('next');
     expect(next).toContain("from '@/components/ThemeSwitcher'");
     expect(next).toContain('export default function Home()');
+  });
+
+  it('uses a relative import for React Router (route → app/components)', () => {
+    const rr = starterPage('react-router');
+    expect(rr).toContain("from '../components/ThemeSwitcher'");
+    expect(rr).toContain('export default function Home()');
+    expect(rr).toContain('bg-surface');
+    expect(rr).not.toMatch(/bg-(?:blue|red|gray|green|black|white)-?\d*/);
   });
 });

@@ -16,24 +16,26 @@
  * unit-testable and `--dry-run`-safe; `runInit` decides whether to write it.
  */
 import { providerSnippet, nextAntiFlashSnippet, TOKENS_IMPORT } from './patch';
+import { getProfile, type FrameworkId } from './profiles';
 
 export const SETUP_FILE = 'VENEER-SETUP.md';
 
 /**
- * Popular React frameworks Veneer's runtime should work with, but which the CLI
- * doesn't auto-wire and we haven't fully tested. Surfaced in init's output and in
- * the generic setup file so users know they're supported via the manual path.
- * Keep in sync with the "Other React frameworks" section of docs/integration.md.
+ * React frameworks Veneer's runtime works on, but which the CLI doesn't yet
+ * auto-detect/wire (so they go through the generic manual path). React Router 7
+ * and TanStack Start are NOT here — they're recognized and auto-wired now (see
+ * `profiles.ts`). Astro stays because its document is `.astro`, not a React root,
+ * so it needs the per-island pattern, not the `<ThemeProvider>`-wraps-the-tree
+ * wiring. Surfaced in init's output + the generic setup file. Keep in sync with
+ * the "Other React frameworks" section of docs/integration.md.
  */
 export const EXPERIMENTAL_FRAMEWORKS = [
-  'Remix / React Router',
-  'TanStack Start',
   'Astro (React islands)',
   'Gatsby',
   'RedwoodJS',
 ] as const;
 
-export type SetupFramework = 'vite' | 'next' | 'other';
+export type SetupFramework = FrameworkId | 'other';
 
 export interface SetupPlanInput {
   framework: SetupFramework;
@@ -78,6 +80,24 @@ function providerStep(input: SetupPlanInput, n: number): string[] {
       '',
     ];
   }
+  // SSR root document (React Router 7, TanStack Start, …): wrap the document's
+  // `{children}` directly — no `'use client'` providers file (no RSC boundary).
+  if (getProfile(input.framework)?.wiring === 'ssr-root') {
+    const entry = input.entryPath ?? 'your root document (e.g. app/root.tsx, src/routes/__root.tsx)';
+    return [
+      `### ${n}. Wrap your app root in \`<ThemeProvider>\``,
+      '',
+      `In \`${entry}\`, wrap the root document's \`{children}\` (no \`'use client'\` needed —`,
+      'these frameworks have no RSC boundary):',
+      '',
+      '```tsx',
+      "import { ThemeProvider } from '@offthegully/veneerui'",
+      '// <body><ThemeProvider>{children}</ThemeProvider> … </body>',
+      '```',
+      '',
+    ];
+  }
+  // Vite / Next: the only remaining cases reach providerSnippet (typed to those two).
   const entry =
     input.entryPath ?? (input.framework === 'next' ? 'app/layout.tsx' : 'src/main.tsx');
   return [
@@ -86,7 +106,7 @@ function providerStep(input: SetupPlanInput, n: number): string[] {
     `In \`${entry}\`, wrap your root component:`,
     '',
     '```tsx',
-    providerSnippet(input.framework, false),
+    providerSnippet(input.framework as 'vite' | 'next', false),
     '```',
     '',
   ];

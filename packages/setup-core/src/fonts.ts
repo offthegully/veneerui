@@ -16,6 +16,7 @@
  */
 import { FONT_PACKAGES } from '@veneerui/lint-core/font-packages';
 import { detect, type Framework } from './detect';
+import { getProfile } from './profiles';
 
 export interface FontsOptions {
   root: string;
@@ -29,6 +30,9 @@ function importHint(framework: Framework): string {
   }
   if (framework === 'vite') {
     return 'Import them in src/main.tsx, above your `./index.css` import:';
+  }
+  if (getProfile(framework)?.wiring === 'ssr-root') {
+    return 'Import them in your root document (React Router app/root.tsx, TanStack Start src/routes/__root.tsx), above your global CSS import:';
   }
   return 'Import them once in your app entry (before your global CSS):';
 }

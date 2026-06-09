@@ -23,7 +23,7 @@ per framework, and the agent hand-off.
   scaffolds a themed Expo app; same tokens and utilities on native via NativeWind.
   **Experimental.**
 - **The invariants & per-framework wiring:** [interlock](#interlock) · [Vite](#vite) ·
-  [Next.js](#nextjs) · [other React + Tailwind v4](#other)
+  [Next.js](#nextjs) · [React Router 7](#react-router) · [other React + Tailwind v4](#other)
 
 ---
 
@@ -39,12 +39,12 @@ drops in a theme switcher — so it runs themed from the first commit:
 npm create veneerui@latest my-app
 ```
 
-It asks one thing — **which framework** (Vite + React, Next.js App Router, or
-[Expo / React Native](./expo.md) — experimental) — then delegates to that framework's
-official scaffolder (`create-vite` / `create-next-app` / `create-expo-app`), installs
-Veneer, wires the tokens `@import` + `<ThemeProvider>` + anti-flash script (or, on Expo,
-the NativeWind config + token codegen + provider), copies in a `ThemeSwitcher`, and writes
-an `AGENTS.md` of the token rules. Then:
+It asks one thing — **which framework** (Vite + React, Next.js App Router, React Router 7,
+or [Expo / React Native](./expo.md) — experimental) — then delegates to that framework's
+official scaffolder (`create-vite` / `create-next-app` / `create-react-router` /
+`create-expo-app`), installs Veneer, wires the tokens `@import` + `<ThemeProvider>` +
+anti-flash script (or, on Expo, the NativeWind config + token codegen + provider), copies
+in a `ThemeSwitcher`, and writes an `AGENTS.md` of the token rules. Then:
 
 ```sh
 cd my-app && npm run dev
@@ -57,7 +57,7 @@ rest with the token utilities (`bg-surface`, `text-text`, `rounded-md`, …).
 
 | Flag | Effect |
 |---|---|
-| `--framework <vite\|next\|expo>` | skip the prompt (`expo` = React Native, [experimental](./expo.md)) |
+| `--framework <vite\|next\|react-router\|expo>` | skip the prompt (`react-router` = React Router 7, also accepts `remix`; `expo` = React Native, [experimental](./expo.md)) |
 | `--agent[=claude\|codex]` | after wiring, hand off to an installed agent to finish/customize ([below](#agent)) |
 | `--pm <npm\|pnpm\|yarn\|bun>` | override the detected package manager |
 | `--no-install` · `--dry-run` | as named |
@@ -77,10 +77,12 @@ rest with the token utilities (`bg-surface`, `text-text`, `rounded-md`, …).
 > These come from *their* dependency trees, not Veneer; they're expected and safe to
 > ignore — the app still builds and runs.
 
-**Another framework?** (Remix, Astro, TanStack Start, …) Scaffold it with that
-framework's own tool, then run `npx veneerui init` inside it: Veneer's runtime is
-framework-agnostic, so the [three invariants](#interlock) are all it needs, and
-`init` writes a `VENEER-SETUP.md` you (or [your agent](#agent)) can finish.
+**Another framework?** (Astro, Gatsby, …) Scaffold it with that framework's own
+tool, then run `npx veneerui init` inside it: Veneer's runtime is
+framework-agnostic, so the [three invariants](#interlock) are all it needs. `init`
+also **recognizes and auto-wires TanStack Start** (the same SSR-on-Vite shape as
+[React Router](#react-router)); for anything it can't wire it writes a
+`VENEER-SETUP.md` you (or [your agent](#agent)) can finish.
 
 ---
 
@@ -210,15 +212,65 @@ writing your own.
 > `--font-mono` lines from `app/globals.css`. (Color, radius, border, and shadow
 > theming are unaffected.) See [Fonts](#fonts).
 
+<a id="react-router"></a>
+
+### React Router 7 (Remix's successor)
+
+> Framework mode (SSR) + Tailwind v4. The default `create-react-router` template
+> already ships both, so the interlock is a single line.
+
+React Router 7 is **fully wired** — `npm create veneerui@latest my-app -- --framework react-router`
+scaffolds a fresh one, and `npx veneerui init` wires an existing RR7 app. It's the first
+of the **SSR-on-Vite** frameworks, and it surfaces the one thing that differs from a Vite
+SPA — the part the old "Vite vs Next" split got wrong:
+
+- **Tailwind** comes from `@tailwindcss/vite` (the SPA way) — `init` adds the token
+  `@import` to `app/app.css`.
+- **Anti-flash does _not_ use the `veneer()` Vite plugin.** RR7 renders its document from
+  `app/root.tsx`, with no `index.html` for the plugin's `transformIndexHtml` to touch — so
+  the script goes in that `<head>` instead, exactly like Next:
+
+```tsx
+// app/root.tsx — init wires the Layout
+import { ThemeProvider, getAntiFlashScript } from '@offthegully/veneerui'
+
+export function Layout({ children }: { children: React.ReactNode }) {
+  return (
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: getAntiFlashScript() }} />
+        {/* …existing <Meta/>, <Links/> */}
+      </head>
+      <body>
+        <ThemeProvider>{children}</ThemeProvider>
+        {/* …<ScrollRestoration/>, <Scripts/> */}
+      </body>
+    </html>
+  )
+}
+```
+
+No `'use client'` and no providers file: React Router has no RSC boundary, so the context
+provider is used directly. `suppressHydrationWarning` on `<html>` is required for the same
+reason as Next — the script mutates `<html>` before hydration. (React 19 may hoist the
+inline `<script>` below sibling `<meta>`/`<title>`, but it still lands before the
+render-blocking stylesheet, so it runs before first paint — no flash.) On a fresh scaffold,
+Veneer also clears the template's pinned `--font-sans` and `bg-white dark:bg-gray-950`
+surface so type and color theme fully.
+
+**TanStack Start** is the same SSR-on-Vite shape (a `src/routes/__root.tsx` document), so
+`npx veneerui init` recognizes and auto-wires it identically — no extra steps.
+
 <a id="other"></a>
 
-### Other React frameworks (experimental)
+### Other React frameworks
 
 Veneer's runtime is framework-agnostic — it's React 19 + Tailwind v4 + a provider
-+ one inline script. Only the CLI's *auto-wiring* is Vite/Next-specific. Run
-`veneerui init` anyway: on an unrecognized React + Tailwind project it writes the
-agent guide and a **generic [`VENEER-SETUP.md`](#agent)** with the three steps
-below — so you can still finish by hand, or hand it to your agent. The steps:
++ one inline script. Vite, Next, [React Router 7, and TanStack Start](#react-router) are
+auto-wired; **any other** React 19 + Tailwind v4 app works too via the three steps below.
+Run `veneerui init` anyway: on an unrecognized project it writes the agent guide and a
+**generic [`VENEER-SETUP.md`](#agent)** so you can finish by hand or hand it to your agent.
+The steps:
 
 1. **Interlock** — add the [token `@import`](#interlock) to your Tailwind stylesheet.
 2. **Provider** — wrap your app root in `<ThemeProvider>` (inside a client
@@ -237,21 +289,62 @@ import { getAntiFlashScript } from '@offthegully/veneerui'
 saved theme before paint. Pass your default theme's `tokens` map to also kill the
 first-load flash (see [Ship your own themes](#themes)).
 
-**Known to work, not yet first-class** — no CLI auto-wiring and not fully tested
-yet, so expect rough edges and please [report what you hit](https://github.com/offthegully/veneerui/issues):
+**Known to work, not yet auto-wired** — no CLI auto-wiring yet, so expect to run the
+three steps by hand (or via your agent) and please [report what you hit](https://github.com/offthegully/veneerui/issues):
 
-- **Remix / React Router** (v7)
-- **TanStack Start**
-- **Astro** (React islands)
-- **Gatsby**
+- **Astro** (React islands) — see the per-island note below
+- **Gatsby** (`wrapRootElement` + `gatsby-ssr.onPreRenderHTML` for the head script)
 - **RedwoodJS**
 - any custom **Webpack / Rsbuild / Parcel** React setup
 
 The only hard requirement is **React 19 + Tailwind v4** — if a framework has those,
-the three steps above are all it needs. One caveat: if your framework forbids
-importing the React-context package root from a server file (Next's RSC does),
-import `getAntiFlashScript` only where it's allowed — or use the dedicated
-[`/next`](#nextjs) adapter.
+the three steps above are all it needs. **For SSR frameworks the anti-flash script goes
+in your document `<head>`, not the Vite plugin** (the plugin only injects into a real
+`index.html`, which SSR frameworks don't have). One caveat: if your framework forbids
+importing the React-context package root from a server file (Next's RSC does), import
+`getAntiFlashScript` only where it's allowed — or use the dedicated [`/next`](#nextjs)
+adapter.
+
+#### Astro (React islands) — a different shape, by design
+
+Astro pages aren't a React tree, so there's no single root to wrap in `<ThemeProvider>`
+— and you don't need one. Theming is **global**: the tokens are CSS variables on `<html>`,
+and the anti-flash script + `applyTheme` mutate them for the whole document, React or not.
+So the provider scopes to *interactive islands*, not the page:
+
+- **Tailwind + tokens** — Astro runs on Vite; add `@tailwindcss/vite` and the token
+  `@import` to your global stylesheet exactly as elsewhere.
+- **Anti-flash** — inline the script in your base layout's `<head>` (`.astro`). `is:inline`
+  keeps it un-bundled so it runs before paint:
+
+```astro
+---
+import { getAntiFlashScript } from '@offthegully/veneerui'
+const antiFlash = getAntiFlashScript()
+---
+<html lang="en">
+  <head><script is:inline set:html={antiFlash} /></head>
+  <body><slot /></body>
+</html>
+```
+
+- **Provider — per interactive island, not the page.** An island that only uses token
+  utilities (`bg-surface`, `text-text`) re-skins automatically — no provider. Only an
+  island that calls `useTheme` (e.g. a theme switcher) needs `<ThemeProvider>`, and it
+  wraps *itself*:
+
+```tsx
+// ThemeSwitcherIsland.tsx — hydrated with client:load
+import { ThemeProvider } from '@offthegully/veneerui'
+import { Switcher } from './Switcher'
+export default function ThemeSwitcherIsland() {
+  return <ThemeProvider><Switcher /></ThemeProvider>
+}
+```
+
+Multiple such islands stay in sync — each provider reads the same `localStorage` and writes
+the same `<html>` variables. This island-scoped provider is the one structural difference
+from every other target; tokens, anti-flash, and the no-hardcoded-colors rule are identical.
 
 ---
 

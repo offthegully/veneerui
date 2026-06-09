@@ -114,6 +114,31 @@ export function eslintConfigSnippet(): string {
   ].join('\n');
 }
 
+/**
+ * The generic SSR-root snippet (React Router 7, TanStack Start, …): provider +
+ * inlined anti-flash script in the root document's `<head>`. Printed by `init`
+ * when the root's shape can't be patched safely. No `'use client'`/providers file
+ * — these frameworks have no RSC boundary, so the context provider is used directly.
+ */
+export function ssrRootSnippet(): string {
+  return [
+    "import { ThemeProvider, getAntiFlashScript } from '@offthegully/veneerui'",
+    '',
+    '// In your root document (React Router app/root.tsx Layout, TanStack Start',
+    '// __root.tsx, …). suppressHydrationWarning on <html> is REQUIRED: the script',
+    '// sets theme CSS variables on <html> before React hydrates.',
+    '<html lang="en" suppressHydrationWarning>',
+    '  <head>',
+    '    <script dangerouslySetInnerHTML={{ __html: getAntiFlashScript() }} />',
+    '    {/* …existing head: <Meta/>, <Links/>, etc. */}',
+    '  </head>',
+    '  <body>',
+    '    <ThemeProvider>{children}</ThemeProvider>',
+    '  </body>',
+    '</html>',
+  ].join('\n');
+}
+
 /** The Next.js <head> anti-flash snippet (printed by `init`, not auto-patched). */
 export function nextAntiFlashSnippet(): string {
   return [
