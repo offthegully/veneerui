@@ -1,13 +1,14 @@
 /**
- * Project detection. Figures out whether the consumer's project is Vite or Next
- * and locates the files `init` needs to touch (global stylesheet, vite config,
- * entry). The classification step is pure so it can be unit-tested; file
- * discovery uses the real fs against a given root.
+ * Project detection. Classifies the consumer's project against the framework
+ * registry (`profiles.ts`) and locates the files `init` needs to touch (global
+ * stylesheet, vite config, entry). The classification step is pure so it can be
+ * unit-tested; file discovery uses the real fs against a given root.
  */
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { FRAMEWORK_PROFILES, getProfile, type FrameworkId } from './profiles';
 
-export type Framework = 'next' | 'vite' | 'unknown';
+export type Framework = FrameworkId | 'unknown';
 
 export interface PackageJsonish {
   dependencies?: Record<string, string>;
@@ -31,19 +32,20 @@ export interface Detection {
   componentsDir: string;
 }
 
-/** Pure: classify a parsed package.json by its dependency set. */
+/**
+ * Pure: classify a parsed package.json by its dependency set. Iterates the
+ * registry in precedence order (specific frameworks before the generic Vite SPA,
+ * since e.g. an RR7 app also depends on Vite) and returns the first match.
+ */
 export function frameworkFromDeps(pkg: PackageJsonish): Framework {
   const deps = { ...pkg.dependencies, ...pkg.devDependencies };
-  if (deps['next']) return 'next';
-  if (deps['vite'] || deps['@vitejs/plugin-react']) return 'vite';
+  for (const p of FRAMEWORK_PROFILES) {
+    if (p.detectDeps.some((d) => deps[d])) return p.id;
+  }
   return 'unknown';
 }
 
 const VITE_CONFIGS = ['vite.config.ts', 'vite.config.js', 'vite.config.mts', 'vite.config.mjs'];
-const VITE_CSS = ['src/index.css', 'src/main.css', 'src/app.css', 'src/styles/index.css', 'src/styles/globals.css'];
-const NEXT_CSS = ['app/globals.css', 'src/app/globals.css', 'styles/globals.css', 'app/global.css'];
-const VITE_ENTRY = ['src/main.tsx', 'src/main.jsx', 'src/index.tsx'];
-const NEXT_ENTRY = ['app/layout.tsx', 'src/app/layout.tsx', 'app/layout.jsx'];
 const ESLINT_CONFIGS = ['eslint.config.js', 'eslint.config.mjs', 'eslint.config.ts', 'eslint.config.cjs'];
 
 function firstExisting(root: string, candidates: string[]): string | undefined {
@@ -77,9 +79,12 @@ export function detect(root: string): Detection {
   }
   const allDeps = { ...pkg.dependencies, ...pkg.devDependencies };
   const framework = frameworkFromDeps(pkg);
+  const profile = getProfile(framework);
 
-  const cssCandidates = framework === 'next' ? NEXT_CSS : VITE_CSS;
-  const entryCandidates = framework === 'next' ? NEXT_ENTRY : VITE_ENTRY;
+  // The generic Vite SPA candidates are the sensible default for an unrecognized
+  // (but plausibly React + Tailwind) project — that's where init still helps.
+  const cssCandidates = profile?.cssCandidates ?? FRAMEWORK_PROFILES.at(-1)!.cssCandidates;
+  const entryCandidates = profile?.entryCandidates ?? FRAMEWORK_PROFILES.at(-1)!.entryCandidates;
   const usesSrcDir = existsSync(join(root, 'src'));
 
   return {
@@ -89,10 +94,12 @@ export function detect(root: string): Detection {
     hasTailwind: 'tailwindcss' in allDeps,
     hasReact: 'react' in allDeps,
     hasEslintPlugin: 'eslint-plugin-veneer' in allDeps,
-    viteConfigPath: framework === 'vite' ? firstExisting(root, VITE_CONFIGS) : undefined,
+    // Only the SPA-on-Vite wiring patches the Vite config (for the index.html
+    // anti-flash plugin); SSR-on-Vite (RR7) uses a head script instead.
+    viteConfigPath: profile?.wiring === 'vite-spa' ? firstExisting(root, VITE_CONFIGS) : undefined,
     globalCssPath: findGlobalCss(root, cssCandidates),
     entryPath: firstExisting(root, entryCandidates),
     eslintConfigPath: firstExisting(root, ESLINT_CONFIGS),
-    componentsDir: usesSrcDir ? 'src/components' : 'components',
+    componentsDir: profile?.componentsDir ?? (usesSrcDir ? 'src/components' : 'components'),
   };
 }

@@ -13,18 +13,27 @@
  * (`runScaffold`) is validated end-to-end against the real scaffolders.
  */
 import { spawnSync } from 'node:child_process';
-import { existsSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { detect } from './detect';
-import { addTailwindVite, stripNextFont, stripNextFontCss, stripNextColorSystem, setNextTitle } from './entry-patch';
+import { getProfile } from './profiles';
+import {
+  addTailwindVite,
+  stripNextFont,
+  stripNextFontCss,
+  stripNextColorSystem,
+  setNextTitle,
+  stripReactRouterTemplateCss,
+  stripReactRouterFontLinks,
+} from './entry-patch';
 import { runInit } from './init';
 import { runAdd } from './add';
 import { runAgentHandoff, type AgentChoice } from './agent';
 import { SETUP_FILE } from './setup-plan';
 import { runScaffoldExpo } from './scaffold-expo';
 
-/** Frameworks wired through the shared web path (create-vite / create-next-app + runInit). */
-export type WebFramework = 'vite' | 'next';
+/** Frameworks wired through the shared web path (official scaffolder + runInit). */
+export type WebFramework = 'vite' | 'next' | 'react-router';
 /** Every framework `create-veneerui` can scaffold. `expo` takes a separate native path. */
 export type ScaffoldFramework = WebFramework | 'expo';
 export type PackageManager = 'npm' | 'pnpm' | 'yarn' | 'bun';
@@ -68,14 +77,22 @@ export function buildScaffoldCommand(
   pm: PackageManager,
   name: string,
 ): { cmd: string; args: string[] } {
-  const create = framework === 'next' ? 'next-app' : 'vite';
+  const create =
+    framework === 'next' ? 'next-app' : framework === 'react-router' ? 'react-router' : 'vite';
   const tool = pm === 'yarn' ? create : `${create}@latest`;
-  // `--no-interactive` is critical: create-vite v7+ prompts "Install with <pm> and
-  // start now?" whenever stdin is a TTY — even with `--template` — then installs and
-  // launches the dev server itself, blocking us. The user Ctrl+C's the server, which
-  // kills this whole process before any Veneer wiring runs, leaving a bare Vite app.
-  // The flag (introduced alongside that prompt) forces non-interactive scaffold-only.
-  const flags = framework === 'next' ? nextFlags(pm) : ['--template', 'react-ts', '--no-interactive'];
+  // `--no-interactive` (Vite) is critical: create-vite v7+ prompts "Install with
+  // <pm> and start now?" whenever stdin is a TTY — even with `--template` — then
+  // installs and launches the dev server itself, blocking us. The user Ctrl+C's the
+  // server, which kills this whole process before any Veneer wiring runs, leaving a
+  // bare Vite app. The flag forces non-interactive scaffold-only.
+  // React Router: `--yes` accepts defaults non-interactively; `--no-git-init` keeps
+  // the scaffold inside our flow (we manage git). Its template installs deps itself.
+  const flags =
+    framework === 'next'
+      ? nextFlags(pm)
+      : framework === 'react-router'
+        ? ['--yes', '--no-git-init']
+        : ['--template', 'react-ts', '--no-interactive'];
   const sep = pm === 'npm' ? ['--'] : [];
   return { cmd: pm, args: ['create', tool, name, ...sep, ...flags] };
 }
@@ -89,8 +106,9 @@ export function installArgs(pm: PackageManager, pkgs: string[], dev = false): st
 
 /** A minimal, self-contained token-driven starter page — themeable on first run. */
 export function starterPage(framework: WebFramework): string {
-  const from = framework === 'next' ? '@/components' : './components';
-  const fn = framework === 'next' ? 'Home' : 'App';
+  const profile = getProfile(framework);
+  const from = profile?.scaffold?.starter.importFrom ?? './components';
+  const fn = profile?.scaffold?.starter.fnName ?? 'App';
   return `import { ThemeSwitcher } from '${from}/ThemeSwitcher'
 
 export default function ${fn}() {
@@ -158,8 +176,12 @@ function setUpViteTailwind(appDir: string, log: (l: string) => void): void {
 /** Overwrite the template's demo page with a token-driven starter (switcher + showcase). */
 function writeStarterPage(appDir: string, framework: WebFramework, log: (l: string) => void): void {
   const det = detect(appDir);
+  // Next's page sits beside its (possibly src/) layout; the others use the profile's
+  // fixed starter path (Vite `src/App.tsx`, React Router `app/routes/home.tsx`).
   const rel =
-    framework === 'next' ? join(dirname(det.entryPath ?? 'app/layout.tsx'), 'page.tsx') : 'src/App.tsx';
+    framework === 'next'
+      ? join(dirname(det.entryPath ?? 'app/layout.tsx'), 'page.tsx')
+      : (getProfile(framework)?.scaffold?.starter.file ?? 'src/App.tsx');
   const abs = join(appDir, rel);
   if (existsSync(abs)) {
     writeFileSync(abs, starterPage(framework));
@@ -214,6 +236,90 @@ function normalizeNextScaffold(appDir: string, name: string, log: (l: string) =>
   }
 }
 
+/**
+ * Undo the create-react-router template defaults that fight Veneer: its
+ * `app/app.css` pins the font token (`@theme { --font-sans: "Inter" }`) and the
+ * page surface (`html, body { @apply bg-white dark:bg-gray-950 }`), and its
+ * `app/root.tsx` hard-loads Inter via Google-Fonts `links`. Mirrors
+ * `normalizeNextScaffold`; each patch is anchored and bails on an unfamiliar shape.
+ */
+function normalizeReactRouterScaffold(appDir: string, log: (l: string) => void): void {
+  const det = detect(appDir);
+  if (det.globalCssPath) {
+    const cssAbs = join(appDir, det.globalCssPath);
+    if (existsSync(cssAbs)) {
+      const res = stripReactRouterTemplateCss(readFileSync(cssAbs, 'utf8'));
+      if (res.changed) {
+        writeFileSync(cssAbs, res.content);
+        log(`  ✓ cleared the template font + surface overrides in ${det.globalCssPath}`);
+      }
+    }
+  }
+  const rootRel = det.entryPath ?? 'app/root.tsx';
+  const rootAbs = join(appDir, rootRel);
+  if (existsSync(rootAbs)) {
+    const res = stripReactRouterFontLinks(readFileSync(rootAbs, 'utf8'));
+    if (res.changed) {
+      writeFileSync(rootAbs, res.content);
+      log(`  ✓ removed the bundled Google-Fonts (Inter) links in ${rootRel} (font now themes)`);
+    }
+  }
+  // Drop the template's `app/welcome` demo component: our starter page replaces the
+  // route that imported it, so it's dead code — and it's full of hardcoded palette
+  // colors (`text-gray-700`, `stroke-gray-600`) that would fail the gate on first lint.
+  const welcomeAbs = join(appDir, 'app/welcome');
+  if (existsSync(welcomeAbs)) {
+    rmSync(welcomeAbs, { recursive: true, force: true });
+    log('  ✓ removed the unused app/welcome demo (hardcoded colors that fail the gate)');
+  }
+}
+
+/** A minimal ESLint flat config: parse TS/TSX and enforce only Veneer's gate. */
+const REACT_ROUTER_ESLINT_CONFIG = `// create-react-router ships no ESLint, so this is the whole linter — kept minimal
+// on purpose: a TS/TSX parser plus Veneer's no-hardcoded-colors gate, and no
+// opinionated style rules (so it never fails on the template's own code).
+import tseslint from 'typescript-eslint';
+import veneer from 'eslint-plugin-veneer';
+
+export default [
+  { ignores: ['build/', '.react-router/'] },
+  {
+    files: ['**/*.{ts,tsx}'],
+    languageOptions: { parser: tseslint.parser },
+  },
+  veneer.configs.recommended,
+];
+`;
+
+/**
+ * Make the no-hardcoded-colors gate runnable on a fresh React Router app, which
+ * ships no ESLint: write a minimal `eslint.config.js` (with the Veneer preset
+ * already in it, so `init` reports it wired rather than leaving a setup step) and
+ * add a `lint` script. Both are skipped if the user already has them. The
+ * `eslint` + `typescript-eslint` deps come from the profile's `extraDevDeps`.
+ */
+function setUpReactRouterEslint(appDir: string, log: (l: string) => void): void {
+  const cfgAbs = join(appDir, 'eslint.config.js');
+  if (!existsSync(cfgAbs)) {
+    writeFileSync(cfgAbs, REACT_ROUTER_ESLINT_CONFIG);
+    log('  ✓ eslint.config.js — the no-hardcoded-colors gate (React Router ships no ESLint)');
+  }
+  const pkgAbs = join(appDir, 'package.json');
+  if (existsSync(pkgAbs)) {
+    try {
+      const pkg = JSON.parse(readFileSync(pkgAbs, 'utf8')) as { scripts?: Record<string, string> };
+      pkg.scripts ??= {};
+      if (!pkg.scripts.lint) {
+        pkg.scripts.lint = 'eslint .';
+        writeFileSync(pkgAbs, `${JSON.stringify(pkg, null, 2)}\n`);
+        log('  ✓ added a `lint` script');
+      }
+    } catch {
+      /* malformed package.json — leave it; init's setup plan will note the gate. */
+    }
+  }
+}
+
 /** Scaffold + wire a fresh app. Returns the created app directory. */
 export function runScaffold(opts: ScaffoldOptions): { appDir: string } {
   // Expo (React Native) takes a wholly separate native path — Veneer's web runtime
@@ -236,16 +342,28 @@ export function runScaffold(opts: ScaffoldOptions): { appDir: string } {
   log(`\nScaffolding ${opts.name} — ${opts.framework} + Tailwind v4 (${opts.pm})…`);
   run(cmd, args, opts.parentDir);
 
-  // Vite ships no Tailwind; create-next-app already includes it.
-  if (opts.framework === 'vite') setUpViteTailwind(appDir, log);
+  // A template either ships Tailwind v4 (Next, React Router) or doesn't (create-vite's
+  // react-ts). When it doesn't, we add it — and that install also pulls the rest of
+  // the (uninstalled) template tree. When it does, the official scaffolder already
+  // installed everything, so we only add Veneer on top.
+  const scaffoldProfile = getProfile(opts.framework)?.scaffold;
+  const bringsTailwind = scaffoldProfile?.bringsTailwind ?? false;
+  if (!bringsTailwind) setUpViteTailwind(appDir, log);
 
   if (opts.install !== false) {
     log('\nInstalling Veneer…');
-    if (opts.framework === 'vite') run(opts.pm, installArgs(opts.pm, TAILWIND_PKGS, true), appDir);
+    if (!bringsTailwind) run(opts.pm, installArgs(opts.pm, TAILWIND_PKGS, true), appDir);
     run(opts.pm, installArgs(opts.pm, [RUNTIME_PKG], false), appDir);
     // The lint gate (dev): eslint-plugin-veneer, enabled by runInit's wireEslint.
-    run(opts.pm, installArgs(opts.pm, [ESLINT_PKG], true), appDir);
+    // Some templates ship no ESLint at all (React Router) — extraDevDeps supplies it.
+    const eslintDeps = [ESLINT_PKG, ...(scaffoldProfile?.extraDevDeps ?? [])];
+    run(opts.pm, installArgs(opts.pm, eslintDeps, true), appDir);
   }
+
+  // For a template with no ESLint of its own (React Router), drop in a minimal flat
+  // config + `lint` script BEFORE init, so init's wireEslint finds it and the gate is
+  // active out of the box (no leftover VENEER-SETUP.md step).
+  if (opts.framework === 'react-router') setUpReactRouterEslint(appDir, log);
 
   // Wire Veneer through the SAME engine `veneerui init` uses — tokens, provider,
   // anti-flash, the agent guide, and (only if a patch bails) VENEER-SETUP.md.
@@ -257,8 +375,9 @@ export function runScaffold(opts: ScaffoldOptions): { appDir: string } {
   log('  ✓ added a ThemeSwitcher');
   writeStarterPage(appDir, opts.framework, log);
 
-  // Next ships create-next-app defaults that fight Veneer — undo them on a fresh app.
+  // Undo the official template's Veneer-fighting defaults on a fresh app.
   if (opts.framework === 'next') normalizeNextScaffold(appDir, opts.name, log);
+  else if (opts.framework === 'react-router') normalizeReactRouterScaffold(appDir, log);
 
   // Hand off to an agent only when init left manual steps in VENEER-SETUP.md. On a
   // fully-wired scaffold (the common Vite/Next case) that file is never written —

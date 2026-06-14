@@ -16,13 +16,13 @@ import { parse, validateName, type Parsed } from './args';
 
 type FrameworkChoice = ScaffoldFramework | 'other';
 
-const HELP = `create-veneerui — scaffold a themed Vite, Next, or Expo app, wired for Veneer
+const HELP = `create-veneerui — scaffold a themed Vite, Next, React Router, or Expo app, wired for Veneer
 
 Usage:
   npm create veneerui@latest [name] [options]
 
 Options:
-  --framework <vite|next|expo|other>  Skip the framework prompt
+  --framework <vite|next|react-router|expo|other>  Skip the framework prompt
   --yes, --defaults              Non-interactive (name required; framework defaults to vite)
   --pm <npm|pnpm|yarn|bun>       Override the detected package manager
   --no-install                   Skip dependency install
@@ -63,12 +63,15 @@ function nextSteps(name: string, pm: string, framework: ScaffoldFramework): stri
 
 function otherGuidance(): string {
   return [
-    'Veneer runs on any React 19 + Tailwind v4 app. Automated scaffolding currently',
-    'supports Vite and Next.js; for another framework (Remix, Astro, TanStack Start, …):',
+    'Veneer runs on any React 19 + Tailwind v4 app. Automated scaffolding supports Vite,',
+    'Next.js, and React Router 7; for another framework (TanStack Start, Astro, Gatsby, …):',
     '',
     "  1. Scaffold it with that framework's official tool",
     '  2. Inside it, run:  npx veneerui init',
     '     (wires what it can and writes VENEER-SETUP.md for you — or your agent — to finish)',
+    '',
+    'For SSR frameworks the anti-flash script goes in your document <head> (not the Vite',
+    'plugin) — init writes the exact step. Only React 19 + Tailwind v4 is required.',
   ].join('\n');
 }
 
@@ -81,7 +84,15 @@ function otherGuidance(): string {
  */
 function strayFramework(): string | undefined {
   const rest = process.argv.slice(2).filter((a) => !a.startsWith('-')).slice(1);
-  return rest.find((a) => a === 'vite' || a === 'next' || a === 'expo' || a === 'other');
+  return rest.find(
+    (a) =>
+      a === 'vite' ||
+      a === 'next' ||
+      a === 'react-router' ||
+      a === 'remix' ||
+      a === 'expo' ||
+      a === 'other',
+  );
 }
 
 /**
@@ -144,10 +155,11 @@ async function main(): Promise<void> {
     return;
   }
 
-  // Framework.
+  // Framework. `remix` is accepted as a friendly alias for React Router 7 (its successor).
   let framework = o.framework as FrameworkChoice | undefined;
-  if (framework && !['vite', 'next', 'expo', 'other'].includes(framework)) {
-    cancel(`Unknown framework "${framework}" — expected vite, next, expo, or other.`);
+  if (framework === ('remix' as FrameworkChoice)) framework = 'react-router';
+  if (framework && !['vite', 'next', 'react-router', 'expo', 'other'].includes(framework)) {
+    cancel(`Unknown framework "${framework}" — expected vite, next, react-router, expo, or other.`);
     process.exitCode = 1;
     return;
   }
@@ -158,8 +170,9 @@ async function main(): Promise<void> {
         options: [
           { value: 'vite', label: 'Vite + React', hint: 'fastest — fully wired' },
           { value: 'next', label: 'Next.js (App Router)', hint: 'SSR-safe — fully wired' },
+          { value: 'react-router', label: 'React Router 7', hint: 'SSR (the Remix successor) — fully wired' },
           { value: 'expo', label: 'Expo (React Native)', hint: 'NativeWind — same tokens on native (experimental)' },
-          { value: 'other', label: 'Other React framework', hint: 'Remix, Astro, TanStack — manual + agent' },
+          { value: 'other', label: 'Other React framework', hint: 'TanStack, Astro, Gatsby — manual + agent' },
         ],
       });
       if (isCancel(res)) return void cancel('Cancelled.');

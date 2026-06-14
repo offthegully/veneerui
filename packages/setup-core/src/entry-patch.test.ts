@@ -3,12 +3,67 @@ import {
   addTailwindVite,
   createNextProviders,
   wireNextLayout,
+  wireSsrRoot,
   wrapEntryWithProvider,
   stripNextFont,
   stripNextFontCss,
   stripNextColorSystem,
   setNextTitle,
+  stripReactRouterTemplateCss,
+  stripReactRouterFontLinks,
 } from './entry-patch';
+
+// The create-react-router default template's app/root.tsx (trimmed to the Layout).
+const RR_ROOT = `import { Links, Meta, Outlet, Scripts, ScrollRestoration } from "react-router";
+import type { Route } from "./+types/root";
+import "./app.css";
+
+export const links: Route.LinksFunction = () => [
+  { rel: "preconnect", href: "https://fonts.googleapis.com" },
+  {
+    rel: "stylesheet",
+    href: "https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap",
+  },
+];
+
+export function Layout({ children }: { children: React.ReactNode }) {
+  return (
+    <html lang="en">
+      <head>
+        <meta charSet="utf-8" />
+        <Meta />
+        <Links />
+      </head>
+      <body>
+        {children}
+        <ScrollRestoration />
+        <Scripts />
+      </body>
+    </html>
+  );
+}
+
+export default function App() {
+  return <Outlet />;
+}
+`;
+
+// The template's app/app.css.
+const RR_CSS = `@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+}
+
+html,
+body {
+  @apply bg-white dark:bg-gray-950;
+
+  @media (prefers-color-scheme: dark) {
+    color-scheme: dark;
+  }
+}
+`;
 
 // Literal output of `npm create vite@latest -- --template react-ts`.
 const VITE_MAIN = `import { StrictMode } from 'react'
@@ -276,5 +331,99 @@ describe('setNextTitle (app/layout.tsx)', () => {
     expect(out.changed).toBe(true);
     expect(out.content).toMatch(/title:\s*"My App"/);
     expect(setNextTitle(out.content, 'My App').changed).toBe(false); // custom title untouched
+  });
+});
+
+describe('wireSsrRoot (React Router app/root.tsx)', () => {
+  it('wraps {children}, inlines the anti-flash script in <head>, and adds suppressHydrationWarning', () => {
+    const out = wireSsrRoot(RR_ROOT);
+    expect(out.changed).toBe(true);
+    expect(out.content).toContain(
+      "import { ThemeProvider, getAntiFlashScript } from '@offthegully/veneerui'",
+    );
+    expect(out.content).toMatch(/<html lang="en" suppressHydrationWarning>/);
+    expect(out.content).toContain(
+      '<script dangerouslySetInnerHTML={{ __html: getAntiFlashScript() }} />',
+    );
+    expect(out.content).toContain('<ThemeProvider>{children}</ThemeProvider>');
+    // no RSC boundary — must NOT introduce a 'use client' providers wrapper
+    expect(out.content).not.toContain('use client');
+    expect(out.content).not.toContain('<Providers>');
+  });
+
+  it('puts the script before the stylesheet would load (first in <head>, before <Meta/>/<Links/>)', () => {
+    const out = wireSsrRoot(RR_ROOT).content;
+    expect(out.indexOf('getAntiFlashScript()')).toBeLessThan(out.indexOf('<Links />'));
+  });
+
+  it('is idempotent', () => {
+    const once = wireSsrRoot(RR_ROOT).content;
+    expect(wireSsrRoot(once).changed).toBe(false);
+  });
+
+  it('bails (no change) when there is no <html> root document', () => {
+    const notARoot = 'export default function App() { return <div>{children}</div>; }';
+    const out = wireSsrRoot(notARoot);
+    expect(out.changed).toBe(false);
+    expect(out.reason).toMatch(/<html>/);
+  });
+
+  // The registry payoff: the SAME patcher wires TanStack Start's __root.tsx
+  // RootDocument — a different framework added as data, with no new code.
+  it('also wires a TanStack Start __root.tsx RootDocument', () => {
+    const TANSTACK_ROOT = `import { Outlet, HeadContent, Scripts } from '@tanstack/react-router'
+function RootDocument({ children }: { children: React.ReactNode }) {
+  return (
+    <html>
+      <head>
+        <HeadContent />
+      </head>
+      <body>
+        {children}
+        <Scripts />
+      </body>
+    </html>
+  )
+}`;
+    const out = wireSsrRoot(TANSTACK_ROOT);
+    expect(out.changed).toBe(true);
+    expect(out.content).toContain('suppressHydrationWarning');
+    expect(out.content).toContain('getAntiFlashScript()');
+    expect(out.content).toContain('<ThemeProvider>{children}</ThemeProvider>');
+  });
+});
+
+describe('stripReactRouterTemplateCss (app/app.css)', () => {
+  it('drops the pinned font @theme and re-points the surface at tokens', () => {
+    const out = stripReactRouterTemplateCss(RR_CSS);
+    expect(out.changed).toBe(true);
+    expect(out.content).not.toContain('--font-sans');
+    expect(out.content).not.toContain('bg-white dark:bg-gray-950');
+    expect(out.content).toContain('@apply bg-surface text-text;');
+    expect(out.content).not.toContain('prefers-color-scheme');
+    // clean formatting: the closing brace keeps its own line (no `text;}`)
+    expect(out.content).toMatch(/@apply bg-surface text-text;\n}/);
+    // the Tailwind import is preserved
+    expect(out.content).toContain('@import "tailwindcss";');
+  });
+
+  it('is idempotent / bails on an unrelated stylesheet', () => {
+    const once = stripReactRouterTemplateCss(RR_CSS).content;
+    expect(stripReactRouterTemplateCss(once).changed).toBe(false);
+    expect(stripReactRouterTemplateCss('@import "tailwindcss";\n').changed).toBe(false);
+  });
+});
+
+describe('stripReactRouterFontLinks (app/root.tsx)', () => {
+  it('empties a links() that loads Google Fonts', () => {
+    const out = stripReactRouterFontLinks(RR_ROOT);
+    expect(out.changed).toBe(true);
+    expect(out.content).toContain('export const links: Route.LinksFunction = () => [];');
+    expect(out.content).not.toContain('fonts.googleapis.com');
+  });
+
+  it("leaves a user's non-font links untouched", () => {
+    const custom = 'export const links: Route.LinksFunction = () => [\n  { rel: "icon", href: "/favicon.ico" },\n];';
+    expect(stripReactRouterFontLinks(custom).changed).toBe(false);
   });
 });

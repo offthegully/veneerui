@@ -219,4 +219,5 @@ components.
 - **The gallery** — [example themes](./gallery/README.md) and how to
   [contribute one](./gallery/CONTRIBUTING.md)
 - **Maintainers** — release & `SCHEMA_VERSION` policy in
-  [docs/publishing.md](./docs/publishing.md)
+  [docs/publishing.md](./docs/publishing.md); deploying the
+  [veneerui.dev playground to Fly.io](./docs/deployment.md)
