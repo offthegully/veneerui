@@ -145,7 +145,8 @@ Themes reference `"$schema": "https://veneerui.dev/schemas/theme-v1.json"` for
 editor autocomplete and inline validation. The playground (which *is*
 veneerui.dev) serves this automatically: `generate-theme.ts` writes the schema to
 `apps/playground/public/schemas/theme-v1.json`, Vite copies it to the dist root,
-and the deploy rsyncs it — so it lands at the `$schema` URL. It's generated from
+and the [Fly.io deploy](./deployment.md) bakes that `dist/` into the image (nginx
+serves `/schemas/` as JSON) — so it lands at the `$schema` URL. It's generated from
 the same `TOKEN_SCHEMA` as `packages/theme/theme-v1.json` (and the package's
 `@offthegully/veneerui/theme-v1.json`), so the served copy can't drift; just
 re-run `npm run gen:theme` after a schema change. If the URL is ever unreachable,

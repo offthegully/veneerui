@@ -1,0 +1,21 @@
+# Keep the build context lean and let `npm ci` rebuild node_modules inside the
+# image (host modules are the wrong platform and break native installs).
+**/node_modules
+**/dist
+**/dist-ssr
+
+.git
+.github
+.changeset
+.claude
+.playwright
+
+docs
+*.md
+!packages/**/README.md
+
+.DS_Store
+**/.DS_Store
+.env
+.env.*
+npm-debug.log*
