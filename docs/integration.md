@@ -344,7 +344,7 @@ export default function ThemeSwitcherIsland() {
 
 Multiple such islands stay in sync — each provider reads the same `localStorage` and writes
 the same `<html>` variables. This island-scoped provider is the one structural difference
-from every other target; tokens, anti-flash, and the no-hardcoded-colors rule are identical.
+from every other target; tokens, anti-flash, and the `veneer/*` themeability lint rules are identical.
 
 ---
 

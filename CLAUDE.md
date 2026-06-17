@@ -7,4 +7,6 @@ vocabulary, and the conventions for writing themeable components — lives in
 The one rule that matters most: **never hardcode colors or other visual values;
 drive everything from theme tokens.** Raw palette utilities (`bg-blue-500`),
 arbitrary colors (`bg-[#fff]`), and bare color literals fail CI via the
-`veneer/no-hardcoded-colors` lint rule and the conformance test.
+`veneer/no-hardcoded-colors` lint rule and the conformance test; baked shadows
+(`shadow-md`), off-scale spacing (`p-[18px]`), and dead opacity (`bg-opacity-*`)
+fail via the sibling `veneer/*` rules (most with `eslint --fix`).

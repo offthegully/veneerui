@@ -1,18 +1,23 @@
 # eslint-plugin-veneer
 
 The ESLint companion to [Veneer UI](https://www.npmjs.com/package/@offthegully/veneerui).
-One rule — `veneer/no-hardcoded-colors` — that keeps an app **themeable** after a
-token migration: it fails on the three ways a hardcoded color sneaks back in.
+Rules that keep an app **themeable** after a token migration: they fail on the
+ways a hardcoded *island* — a visual value no theme can reach — sneaks back in,
+across the axes that fail **silently** (a baked shadow or off-scale spacing
+doesn't render wrong, it just stops re-skinning).
 
-```
-1. a Tailwind palette utility       bg-blue-500, text-white
-2. an arbitrary color value         bg-[#fff], [color:rgb(...)]
-3. a bare color in an inline style  style={{ color: '#333' }}
-```
+| Rule | Flags | Fix |
+|---|---|---|
+| `veneer/no-hardcoded-colors` | `bg-blue-500`, `text-white`, `bg-[#fff]`, `[color:rgb(…)]`, inline `style={{ color: '#333' }}` | — |
+| `veneer/no-baked-shadow` | named `shadow-md`, `inset-shadow-sm`, `text-shadow-glow` (geometry baked at build time) | ✅ → `[box-shadow:var(--shadow-md)]` |
+| `veneer/no-island-spacing` | off-scale px: `p-[18px]`, `gap-[4px]` | ✅ → `p-4.5` |
+| `veneer/no-dead-opacity` | `bg-opacity-75` (a Tailwind v4 no-op — renders opaque) | — |
 
-The sanctioned escape hatch is a **token reference** — a semantic utility
-(`bg-primary`, `text-text-muted`, `border-border`) or `var(--token)` — neither of
-which the rule flags. It shares the exact detector behind Veneer's
+The sanctioned escape hatch is always a **token reference** — a semantic utility
+(`bg-primary`, `text-text-muted`, `border-border`) or `var(--token)` (e.g.
+`[box-shadow:var(--shadow-card)]`, `drop-shadow-lg`) — none of which the rules
+flag; `no-baked-shadow` and `no-island-spacing` autofix straight to that form.
+They share the exact detector behind Veneer's
 [conformance test](https://github.com/offthegully/veneerui/blob/main/apps/playground/src/conformance.test.ts),
 so your editor, CI, and the design-system's own tests never disagree about what
 counts as an island.
@@ -40,7 +45,7 @@ export default [
 ]
 ```
 
-Or wire the rule yourself:
+Or wire the rules yourself:
 
 ```js
 import veneer from 'eslint-plugin-veneer'
@@ -48,15 +53,28 @@ import veneer from 'eslint-plugin-veneer'
 export default [
   {
     plugins: { veneer },
-    rules: { 'veneer/no-hardcoded-colors': 'error' },
+    rules: {
+      'veneer/no-hardcoded-colors': 'error',
+      'veneer/no-baked-shadow': 'error',
+      'veneer/no-island-spacing': 'error',
+      'veneer/no-dead-opacity': 'error',
+    },
   },
 ]
 ```
 
-Test files legitimately contain color fixtures, so turn the rule off for them:
+Test files legitimately contain color/utility fixtures, so turn the rules off for them:
 
 ```js
-{ files: ['**/*.test.{ts,tsx}'], rules: { 'veneer/no-hardcoded-colors': 'off' } }
+{
+  files: ['**/*.test.{ts,tsx}'],
+  rules: {
+    'veneer/no-hardcoded-colors': 'off',
+    'veneer/no-baked-shadow': 'off',
+    'veneer/no-island-spacing': 'off',
+    'veneer/no-dead-opacity': 'off',
+  },
+}
 ```
 
 ## License

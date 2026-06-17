@@ -187,16 +187,16 @@ themes** is how you preview a theme you're working on.
 | `npm run dev` | Build `@offthegully/veneerui`, then run the playground dev server |
 | `npm run build` | Generate artifacts → build the package, playground, and CLI |
 | `npm run gen:theme` | Regenerate the tokens CSS / JSON Schema / token & escape-hatch references from `TOKEN_SCHEMA` |
-| `npm run lint` | ESLint across workspaces (incl. the `veneer/no-hardcoded-colors` rule) |
+| `npm run lint` | ESLint across workspaces (incl. the `veneer/*` themeability rules) |
 | `npm run typecheck` | Type-check every workspace |
 | `npm test` | Vitest across every workspace |
 
 `packages/theme/src/schema.ts` is the single source of truth — the canonical
 `TOKEN_SCHEMA`. `npm run gen:theme` regenerates everything downstream (tokens CSS,
 JSON Schema, token reference), so nothing hand-edited can drift. Two gates keep the
-app themeable: the `veneer/no-hardcoded-colors` lint rule fails CI on raw color
-utilities, and a conformance test proves a drastic theme switch re-skins 100% of
-the UI. See **[AGENTS.md](./AGENTS.md)** for the rules on writing themeable
+app themeable: the `veneer/*` lint rules fail CI on islands — raw colors, baked
+shadows, off-scale spacing, and dead opacity (most with `eslint --fix`) — and a
+conformance test proves a drastic theme switch re-skins 100% of the UI. See **[AGENTS.md](./AGENTS.md)** for the rules on writing themeable
 components.
 
 ---

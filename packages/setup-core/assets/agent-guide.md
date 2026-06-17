@@ -47,6 +47,13 @@ themeable. `drop-shadow-*` is the exception, so its class is fine. Durations are
 unitless numbers in ms, hence the `*1ms` in the calc. Gradient text:
 `bg-clip-text text-transparent bg-(image:--gradient-text)`.
 
+**Lint catches the mechanical islands**, most with autofix: `eslint --fix`
+rewrites `shadow-md` → `[box-shadow:var(--shadow-md)]` and off-scale `p-[18px]` →
+`p-4.5`, and `veneer/no-dead-opacity` flags the dead-in-v4 `bg-opacity-*`
+utilities. The other rows above (border-width, duration, focus-ring, icon-stroke)
+and a bare `opacity-50` are **not** caught — keep those in mind yourself, and lean
+on the stress-theme pass below.
+
 ### Token vocabulary (use role-based names)
 
 - **Brand:** `primary` (+ `-hover`/`-active`/`-subtle`), `accent` (+ `-hover`/`-active`/`-subtle`),
@@ -121,9 +128,9 @@ breaks. `tokenValue` does **not** resolve these — consume them via `var()`/uti
 
 ### Verify under a stress theme
 
-A theme only changes what a component **opts into**, and the failures are
-*silent*: a card with no shadow token renders flat under Neumorphic — not an
-error, just invisible elevation. So after a change, switch through the themes
+A theme only changes what a component **opts into**, and the failures lint can't
+see are *silent*: a card with no shadow token renders flat under Neumorphic — not
+an error, just invisible elevation. So after a change, switch through the themes
 that each stress one axis and confirm your view **visibly changes**:
 
 | Theme | Stresses | If nothing changes, you're missing… |
@@ -135,7 +142,8 @@ that each stress one axis and confirm your view **visibly changes**:
 
 **Done checklist:** no raw palette / hex / `*-opacity-N`; off-scale spacing via
 `p-4.5` not `p-[18px]`; cards carry a shadow token; distinct headings use
-`font-display`; verified by eye under ≥2 stress themes.
+`font-display`; verified by eye under ≥2 stress themes. (Lint + `eslint --fix`
+enforce the color, baked-shadow, spacing, and dead-opacity items; the rest are by eye.)
 
 ### Setup & authoring
 

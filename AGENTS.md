@@ -32,11 +32,14 @@ Three things follow from this, and they're the part agents miss:
    a box-shadow token, the elevation axis can't touch it. If no heading uses
    `font-display`, the type-family axis is inert. "I used semantic colors" buys
    you *one* axis and leaves the other eight flat.
-3. **The failures are silent.** A shadowless card under Neumorphic isn't an
-   error — it just renders as a flat rectangle the same color as the page.
-   `p-[18px]` works fine; it just won't rescale. Nothing fails loudly, so it
-   accumulates. The fix is to *reference* the axes (below) and *look* under a
-   stress theme (§8).
+3. **The silent failures are the ones lint can't see.** Lint now catches the
+   *mechanical* islands — palette/hex colors, baked `shadow-*`, off-scale
+   `p-[18px]`, dead `*-opacity-N` — and autofixes most (§2). What's left is
+   genuinely silent: a shadowless card under Neumorphic isn't an error, it just
+   renders as a flat rectangle the same color as the page; an axis you never
+   reference is inert; a pale fill's on-color washes out. Those don't fail loudly,
+   so they accumulate — the fix is to *reference* the axes (below) and *look*
+   under a stress theme (§8).
 
 `packages/theme/src/schema.ts` (`TOKEN_SCHEMA`) is the **single source of truth**
 for every token. `npm run gen:theme` regenerates the tokens CSS, JSON Schema, and
@@ -95,6 +98,14 @@ These are the cases agents get wrong most often. Use the right-hand form:
 
 The complete, schema-generated list of escape-hatch tokens is in
 [`docs/escape-hatches.generated.md`](docs/escape-hatches.generated.md).
+
+**Three island types now fail lint, with autofix — you rarely hand-write the fix:**
+`veneer/no-baked-shadow` rewrites the named `shadow-*`/`text-shadow-*` utilities →
+`[box-shadow:var(--shadow-md)]`; `veneer/no-island-spacing` rewrites off-scale
+`p-[18px]` → `p-4.5`; `veneer/no-dead-opacity` flags the dead-in-v4 `bg-opacity-*`
+utilities. The other rows (border-width, duration, focus-ring, icon-stroke — and a
+bare `opacity-50`) can't be caught safely by a class-string lint, so they stay on
+you, backed by §8.
 
 **Why shadows are special:** Tailwind v4's named `shadow-*` / `text-shadow-*`
 utilities *bake their geometry at build time* (only the color is a runtime var),
@@ -261,8 +272,9 @@ Design pitfalls to respect (see `docs/authoring-guide.md`):
   imported.
 - `apps/playground` — the dev harness / demo site. `src/components/` holds the
   rendered UI (`ProjectOverview`, `ThemeShowcase`, `ThemeSwitcher`, …).
-- `packages/lint-core` — the shared `veneer/no-hardcoded-colors` rule
-  (`rule.js`), reused by `eslint-plugin-veneer` and the playground's lint config.
+- `packages/lint-core` — the shared `veneer/*` island rules (`no-hardcoded-colors`,
+  `no-baked-shadow`, `no-island-spacing`, `no-dead-opacity`) and their detector
+  (`detect.js`/`rule.js`), reused by `eslint-plugin-veneer` and the playground's lint config.
 - `gallery/themes/<slug>/theme.json` — the canonical example themes.
 - `docs/` — `authoring-guide.md`, `schema-reference.md` (generated), integration
   guides. `scripts/` — `generate-theme.ts`, `gen-builtin.ts`, `build-registry.ts`.
@@ -309,7 +321,7 @@ A UI change isn't done until:
 Then run from the repo root:
 
 ```sh
-npm run lint            # incl. veneer/no-hardcoded-colors — fails on any island
+npm run lint            # veneer/* island rules: color, baked shadow, off-scale spacing, dead opacity (most autofix)
 npm run typecheck
 npm test                # incl. conformance.test.ts (no islands + drastic re-skin)
 ```

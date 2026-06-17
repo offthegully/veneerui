@@ -21,8 +21,9 @@ import { describe, expect, it } from 'vitest';
 import {
   findClassColorViolations,
   findBareColorLiterals,
+  SHADOW_SCALES,
 } from '../eslint-rules/detect-hardcoded-colors.js';
-import { applyTheme, BUILTIN_THEMES, type Theme } from '@offthegully/veneerui';
+import { applyTheme, BUILTIN_THEMES, TOKEN_SCHEMA, type Theme } from '@offthegully/veneerui';
 
 /**
  * Every non-test source file under the playground's src, as raw text — this is
@@ -128,5 +129,23 @@ describe('conformance: the detector actually detects', () => {
     expect(findClassColorViolations('bg-[image:var(--gradient-primary)]')).toEqual([]);
     expect(findClassColorViolations('[border-width:var(--border-width-default)]')).toEqual([]);
     expect(findBareColorLiterals('var(--color-primary)')).toEqual([]);
+  });
+});
+
+describe('conformance: the baked-shadow rule stays in sync with the schema', () => {
+  // Drift guard for the H2 class of bug: the no-baked-shadow autofix emits
+  // `var(--<type>-<name>)`, so its hardcoded per-type scales (lint-core/detect.js
+  // SHADOW_SCALES) must name exactly the schema's baked-shadow tokens — otherwise
+  // an autofix could point at a nonexistent token, which resolves to no shadow.
+  it('SHADOW_SCALES names exactly the schema baked-shadow tokens', () => {
+    const fromDetector = Object.entries(SHADOW_SCALES)
+      .flatMap(([type, names]) => names.map((n) => `${type}-${n}`))
+      .sort();
+    // box/text shadows only; drop-shadow-* is themeable via its own utility, so
+    // it's intentionally out of the rule's scope.
+    const fromSchema = TOKEN_SCHEMA.map((t) => t.name)
+      .filter((name) => /^(inset-shadow|text-shadow|shadow)-/.test(name))
+      .sort();
+    expect(fromDetector).toEqual(fromSchema);
   });
 });

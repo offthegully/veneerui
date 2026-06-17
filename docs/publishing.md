@@ -7,7 +7,7 @@ Veneer publishes **four** packages from this monorepo:
 | `@offthegully/veneerui` | `packages/theme` | the runtime + tokens (a dependency apps install) |
 | `veneerui` | `packages/cli` | the `init`/`add`/`list` CLI for existing apps (`npx veneerui`) |
 | `create-veneerui` | `packages/create-veneerui` | the `npm create veneerui` scaffolder for new apps |
-| `eslint-plugin-veneer` | `packages/eslint-plugin` | the `veneer/no-hardcoded-colors` ESLint rule |
+| `eslint-plugin-veneer` | `packages/eslint-plugin` | the `veneer/*` themeability ESLint rules (no-hardcoded-colors, no-baked-shadow, no-island-spacing, no-dead-opacity) |
 
 > `@veneerui/setup-core` (the shared setup logic) and `@veneerui/lint-core` are
 > **private** (`"private": true`, never published); both are bundled into the CLI,
