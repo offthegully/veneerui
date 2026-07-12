@@ -27,7 +27,7 @@ const FEATURES = [
   },
   {
     title: 'Safe by default',
-    body: "Themes can only name bundled fonts and reference tokens, so an imported theme can't smuggle in assets.",
+    body: "Themes can only name bundled fonts and reference tokens, so a theme can't smuggle in assets.",
     path: 'M12 3l8 4v5c0 5-3.4 8-8 9-4.6-1-8-4-8-9V7l8-4z',
   },
   {
@@ -42,7 +42,7 @@ const FEATURES = [
   },
   {
     title: 'No lock-in',
-    body: 'Your library lives in the browser. Export a theme as plain JSON and take it anywhere VeneerUI runs.',
+    body: 'A theme is one plain JSON file in your repo — take it anywhere VeneerUI runs, web or native.',
     path: 'M12 16V4m0 0L7 9m5-5l5 5M4 17v2a1 1 0 001 1h14a1 1 0 001-1v-2',
   },
 ];
@@ -86,7 +86,7 @@ const FAQS = [
   },
   {
     q: 'Where are my themes stored?',
-    a: 'In your browser. There is no account and nothing is uploaded — your library is local, and you can export any theme as JSON.',
+    a: 'Themes ship with the app as plain JSON; only your chosen theme is remembered in your browser. There is no account and nothing is uploaded.',
   },
   {
     q: 'Can a theme break my app?',
@@ -224,10 +224,10 @@ export function LandingPreview() {
           <div className="relative overflow-hidden rounded-2xl p-10 sm:p-16 bg-(image:--gradient-primary) [box-shadow:var(--shadow-xl)]">
             <div className="max-w-xl">
               <h2 className="font-display text-4xl font-black tracking-tight text-text-on-primary">
-                See it before you save it
+                See it before you ship it
               </h2>
               <p className="mt-4 text-base leading-relaxed text-text-on-primary opacity-90">
-                Import any theme and preview it live across your real screens. Keep what works, drop
+                Preview every theme live across your real screens. Keep what works, drop
                 what doesn't — your visitors never see a half-built skin.
               </p>
               <div className="mt-8">

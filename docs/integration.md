@@ -474,9 +474,8 @@ keeps the whole app re-skinnable. (To add the guide by hand, copy
 ## API
 
 `@offthegully/veneerui` exports the runtime: `ThemeProvider`, `useTheme()` (returns
-`current`, `enabledThemes`, `setCurrent`, `hydrated`, and the import/preview
-actions), `applyTheme`, `defineTheme`,
-`validateTheme`, `parseAndValidate` / `fetchTheme` / `isFetchableUrl`,
+`current`, `enabledThemes`, `setCurrent`, `setEnabled`, and `hydrated`),
+`applyTheme`, `defineTheme`, `validateTheme`,
 `tokenValue`, `getAntiFlashScript`, `TOKEN_SCHEMA`, `BUILTIN_THEMES`, and the
 `Theme` / `ThemeLibrary` types.
 

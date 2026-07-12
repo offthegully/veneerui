@@ -168,7 +168,10 @@ AA. That's a real tension; if you ship one for production rather than flair, nud
 
 ## 8. Preview loop
 
-Open the app → theme switcher → **Manage themes** → drop your file (or paste a raw
-URL). It validates locally and applies live as a preview; tweak the file and drop
-it again. When it's right, **Save to library**. From a clean checkout of an
-example, a first themed result should take well under ten minutes.
+Working in this repo: put your file at `gallery/themes/<slug>/theme.json`, run
+`npm run gen:builtin`, and start `npm run dev` — your theme appears in the
+playground switcher, validated by the same checks a gallery PR runs. Tweak the
+file, re-run `gen:builtin`, reload. In your own app, pass the parsed JSON through
+`normalizeAuthoredTheme` (or author inline with `defineTheme`) and add it to
+`<ThemeProvider themes={...}>`. From a clean checkout, a first themed result
+should take well under ten minutes.

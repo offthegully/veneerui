@@ -49,7 +49,7 @@ const FEATURES = [
   },
   {
     title: 'Themes are inert data',
-    body: 'A theme is plain JSON — no CSS, no scripts. Validation forbids url(), @import and javascript:, and fonts may only name a bundled allowlist, so themes are safe to load from anywhere.',
+    body: 'A theme is plain JSON — no CSS, no scripts. Validation forbids url(), @import and javascript:, and fonts may only name a bundled allowlist, so a theme is inert data.',
     path: 'M12 3l8 4v5c0 5-3.4 8-8 9-4.6-1-8-4-8-9V7l8-4z',
   },
   {
@@ -59,7 +59,7 @@ const FEATURES = [
   },
   {
     title: 'No server, no account',
-    body: 'Your theme library lives in the browser. Import, author, and export are entirely client-side — nothing is uploaded.',
+    body: 'Themes ship with your app; only the visitor’s choice is remembered in the browser. Everything is client-side — nothing is uploaded.',
     path: 'M3 12h18M12 3v18M5.6 5.6l12.8 12.8M18.4 5.6L5.6 18.4',
   },
   {

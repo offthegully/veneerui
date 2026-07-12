@@ -1,8 +1,8 @@
 # Contributing a theme
 
-> Authoring is entirely local: you write a `theme.json`, preview it in the app, and
-> save it to your own library. Nothing here needs an account or a server. Once the
-> gallery lives in its own public repo, themes will also be shareable by PR.
+> Authoring is entirely local: you write a `theme.json` and preview it in the
+> playground. Nothing here needs an account or a server. Once the gallery lives
+> in its own public repo, themes will also be shareable by PR.
 
 ## The local flow
 
@@ -12,9 +12,10 @@
 2. **Edit with autocomplete.** Keep the `"$schema"` line at the top so your editor
    suggests token names and flags invalid values and unknown tokens as you type.
    The full list is in [`docs/schema-reference.md`](../docs/schema-reference.md).
-3. **Preview it.** In the app: theme switcher → **Manage themes** → drop your
-   file. It's validated locally and applied live. Iterate until it's right, then
-   **Save to library**.
+3. **Preview it.** Put your folder under `themes/<your-slug>/`, run
+   `npm run gen:builtin`, and start `npm run dev` — your theme appears in the
+   playground switcher, validated by the same checks CI runs. Iterate by
+   re-running `gen:builtin` and reloading.
 4. **Write `notes.md`.** A short explanation of *why* you chose the values —
    that's what makes a theme a good template for the next author.
 
