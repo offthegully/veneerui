@@ -17,6 +17,7 @@
  */
 import { providerSnippet, nextAntiFlashSnippet, TOKENS_IMPORT } from './patch';
 import { getProfile, type FrameworkId } from './profiles';
+import { execHint, installHint, runHint, type PackageManager } from './pm';
 
 export const SETUP_FILE = 'VENEER-SETUP.md';
 
@@ -39,6 +40,8 @@ export type SetupFramework = FrameworkId | 'other';
 
 export interface SetupPlanInput {
   framework: SetupFramework;
+  /** The project's package manager, so the install/run commands match it. Defaults to npm. */
+  pm?: PackageManager;
   /** The entry file the provider wrap lands in (named so a human/agent can find it). */
   entryPath?: string;
   globalCssPath?: string;
@@ -51,7 +54,7 @@ export interface SetupPlanInput {
   providerWired: boolean;
   /** Vite: the `veneer()` plugin is present. Next: `<AntiFlashScript/>`. Other: the inline script. */
   antiFlashWired: boolean;
-  /** True once the `veneer/no-hardcoded-colors` ESLint rule is wired. When `false`, the lint step is added. */
+  /** True once Veneer's `veneer/*` ESLint rules are wired. When `false`, the lint step is added. */
   eslintWired?: boolean;
 }
 
@@ -154,17 +157,17 @@ function antiFlashStep(input: SetupPlanInput, n: number): string[] {
   ];
 }
 
-/** The `### N. …` lint-gate step (shown when the no-hardcoded-colors rule isn't wired). */
-function eslintStep(n: number): string[] {
+/** The `### N. …` lint-gate step (shown when the veneer/* rules aren't wired). */
+function eslintStep(pm: PackageManager, n: number): string[] {
   return [
-    `### ${n}. Enable the no-hardcoded-colors lint rule`,
+    `### ${n}. Enable the veneer/* themeability lint rules`,
     '',
-    'So a stray `bg-blue-500` or `#fff` fails lint instead of silently shipping an',
-    'un-themeable island, install the plugin and add its preset to your ESLint flat',
-    'config:',
+    'So a stray `bg-blue-500`, `shadow-md`, `p-[18px]`, or `bg-opacity-50` fails lint',
+    'instead of silently shipping an un-themeable island, install the plugin and add',
+    'its preset to your ESLint flat config:',
     '',
     '```sh',
-    'npm i -D eslint-plugin-veneer',
+    installHint(pm, ['eslint-plugin-veneer'], true),
     '```',
     '',
     '```js',
@@ -181,6 +184,7 @@ function eslintStep(n: number): string[] {
  * `init` can skip writing the file and report a clean setup instead).
  */
 export function buildSetupPlan(input: SetupPlanInput): string | null {
+  const pm = input.pm ?? 'npm';
   const tokenImportWired = input.tokenImportWired ?? true;
   const needsInterlock = !tokenImportWired;
   const needsProvider = !input.providerWired;
@@ -207,7 +211,7 @@ export function buildSetupPlan(input: SetupPlanInput): string | null {
   }
   if (needsProvider) steps.push(...providerStep(input, n++));
   if (needsAntiFlash) steps.push(...antiFlashStep(input, n++));
-  if (needsEslint) steps.push(...eslintStep(n++));
+  if (needsEslint) steps.push(...eslintStep(pm, n++));
 
   // What init already handled — so the agent/dev has the full picture and does
   // not redo it. (On an unrecognized framework, often just the agent guide.)
@@ -260,13 +264,13 @@ export function buildSetupPlan(input: SetupPlanInput): string | null {
     '',
     'Automated checks — these exit on their own, so they are safe for an agent to run:',
     '',
-    '- typecheck — e.g. `npm run typecheck` / `tsc -b`',
-    '- production build — e.g. `npm run build`',
+    `- typecheck — e.g. \`${runHint(pm, 'typecheck')}\` / \`tsc -b\``,
+    `- production build — e.g. \`${runHint(pm, 'build')}\``,
     '',
-    'Manual check — skip this if an AI agent is finishing setup, since `npm run dev`',
+    `Manual check — skip this if an AI agent is finishing setup, since \`${runHint(pm, 'dev')}\``,
     'never exits and would hang an automated run:',
     '',
-    '- `npm run dev`, then confirm the app renders with no console errors on the default theme',
+    `- \`${runHint(pm, 'dev')}\`, then confirm the app renders with no console errors on the default theme`,
     '',
     '## When it works',
     '',
@@ -276,8 +280,8 @@ export function buildSetupPlan(input: SetupPlanInput): string | null {
     '',
     'Optional next steps (not required for setup):',
     '',
-    '- `npx veneerui add switcher` — drop in a theme switcher UI',
-    '- `npx veneerui add fonts` — load the fonts the built-in themes name',
+    `- \`${execHint(pm, 'veneerui add switcher')}\` — drop in a theme switcher UI`,
+    `- \`${execHint(pm, 'veneerui add fonts')}\` — load the fonts the built-in themes name`,
     '- ship your own themes with `defineTheme` — see the integration guide',
     '',
   ].join('\n');

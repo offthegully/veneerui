@@ -30,6 +30,12 @@ cd my-app
 npm start          # press i (iOS) / a (Android), or scan with Expo Go
 ```
 
+> **Any package manager works** — `pnpm create veneerui my-app --framework expo`,
+> `yarn create veneerui my-app --framework expo`, or `bun create veneerui my-app
+> --framework expo`. Only npm needs the `--` before `--framework`; the others take
+> the flag directly, and `npm start` becomes `pnpm start` / `yarn start` / `bun start`
+> to match. The scaffolder installs and codegens with whichever one you used.
+
 This delegates to `create-expo-app`, then wires Veneer: the NativeWind + Tailwind v4
 config, a token codegen, a `ThemeProvider` + `ThemeSwitcher`, and a token-driven starter
 screen — and runs `npm run gen:tokens` so it boots themed. Tap the switcher and watch it
@@ -45,7 +51,7 @@ re-skin; build screens from the token utilities (see the app's `AGENTS.md`).
 ```sh
 npx expo install nativewind react-native-css react-native-reanimated \
   react-native-worklets react-native-safe-area-context
-npm i -D tailwindcss @tailwindcss/postcss
+npm i -D tailwindcss @tailwindcss/postcss   # or pnpm add -D / yarn add -D / bun add -d
 ```
 
 Wire `metro.config.js` (`withNativewind`) and `babel-preset-expo` — copy both from the

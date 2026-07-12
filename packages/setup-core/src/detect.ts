@@ -7,6 +7,7 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { FRAMEWORK_PROFILES, getProfile, type FrameworkId } from './profiles';
+import { detectPm, type PackageManager } from './pm';
 
 export type Framework = FrameworkId | 'unknown';
 
@@ -30,6 +31,9 @@ export interface Detection {
   /** The project's ESLint flat config, if one exists — where the lint gate is wired. */
   eslintConfigPath?: string;
   componentsDir: string;
+  /** The project's package manager (corepack field → lockfile → npm), so the
+   * "we never install, we instruct" output speaks the right dialect. */
+  pm: PackageManager;
 }
 
 /**
@@ -101,5 +105,6 @@ export function detect(root: string): Detection {
     entryPath: firstExisting(root, entryCandidates),
     eslintConfigPath: firstExisting(root, ESLINT_CONFIGS),
     componentsDir: profile?.componentsDir ?? (usesSrcDir ? 'src/components' : 'components'),
+    pm: detectPm(root),
   };
 }

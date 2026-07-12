@@ -2,10 +2,11 @@ import { describe, expect, it } from 'vitest';
 import { runFonts } from './fonts';
 import { FONT_PACKAGES } from '@veneerui/lint-core/font-packages';
 
-/** Capture the printed lines. runFonts only reads package.json for detection. */
+/** Capture the printed lines. `pm` is pinned so the install command is deterministic
+ * (not dependent on whatever package manager the test host repo happens to use). */
 function run(root = process.cwd()): string {
   const lines: string[] = [];
-  runFonts({ root, log: (l) => lines.push(l) });
+  runFonts({ root, pm: 'npm', log: (l) => lines.push(l) });
   return lines.join('\n');
 }
 

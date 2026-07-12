@@ -58,10 +58,11 @@ export function addViteAntiFlash(config: string): PatchResult {
 export const ESLINT_PLUGIN = 'eslint-plugin-veneer';
 
 /**
- * Add Veneer's flat-config preset to an ESLint config so `no-hardcoded-colors`
- * runs on the project — a stray `bg-blue-500` fails lint instead of silently
- * shipping an un-themeable island. Inserts the import after the last existing one
- * and `veneer.configs.recommended` as the first entry of the flat-config array.
+ * Add Veneer's flat-config preset to an ESLint config so the `veneer/*`
+ * themeability rules run on the project — a stray `bg-blue-500` (or `shadow-md`,
+ * `p-[18px]`, `bg-opacity-50`) fails lint instead of silently shipping an
+ * un-themeable island. Inserts the import after the last existing one and
+ * `veneer.configs.recommended` as the first entry of the flat-config array.
  * Recognizes the shapes the official scaffolders emit (create-vite:
  * `export default defineConfig([…])`; current create-next-app:
  * `const eslintConfig = defineConfig([…])`; older create-next-app:
@@ -96,7 +97,7 @@ export function addEslintRule(config: string): PatchResult {
     : `${importLine}\n${config}`;
 
   // Add the preset as the first config entry. Order is safe: it only switches the
-  // no-hardcoded-colors rule on, and nothing the scaffolders emit turns it off.
+  // veneer/* rules on, and nothing the scaffolders emit turns them off.
   const out = withImport.replace(anchor, (s) => `${s}\n  veneer.configs.recommended,`);
   return { content: out, changed: true };
 }

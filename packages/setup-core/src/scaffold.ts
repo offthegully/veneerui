@@ -31,35 +31,21 @@ import { runAdd } from './add';
 import { runAgentHandoff, type AgentChoice } from './agent';
 import { SETUP_FILE } from './setup-plan';
 import { runScaffoldExpo } from './scaffold-expo';
+import { installArgs, type PackageManager } from './pm';
 
 /** Frameworks wired through the shared web path (official scaffolder + runInit). */
 export type WebFramework = 'vite' | 'next' | 'react-router';
 /** Every framework `create-veneerui` can scaffold. `expo` takes a separate native path. */
 export type ScaffoldFramework = WebFramework | 'expo';
-export type PackageManager = 'npm' | 'pnpm' | 'yarn' | 'bun';
 
 /** The runtime the scaffolded app installs. Pin only the runtime; `add`/wiring is in-process. */
 const RUNTIME_PKG = '@offthegully/veneerui';
 const TAILWIND_PKGS = ['tailwindcss', '@tailwindcss/vite'];
-// The no-hardcoded-colors lint gate, installed dev-only; runInit wires the preset.
+// The veneer/* themeability lint rules, installed dev-only; runInit wires the preset.
 const ESLINT_PKG = 'eslint-plugin-veneer';
 // Just the switcher (it pulls in its own panels). The full ThemeShowcase stays in
 // the playground/docs — a new app shouldn't ship a demo component to delete.
 const STARTER_COMPONENTS = ['switcher'];
-
-export function isPackageManager(s: string | undefined): s is PackageManager {
-  return s === 'npm' || s === 'pnpm' || s === 'yarn' || s === 'bun';
-}
-
-/** Detect the package manager from `npm_config_user_agent`; `override` (a flag) wins. */
-export function resolvePm(
-  userAgent: string | undefined = process.env.npm_config_user_agent,
-  override?: string,
-): PackageManager {
-  if (isPackageManager(override)) return override;
-  const tok = (userAgent ?? '').split('/')[0];
-  return isPackageManager(tok) ? tok : 'npm';
-}
 
 function nextFlags(pm: PackageManager): string[] {
   const use = { npm: '--use-npm', pnpm: '--use-pnpm', yarn: '--use-yarn', bun: '--use-bun' }[pm];
@@ -95,13 +81,6 @@ export function buildScaffoldCommand(
         : ['--template', 'react-ts', '--no-interactive'];
   const sep = pm === 'npm' ? ['--'] : [];
   return { cmd: pm, args: ['create', tool, name, ...sep, ...flags] };
-}
-
-/** The install args for a package manager (`npm install` vs `<pm> add`). */
-export function installArgs(pm: PackageManager, pkgs: string[], dev = false): string[] {
-  if (pm === 'npm') return ['install', ...(dev ? ['--save-dev'] : []), ...pkgs];
-  const devFlag = dev ? (pm === 'bun' ? '-d' : '-D') : null;
-  return ['add', ...(devFlag ? [devFlag] : []), ...pkgs];
 }
 
 /** A minimal, self-contained token-driven starter page — themeable on first run. */
@@ -276,7 +255,7 @@ function normalizeReactRouterScaffold(appDir: string, log: (l: string) => void):
 
 /** A minimal ESLint flat config: parse TS/TSX and enforce only Veneer's gate. */
 const REACT_ROUTER_ESLINT_CONFIG = `// create-react-router ships no ESLint, so this is the whole linter — kept minimal
-// on purpose: a TS/TSX parser plus Veneer's no-hardcoded-colors gate, and no
+// on purpose: a TS/TSX parser plus Veneer's themeability rules (veneer/*), and no
 // opinionated style rules (so it never fails on the template's own code).
 import tseslint from 'typescript-eslint';
 import veneer from 'eslint-plugin-veneer';
@@ -292,7 +271,7 @@ export default [
 `;
 
 /**
- * Make the no-hardcoded-colors gate runnable on a fresh React Router app, which
+ * Make the veneer/* themeability gate runnable on a fresh React Router app, which
  * ships no ESLint: write a minimal `eslint.config.js` (with the Veneer preset
  * already in it, so `init` reports it wired rather than leaving a setup step) and
  * add a `lint` script. Both are skipped if the user already has them. The
@@ -302,7 +281,7 @@ function setUpReactRouterEslint(appDir: string, log: (l: string) => void): void 
   const cfgAbs = join(appDir, 'eslint.config.js');
   if (!existsSync(cfgAbs)) {
     writeFileSync(cfgAbs, REACT_ROUTER_ESLINT_CONFIG);
-    log('  ✓ eslint.config.js — the no-hardcoded-colors gate (React Router ships no ESLint)');
+    log('  ✓ eslint.config.js — the veneer/* themeability gate (React Router ships no ESLint)');
   }
   const pkgAbs = join(appDir, 'package.json');
   if (existsSync(pkgAbs)) {

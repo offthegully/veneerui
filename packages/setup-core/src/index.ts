@@ -6,6 +6,7 @@
  * and VENEER-SETUP.md, copying in registry components, scaffolding a fresh app,
  * and handing off to a coding agent.
  */
+export * from './pm';
 export * from './profiles';
 export * from './detect';
 export * from './patch';

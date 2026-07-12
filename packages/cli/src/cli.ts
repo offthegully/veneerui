@@ -6,7 +6,7 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { runInit, runAdd, runFonts } from '@veneerui/setup-core';
+import { runInit, runAdd, runFonts, isPackageManager, type PackageManager } from '@veneerui/setup-core';
 import { runList } from './list';
 
 interface Parsed {
@@ -16,6 +16,8 @@ interface Parsed {
   dryRun: boolean;
   force: boolean;
   dir?: string;
+  /** Override the package manager init/add/fonts print install commands for. */
+  pm?: PackageManager;
   help: boolean;
   version: boolean;
 }
@@ -41,6 +43,10 @@ function parse(argv: string[]): Parsed {
     else if (a.startsWith('--dir=')) p.dir = a.slice('--dir='.length);
     else if (a === '--cwd') p.root = resolve(rest[++i]);
     else if (a.startsWith('--cwd=')) p.root = resolve(a.slice('--cwd='.length));
+    // `--pm` overrides the lockfile-detected package manager the instructions use;
+    // an unrecognized value is ignored so detection still wins (no hard error).
+    else if (a === '--pm') { const v = rest[++i]; if (isPackageManager(v)) p.pm = v; }
+    else if (a.startsWith('--pm=')) { const v = a.slice('--pm='.length); if (isPackageManager(v)) p.pm = v; }
     else p.positionals.push(a);
   }
   return p;
@@ -66,8 +72,13 @@ Usage:
   veneerui list                                 List available components
   veneerui --version | --help
 
+The package manager is detected from your lockfile (so install commands are
+printed as pnpm/yarn/bun where appropriate); pass --pm <npm|pnpm|yarn|bun> to
+override it.
+
 Examples:
   npx veneerui init
+  pnpm dlx veneerui init --pm pnpm
   npx veneerui add switcher
   npx veneerui add switcher banner --dir src/ui
   npx veneerui add fonts
@@ -90,13 +101,13 @@ function main(): void {
 
   switch (p.command) {
     case 'init':
-      runInit({ root: p.root, dryRun: p.dryRun });
+      runInit({ root: p.root, dryRun: p.dryRun, pm: p.pm });
       break;
     case 'add':
       // `add fonts` is a distinct flow (install packages + import lines), not a
       // component copy — route it before the registry resolver.
-      if (p.positionals[0] === 'fonts') runFonts({ root: p.root });
-      else runAdd(p.positionals, { root: p.root, dir: p.dir, force: p.force, dryRun: p.dryRun });
+      if (p.positionals[0] === 'fonts') runFonts({ root: p.root, pm: p.pm });
+      else runAdd(p.positionals, { root: p.root, dir: p.dir, force: p.force, dryRun: p.dryRun, pm: p.pm });
       break;
     case 'list':
       runList();

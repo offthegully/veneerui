@@ -31,16 +31,20 @@ import {
 import { createNextProviders, wireNextLayout, wireSsrRoot, wrapEntryWithProvider } from './entry-patch';
 import { agentDocTargets, readAgentGuide, upsertAgentGuide } from './agents';
 import { buildSetupPlan, EXPERIMENTAL_FRAMEWORKS, SETUP_FILE } from './setup-plan';
+import { execHint, installHint, runHint, type PackageManager } from './pm';
 
 export interface InitOptions {
   root: string;
   dryRun?: boolean;
+  /** Override the detected package manager for the printed instructions. */
+  pm?: PackageManager;
   log?: (line: string) => void;
 }
 
 export function runInit(opts: InitOptions): void {
   const log = opts.log ?? console.log;
   const det = detect(opts.root);
+  const pm = opts.pm ?? det.pm;
   const dry = opts.dryRun ? ' (dry-run)' : '';
 
   log(`Veneer init${dry}`);
@@ -55,10 +59,10 @@ export function runInit(opts: InitOptions): void {
 
   // 1 — dependencies (we never auto-install; we instruct).
   log('1. Dependencies');
-  if (!det.hasVeneerTheme) log('   → run: npm i @offthegully/veneerui  (before `npm run dev`)');
+  if (!det.hasVeneerTheme) log(`   → run: ${installHint(pm, ['@offthegully/veneerui'])}  (before \`${runHint(pm, 'dev')}\`)`);
   else log('   ✓ @offthegully/veneerui already a dependency');
-  if (!det.hasTailwind) log('   ! Tailwind v4 not found — Veneer requires it (npm i tailwindcss @tailwindcss/vite).');
-  if (!det.hasEslintPlugin) log('   → run: npm i -D eslint-plugin-veneer  (the no-hardcoded-colors lint gate)');
+  if (!det.hasTailwind) log(`   ! Tailwind v4 not found — Veneer requires it (${installHint(pm, ['tailwindcss', '@tailwindcss/vite'])}).`);
+  if (!det.hasEslintPlugin) log(`   → run: ${installHint(pm, ['eslint-plugin-veneer'], true)}  (the veneer/* themeability lint rules)`);
   else log('   ✓ eslint-plugin-veneer already a dependency');
 
   // 2 — token @import in the global stylesheet.
@@ -88,9 +92,10 @@ export function runInit(opts: InitOptions): void {
   else if (wiring === 'next-app') wireNextEntry(opts, det, log);
   else wireSsrRootEntry(opts, det, log);
 
-  // 4 — the lint gate: enable veneer/no-hardcoded-colors so a stray bg-blue-500
-  // fails lint/CI instead of silently shipping an un-themeable island.
-  log('\n4. Lint gate (no hardcoded colors)');
+  // 4 — the lint gate: enable the veneer/* themeability rules so a stray
+  // bg-blue-500 / shadow-md / p-[18px] / bg-opacity-50 fails lint/CI instead of
+  // silently shipping an un-themeable island.
+  log('\n4. Lint gate (themeability rules)');
   wireEslint(opts, det, log);
 
   // 5 — agent guide so AI coding tools write themeable components.
@@ -103,6 +108,7 @@ export function runInit(opts: InitOptions): void {
   log('\n6. Finish setup');
   const plan = buildSetupPlan({
     framework: det.framework,
+    pm,
     entryPath: det.entryPath,
     globalCssPath: det.globalCssPath,
     viteConfigPath: det.viteConfigPath,
@@ -232,10 +238,11 @@ function wireSsrRootEntry(opts: InitOptions, det: Detection, log: (line: string)
 }
 
 /**
- * Enable the `veneer/no-hardcoded-colors` rule in the project's ESLint flat
- * config — the executable half of the token contract (the agent guide is the
- * prose half). Patches the config the scaffolders emit; on an unfamiliar shape it
- * prints the snippet and step 6 records it in VENEER-SETUP.md.
+ * Enable Veneer's `veneer/*` themeability rules in the project's ESLint flat
+ * config — the `recommended` preset (no-hardcoded-colors, no-baked-shadow,
+ * no-island-spacing, no-dead-opacity), the executable half of the token contract
+ * (the agent guide is the prose half). Patches the config the scaffolders emit; on
+ * an unfamiliar shape it prints the snippet and step 6 records it in VENEER-SETUP.md.
  */
 function wireEslint(opts: InitOptions, det: Detection, log: (line: string) => void): void {
   if (!det.eslintConfigPath) {
@@ -246,7 +253,7 @@ function wireEslint(opts: InitOptions, det: Detection, log: (line: string) => vo
   const abs = join(opts.root, det.eslintConfigPath);
   const before = readFileSync(abs, 'utf8');
   if (before.includes('eslint-plugin-veneer')) {
-    log(`   ✓ ${det.eslintConfigPath} already enables veneer/no-hardcoded-colors`);
+    log(`   ✓ ${det.eslintConfigPath} already enables veneer.configs.recommended`);
     return;
   }
   const { content, changed, reason } = addEslintRule(before);
@@ -268,6 +275,7 @@ function wireEslint(opts: InitOptions, det: Detection, log: (line: string) => vo
  * path) — making the "tell your agent to finish it" flow work everywhere.
  */
 function runOtherFramework(opts: InitOptions, det: Detection, log: (line: string) => void): void {
+  const pm = opts.pm ?? det.pm;
   log('Could not auto-detect Vite or Next — those are the two `init` wires for you.');
   log("Veneer's runtime is framework-agnostic (React 19 + Tailwind v4); these popular");
   log('setups should work via the manual steps, though they are not fully tested yet:');
@@ -278,15 +286,15 @@ function runOtherFramework(opts: InitOptions, det: Detection, log: (line: string
     (det.hasReact || det.hasTailwind || det.hasVeneerTheme);
   if (!plausible) {
     log("\nThis doesn't look like a React + Tailwind project yet. Once `react` and");
-    log('`tailwindcss` are installed, re-run `npx veneerui init`, or follow the');
+    log(`\`tailwindcss\` are installed, re-run \`${execHint(pm, 'veneerui init')}\`, or follow the`);
     log('"Other React frameworks" section of docs/integration.md by hand.');
     return;
   }
 
   log('\n1. Dependencies');
-  if (!det.hasVeneerTheme) log('   → run: npm i @offthegully/veneerui  (before `npm run dev`)');
+  if (!det.hasVeneerTheme) log(`   → run: ${installHint(pm, ['@offthegully/veneerui'])}  (before \`${runHint(pm, 'dev')}\`)`);
   else log('   ✓ @offthegully/veneerui already a dependency');
-  if (!det.hasTailwind) log('   ! Tailwind v4 not found — Veneer requires it (npm i tailwindcss).');
+  if (!det.hasTailwind) log(`   ! Tailwind v4 not found — Veneer requires it (${installHint(pm, ['tailwindcss'])}).`);
 
   log('\n2. Agent guide (so AI tools write themeable components)');
   const agentDocs = writeAgentGuide(opts, log);
@@ -300,6 +308,7 @@ function runOtherFramework(opts: InitOptions, det: Detection, log: (line: string
   log('\n3. Finish setup');
   const plan = buildSetupPlan({
     framework: 'other',
+    pm,
     globalCssPath: tokenImportWired ? det.globalCssPath : undefined,
     agentDocs,
     tokenImportWired,

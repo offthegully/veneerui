@@ -17,9 +17,12 @@
 import { FONT_PACKAGES } from '@veneerui/lint-core/font-packages';
 import { detect, type Framework } from './detect';
 import { getProfile } from './profiles';
+import { installHint, type PackageManager } from './pm';
 
 export interface FontsOptions {
   root: string;
+  /** Override the detected package manager for the printed install command. */
+  pm?: PackageManager;
   log?: (line: string) => void;
 }
 
@@ -40,6 +43,7 @@ function importHint(framework: Framework): string {
 export function runFonts(opts: FontsOptions): void {
   const log = opts.log ?? console.log;
   const det = detect(opts.root);
+  const pm = opts.pm ?? det.pm;
 
   const pkgs = FONT_PACKAGES.map((f) => f.pkg);
   const imports = FONT_PACKAGES.flatMap((f) => f.imports);
@@ -47,7 +51,7 @@ export function runFonts(opts: FontsOptions): void {
   log('Veneer fonts — load the families the built-in themes name.\n');
 
   log('1. Install the Fontsource packages:');
-  log(`   npm i ${pkgs.join(' ')}\n`);
+  log(`   ${installHint(pm, pkgs)}\n`);
 
   log(`2. ${importHint(det.framework)}`);
   for (const spec of imports) log(`     import '${spec}'`);

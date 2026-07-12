@@ -9,6 +9,7 @@ import { join } from 'node:path';
 import { detect, type Framework } from './detect';
 import { getProfile } from './profiles';
 import { loadManifest, readComponentSource, resolveWithDeps } from './registry';
+import { installHint, type PackageManager } from './pm';
 
 /**
  * Hooks/state that make a component a client component under React Server
@@ -35,6 +36,8 @@ export interface AddOptions {
   dir?: string;
   force?: boolean;
   dryRun?: boolean;
+  /** Override the detected package manager for the printed install reminder. */
+  pm?: PackageManager;
   log?: (line: string) => void;
 }
 
@@ -75,5 +78,6 @@ export function runAdd(names: string[], opts: AddOptions): void {
   }
 
   if (injectedClient) log("\nAdded 'use client' for Next — these components use hooks (inert on other setups).");
-  log('\nThese import from "@offthegully/veneerui" — ensure it is installed (`npm i @offthegully/veneerui`).');
+  const pm = opts.pm ?? det.pm;
+  log(`\nThese import from "@offthegully/veneerui" — ensure it is installed (\`${installHint(pm, ['@offthegully/veneerui'])}\`).`);
 }

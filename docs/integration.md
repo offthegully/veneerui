@@ -39,6 +39,16 @@ drops in a theme switcher — so it runs themed from the first commit:
 npm create veneerui@latest my-app
 ```
 
+**Any package manager works** — the scaffolder installs and wires with whichever
+one you invoke it through, so use the create command for yours (or force one with
+the `--pm` flag below):
+
+```sh
+pnpm create veneerui my-app
+yarn create veneerui my-app
+bun create veneerui my-app
+```
+
 It asks one thing — **which framework** (Vite + React, Next.js App Router, React Router 7,
 or [Expo / React Native](./expo.md) — experimental) — then delegates to that framework's
 official scaffolder (`create-vite` / `create-next-app` / `create-react-router` /
@@ -112,9 +122,11 @@ so switching a theme re-skins every utility instantly with no re-render.
 (always true on a freshly scaffolded app): the token `@import`, the anti-flash
 plugin/script, **and** wrapping the root in `<ThemeProvider>`. Anything whose shape
 it can't patch safely it leaves in a self-removing [`VENEER-SETUP.md`](#agent) for
-you (or your agent) to finish. It **detects your framework**, **never installs
-packages** (it tells you to), and is idempotent + `--dry-run`-able. Here's what
-lands per framework — also the recipe if you're wiring by hand.
+you (or your agent) to finish. It **detects your framework** and **your package
+manager** (from the lockfile), **never installs packages** (it prints the exact
+`npm` / `pnpm` / `yarn` / `bun` command to run — pass `--pm` to override), and is
+idempotent + `--dry-run`-able. Here's what lands per framework — also the recipe if
+you're wiring by hand.
 
 <a id="vite"></a>
 
@@ -355,7 +367,10 @@ from every other target; tokens, anti-flash, and the `veneer/*` themeability lin
 `veneerui init` wires the [three invariants](#interlock) into an existing React 19 +
 Tailwind v4 app and adds the [`eslint-plugin-veneer`](../packages/eslint-plugin) gate
 — it patches the common create-vite / create-next shapes in place, and anything it
-can't patch safely lands in a [`VENEER-SETUP.md`](#agent). But wiring is the easy 10%:
+can't patch safely lands in a [`VENEER-SETUP.md`](#agent). Since `init` only instructs
+(it never installs), it reads your lockfile and prints every dependency command in
+your package manager's dialect — `pnpm add …`, `yarn add …`, `bun add …` — with `--pm`
+to override. But wiring is the easy 10%:
 the real work is **moving your current styles onto tokens**. Veneer only re-skins
 elements that already use token utilities (`bg-surface`, `text-text`,
 `border-border`), so hardcoded colors, baked shadows (`shadow-md` →

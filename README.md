@@ -59,10 +59,23 @@ in a theme switcher, so it runs themed from the first commit with no manual step
 
 ```sh
 npm create veneerui@latest my-app
-# → pick Vite, Next.js, or Expo; it scaffolds, installs, wires the tokens + provider +
-#   anti-flash (or NativeWind, on Expo) + the no-hardcoded-colors lint gate, adds a ThemeSwitcher
+# → pick Vite, Next.js, React Router, or Expo; it scaffolds, installs, wires the tokens +
+#   provider + anti-flash (or NativeWind, on Expo) + the no-hardcoded-colors lint gate, adds a ThemeSwitcher
 cd my-app && npm run dev
 ```
+
+**Use any package manager.** The scaffolder detects whichever one ran it and
+installs + wires with it (or pass `--pm <npm|pnpm|yarn|bun>` to force one):
+
+```sh
+pnpm create veneerui my-app
+yarn create veneerui my-app
+bun create veneerui my-app
+```
+
+Adding Veneer to an **existing** app? `npx veneerui init` detects your package
+manager from the lockfile, so the install commands it prints match your setup
+(`pnpm add …`, `bun add …`); override with `--pm` if needed.
 
 **Hand it to your agent (optional).** Add `--agent` and the scaffolder finishes and
 verifies the setup with whatever coding-agent CLI you have installed (`claude`,

@@ -268,10 +268,12 @@ function buildFontsDoc(): string {
     '|---|---|---|',
     ...FONTS.map(row),
     '',
-    '`veneerui add fonts` prints the install command and import lines for the whole',
-    'set. Import the specifiers in your app entry (Vite: `src/main.tsx`; Next: the',
-    'root `layout.tsx` or your global CSS via `@import`). Variable packages ship one',
-    'file; static ones (IBM Plex Mono) need a line per weight.',
+    'The **Install** column shows the npm form; `veneerui add fonts` prints the same',
+    "command in your package manager's dialect (`pnpm add` / `yarn add` / `bun add`,",
+    'detected from your lockfile) plus the import lines for the whole set. Import the',
+    'specifiers in your app entry (Vite: `src/main.tsx`; Next: the root `layout.tsx` or',
+    'your global CSS via `@import`). Variable packages ship one file; static ones',
+    '(IBM Plex Mono) need a line per weight.',
     '',
   ].join('\n');
 }

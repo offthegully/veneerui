@@ -1,35 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import {
-  buildScaffoldCommand,
-  installArgs,
-  isPackageManager,
-  resolvePm,
-  starterPage,
-} from './scaffold';
-
-describe('resolvePm', () => {
-  it('reads the package manager from npm_config_user_agent', () => {
-    expect(resolvePm('pnpm/9.0.0 npm/? node/v20')).toBe('pnpm');
-    expect(resolvePm('yarn/1.22.0 npm/?')).toBe('yarn');
-    expect(resolvePm('bun/1.1.0')).toBe('bun');
-    expect(resolvePm('npm/10.0.0 node/v20')).toBe('npm');
-  });
-
-  it('falls back to npm for an unknown or missing agent', () => {
-    expect(resolvePm(undefined)).toBe('npm');
-    expect(resolvePm('deno/1.0')).toBe('npm');
-  });
-
-  it('lets an explicit override win', () => {
-    expect(resolvePm('pnpm/9', 'bun')).toBe('bun');
-    expect(resolvePm('pnpm/9', 'not-a-pm')).toBe('pnpm');
-  });
-
-  it('validates package-manager names', () => {
-    expect(isPackageManager('pnpm')).toBe(true);
-    expect(isPackageManager('cargo')).toBe(false);
-  });
-});
+import { buildScaffoldCommand, starterPage } from './scaffold';
 
 describe('buildScaffoldCommand', () => {
   it('delegates Vite to create-vite (react-ts), non-interactive, with -- for npm', () => {
@@ -94,21 +64,6 @@ describe('buildScaffoldCommand', () => {
       'react-router',
       'a',
     ]);
-  });
-});
-
-describe('installArgs', () => {
-  it('uses `npm install` / `<pm> add`', () => {
-    expect(installArgs('npm', ['x'])).toEqual(['install', 'x']);
-    expect(installArgs('pnpm', ['x'])).toEqual(['add', 'x']);
-    expect(installArgs('yarn', ['x'])).toEqual(['add', 'x']);
-    expect(installArgs('bun', ['x'])).toEqual(['add', 'x']);
-  });
-
-  it('threads the dev flag per package manager', () => {
-    expect(installArgs('npm', ['x'], true)).toEqual(['install', '--save-dev', 'x']);
-    expect(installArgs('pnpm', ['x'], true)).toEqual(['add', '-D', 'x']);
-    expect(installArgs('bun', ['x'], true)).toEqual(['add', '-d', 'x']);
   });
 });
 

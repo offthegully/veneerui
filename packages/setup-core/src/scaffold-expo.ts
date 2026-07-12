@@ -18,7 +18,8 @@ import { spawnSync } from 'node:child_process';
 import { cpSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { installArgs, type PackageManager, type ScaffoldOptions } from './scaffold';
+import { type ScaffoldOptions } from './scaffold';
+import { installArgs, runHint, type PackageManager } from './pm';
 import { runAgentHandoff } from './agent';
 
 /** The runtime data slice the codegen reads from; dev-only (the app never imports it). */
@@ -176,9 +177,9 @@ export function runScaffoldExpo(opts: ScaffoldOptions): { appDir: string } {
     log('ThemeProvider + ThemeSwitcher, a token-driven App), patch package.json,');
     if (install) {
       log(`install deps (expo install ${EXPO_NATIVE_DEPS.join(' ')}; ${opts.pm} add -D ${EXPO_DEV_DEPS.join(' ')}),`);
-      log('and run `npm run gen:tokens` to generate global.css + the token maps.');
+      log(`and run \`${runHint(opts.pm, 'gen:tokens')}\` to generate global.css + the token maps.`);
     } else {
-      log('and skip install (run `npm install && npm run gen:tokens` yourself).');
+      log(`and skip install (run \`${opts.pm} install && ${runHint(opts.pm, 'gen:tokens')}\` yourself).`);
     }
     if (opts.agent) log(`Then hand off to: ${opts.agent === 'auto' ? 'an installed agent' : opts.agent}.`);
     return { appDir };
@@ -199,7 +200,7 @@ export function runScaffoldExpo(opts: ScaffoldOptions): { appDir: string } {
     run('node', ['scripts/generate-veneer-tokens.mjs'], appDir);
     log('  ✓ global.css + src/veneer-themes.generated.ts');
   } else {
-    log('  (skipped install — run `npm install && npm run gen:tokens` before starting)');
+    log(`  (skipped install — run \`${opts.pm} install && ${runHint(opts.pm, 'gen:tokens')}\` before starting)`);
   }
 
   if (opts.agent) {

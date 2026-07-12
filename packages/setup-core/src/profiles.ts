@@ -54,7 +54,7 @@ export interface ScaffoldProfile {
   /**
    * Extra dev deps to install for this scaffold beyond the runtime + the
    * eslint-plugin. React Router ships no ESLint, so we add `eslint` +
-   * `typescript-eslint` to make the no-hardcoded-colors gate runnable out of the box.
+   * `typescript-eslint` to make the veneer/* themeability gate runnable out of the box.
    */
   extraDevDeps?: string[];
 }
