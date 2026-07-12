@@ -3,9 +3,9 @@
  * (the package defaults plus the whole gallery), each rendered as a live mini-
  * preview in its *own* tokens, so you choose by look rather than by name.
  *
- * Unlike ImportPanel, these themes are already shipped and validated, so picking
- * one just switches to it (no preview/save dance). It enables the theme if a
- * returning visitor had disabled it, then makes it current.
+ * These themes are already shipped and validated, so picking one just switches
+ * to it. It enables the theme if a returning visitor had disabled it, then makes
+ * it current.
  *
  * Per-card previews use inline `tokenValue(theme, …)` because Tailwind utilities
  * resolve against the *active* theme's CSS variables — to paint each card in its

@@ -7,18 +7,6 @@
       "dependencies": []
     },
     {
-      "name": "import-panel",
-      "file": "ImportPanel.tsx",
-      "description": "Drop / paste-URL modal that validates and previews a theme.",
-      "dependencies": []
-    },
-    {
-      "name": "banner",
-      "file": "PreviewBanner.tsx",
-      "description": "Sticky banner shown while previewing an unsaved imported theme.",
-      "dependencies": []
-    },
-    {
       "name": "showcase",
       "file": "ThemeShowcase.tsx",
       "description": "Demo surface exercising the full token set — handy reference.",
@@ -27,9 +15,8 @@
     {
       "name": "switcher",
       "file": "ThemeSwitcher.tsx",
-      "description": "Dropdown to switch and manage themes (opens the import and gallery panels).",
+      "description": "Dropdown to switch themes (opens the gallery panel).",
       "dependencies": [
-        "import-panel",
         "gallery-panel"
       ]
     }
