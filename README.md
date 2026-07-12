@@ -3,15 +3,14 @@
 
 # Under heavy development currently 
 
-**Ship user-customizable theming in your Tailwind CSS v4 app.** Veneer drives your
+**Ship developer-controlled theming in your Tailwind CSS v4 app.** Veneer drives your
 entire visual surface — color, type, spacing, borders, radii, shadows, blur, and
 motion — from one fixed set of design **tokens**. A *theme* is a small JSON file
 that overrides some of those tokens. Switching is instant (one DOM write, no
-re-render), so you can ship your own branded themes and let your users pick,
-import, and author their own — all client-side, with no server and no account.
+re-render), so you can ship your own branded themes for users to pick from.
 
-Because a theme is **inert data, not code**, it's validated and safe to load from
-untrusted sources: a user's whole theme library lives in their browser.
+Themes are defined and controlled by developers, ensuring consistent branding
+and design across your application.
 
 **[▶ Live demo](https://veneerui.dev)** &nbsp;·&nbsp;
 **[Add it to your app](./docs/integration.md)** — `npm create veneerui@latest` &nbsp;·&nbsp;

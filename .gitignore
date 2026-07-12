@@ -26,6 +26,9 @@ dist-ssr
 
 scripts/theme-review/*
 
+# Local scaffold output from testing create-veneerui inside the repo
+packages/create-veneerui/veneer-test/
+
 # Build-copied from @veneerui/setup-core at build time (the canonical copies live
 # in packages/setup-core/{registry,assets}; these are produced by
 # scripts/sync-setup-assets.ts and shipped via each package's "files").

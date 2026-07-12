@@ -1,13 +1,14 @@
 # @offthegully/veneerui
 
-User-extensible **Tailwind CSS v4** theming runtime. The visual surface of your
-app — color, type, spacing, borders, radii, shadows, blur, motion — is driven by a
-fixed set of design **tokens**. A *theme* is a small JSON file overriding some of
-those tokens; switching is one DOM write (no re-render), and themes are **inert
-data, not code**, so they're safe to load from untrusted sources.
+Developer-controlled **Tailwind CSS v4** theming runtime. The visual surface of
+your app — color, type, spacing, borders, radii, shadows, blur, motion — is driven
+by a fixed set of design **tokens**. A *theme* is a small JSON file overriding some
+of those tokens; switching is one DOM write (no re-render), and themes are **inert
+data, not code** — validated before they're applied, with no path to new CSS,
+modified HTML, or executed code.
 
 This is the runtime + tokens. The matching `veneerui` CLI copies UI components
-(switcher, import panel) into your project — Tailwind v4 doesn't scan
+(switcher, gallery panel) into your project — Tailwind v4 doesn't scan
 `node_modules`, so components live in *your* source where Tailwind can see them.
 
 ## Install

@@ -7,8 +7,9 @@ explaining the design choices.
 These are also **the starting templates for authoring your own** — every one is a
 fully-realized example of a different design language, not a stub.
 
-> Today these ship inside the app repo as the seed set. When the gallery moves to
-> its own public repo, each `theme.json` will also be importable by its raw URL.
+> These ship inside the app repo as the seed set — examples for developer-authored
+> themes, not a runtime import catalog. (End-user theme import is shelved on the
+> [`user-themes`](https://github.com/offthegully/veneerui/tree/user-themes) branch.)
 
 ## Themes
 
@@ -32,9 +33,6 @@ Every gallery theme ships in the package as part of `BUILTIN_THEMES` (`npm run
 gen:builtin` vendors this folder in), so in the app it's already there: open the
 theme switcher → **Browse gallery** and apply it by look. In your own app, pass
 the set (or your own subset) to `<ThemeProvider themes={...}>`.
-
-Nothing is uploaded and there is no account — only your chosen theme is
-remembered in your browser.
 
 ## Authoring your own
 

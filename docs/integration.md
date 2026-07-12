@@ -409,7 +409,7 @@ export const themes = [
 
 Your themes are the **app-owned tier**: non-deletable, and re-seeded from the
 live definitions on every load (so shipping a theme change reaches returning
-users). Themes a visitor imports or authors are preserved alongside them. A theme
+users). Each theme
 can change as much or as little as you like — only colors for a quick re-skin, or
 also radius, shadow, border width, type, and motion for a full redesign; anything
 you omit falls back to the schema default.

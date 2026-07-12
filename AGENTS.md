@@ -1,6 +1,6 @@
 # Agent guide — building with Veneer
 
-You are working in **Veneer**, a user-extensible theming system for Tailwind CSS
+You are working in **Veneer**, a developer-controlled theming system for Tailwind CSS
 v4. This file tells you how to write and edit UI here so your code stays
 themeable. Read it before touching any component.
 
