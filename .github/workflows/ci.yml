@@ -14,6 +14,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          # Full history so `changeset status --since` can diff against main.
+          fetch-depth: 0
 
       - uses: actions/setup-node@v4
         with:
@@ -22,6 +25,13 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+
+      # Fail PRs that change a publishable package without a changeset (add an
+      # empty one via `npx changeset --empty` for chores). Skipped on the
+      # changesets "Version Packages" PR, which legitimately consumes them.
+      - name: Require a changeset for package changes
+        if: github.event_name == 'pull_request' && !startsWith(github.head_ref, 'changeset-release/')
+        run: npx changeset status --since=origin/${{ github.base_ref }}
 
       - name: Check generated artifacts match the schema
         run: npm run check:generated
