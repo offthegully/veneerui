@@ -60,13 +60,19 @@ export interface Theme {
   tags?: string[];
   license?: string;
   tokens: Record<string, string>;
-  source: 'builtin' | 'imported' | 'custom';
-  /** Raw URL an imported theme came from (enables the optional update check). */
-  sourceUrl?: string;
-  importedAt?: string;
+  /**
+   * Every theme is app-owned ('builtin'): the package built-ins or a set the
+   * developer ships. Kept as a union member so runtime-imported tiers can
+   * return later without a breaking change (see the roadmap).
+   */
+  source: 'builtin';
 }
 
-/** The user's client-side collection. Persisted to localStorage; no server. */
+/**
+ * The in-memory collection the provider owns. Only the visitor's choices (plus
+ * the current theme's tokens, for the anti-flash script) persist to
+ * localStorage — see storage.ts; themes re-seed from the app bundle.
+ */
 export interface ThemeLibrary {
   themes: Theme[];
   enabledIds: string[]; // subset shown in the switcher, in display order

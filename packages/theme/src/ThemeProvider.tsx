@@ -61,15 +61,11 @@ export function ThemeProvider({
   const [hydrated, setHydrated] = useState(false);
   useEffect(() => setHydrated(true), []);
 
-  // The library is the single source of truth; persist any change.
-  const update = useCallback((next: (lib: ThemeLibrary) => ThemeLibrary) => {
-    setLibrary((lib) => {
-      const updated = next(lib);
-      if (updated === lib) return lib;
-      saveLibrary(updated);
-      return updated;
-    });
-  }, []);
+  // The library is the single source of truth; persist it on mount and on every
+  // change. The mount save matters: it refreshes the persisted `currentTokens`
+  // snapshot (what the anti-flash script applies) when the app ships a changed
+  // theme definition, and it migrates any legacy full-library blob.
+  useEffect(() => saveLibrary(library), [library]);
 
   const current = useMemo(
     () => library.themes.find((t) => t.id === library.currentId) ?? library.themes[0],
@@ -96,15 +92,15 @@ export function ThemeProvider({
   // Switch the current theme. No-op if `id` isn't enabled or is already current.
   const setCurrent = useCallback(
     (id: string) =>
-      update((lib) =>
+      setLibrary((lib) =>
         !lib.enabledIds.includes(id) || lib.currentId === id ? lib : { ...lib, currentId: id },
       ),
-    [update],
+    [],
   );
 
   const setEnabled = useCallback(
     (id: string, enabled: boolean) =>
-      update((lib) => {
+      setLibrary((lib) => {
         const enabledIds = enabled
           ? lib.enabledIds.includes(id)
             ? lib.enabledIds
@@ -114,7 +110,7 @@ export function ThemeProvider({
         const currentId = keptCurrent ? lib.currentId : pickFallbackId(enabledIds, defaultThemeId);
         return { ...lib, enabledIds, currentId };
       }),
-    [update, defaultThemeId],
+    [defaultThemeId],
   );
 
   const value = useMemo<ThemeContextValue>(() => {

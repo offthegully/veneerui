@@ -25,7 +25,7 @@ describe('validateTheme', () => {
     expect(result.valid).toBe(true);
     expect(result.theme?.tokens['color-primary']).toBe('#3b82f6');
     expect(result.theme?.author).toEqual({ id: '', name: 'tester' });
-    expect(result.theme?.source).toBe('custom');
+    expect(result.theme?.source).toBe('builtin');
   });
 
   it('rejects a CSS-injection payload', () => {

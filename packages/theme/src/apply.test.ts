@@ -9,7 +9,7 @@ import { applyTheme, withCustomColorFallback } from './apply';
 import type { Theme } from './types';
 
 function theme(id: string, tokens: Record<string, string>): Theme {
-  return { id, name: id, author: { id: '', name: 'test' }, version: '1.0.0', schemaVersion: 1, tokens, source: 'custom' };
+  return { id, name: id, author: { id: '', name: 'test' }, version: '1.0.0', schemaVersion: 1, tokens, source: 'builtin' };
 }
 
 /** A minimal element whose `style` tracks inline custom properties in insertion order. */

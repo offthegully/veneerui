@@ -27,8 +27,9 @@ function run(script: string, saved: string | null): Record<string, string> {
 }
 
 const savedLib = JSON.stringify({
-  themes: [{ id: 'saved', tokens: { 'color-primary': '#aaaaaa' } }],
   currentId: 'saved',
+  enabledIds: ['saved'],
+  currentTokens: { 'color-primary': '#aaaaaa' },
 });
 
 describe('getAntiFlashScript', () => {

@@ -5,9 +5,10 @@
  * self-contained JS (no imports, no bundle dependency) that a framework adapter
  * drops into a <script>.
  *
- * It reads the same localStorage blob storage.ts writes (via STORAGE_KEY) and
- * performs the same write applyTheme() does — set `--<token>` custom properties
- * on documentElement for the current theme. Keep the three in sync.
+ * It reads the same localStorage blob storage.ts writes (via STORAGE_KEY) —
+ * specifically its `currentTokens` snapshot of the current theme — and performs
+ * the same write applyTheme() does: set `--<token>` custom properties on
+ * documentElement. Keep the three in sync.
  *
  * Adapters that consume this:
  *   - Vite:  `@offthegully/veneerui/vite` injects it into index.html (head-prepend).
@@ -42,11 +43,9 @@ export function getAntiFlashScript(defaultTokens?: Record<string, string>): stri
     defaultLiteral +
     ';var key=' +
     JSON.stringify(STORAGE_KEY) +
-    ';var tokens=null;' +
-    'var raw=localStorage.getItem(key);' +
+    ';var raw=localStorage.getItem(key);' +
     'var lib=raw?JSON.parse(raw):null;' +
-    'if(lib){var themes=lib.themes||[];' +
-    'for(var i=0;i<themes.length;i++){if(themes[i]&&themes[i].id===lib.currentId&&themes[i].tokens){tokens=themes[i].tokens;break;}}}' +
+    'var tokens=lib&&lib.currentTokens?lib.currentTokens:null;' +
     'if(!tokens)tokens=d;' +
     'if(!tokens)return;' +
     'var s=document.documentElement.style;' +
