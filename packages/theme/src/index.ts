@@ -3,8 +3,8 @@
  *
  * The runtime promoted to a package boundary: provider + hook, the DOM apply
  * step, the isomorphic validator (browser value-checker only — the Node one
- * lives at `@offthegully/veneerui/node`), the import pipeline, the token schema, the
- * built-in themes, and the anti-flash helper. Tokens ship separately as
+ * lives at `@offthegully/veneerui/node`), the token schema, the built-in
+ * themes, and the anti-flash helper. Tokens ship separately as
  * `@offthegully/veneerui/tokens.css`; the Vite anti-flash plugin as `@offthegully/veneerui/vite`.
  */
 export { ThemeProvider } from './ThemeProvider';
@@ -15,14 +15,6 @@ export { tokenValue } from './token-value';
 export { validateTheme, type ValidationError, type ValidationResult } from './validate';
 export { browserCheckValue } from './value-check-browser';
 export type { ValueChecker } from './value-check';
-
-export {
-  parseAndValidate,
-  fetchTheme,
-  isFetchableUrl,
-  type ImportOutcome,
-  type Origin,
-} from './import-theme';
 
 export {
   TOKEN_SCHEMA,
