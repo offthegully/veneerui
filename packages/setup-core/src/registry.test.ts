@@ -6,9 +6,7 @@ describe('registry', () => {
 
   it('ships the curated set of components', () => {
     expect(components.map((c) => c.name).sort()).toEqual([
-      'banner',
       'gallery-panel',
-      'import-panel',
       'showcase',
       'switcher',
     ]);
@@ -17,7 +15,6 @@ describe('registry', () => {
   it('resolves the switcher together with its panel dependencies', () => {
     const names = resolveWithDeps(['switcher'], components).map((c) => c.name);
     expect(names).toContain('switcher');
-    expect(names).toContain('import-panel');
     expect(names).toContain('gallery-panel');
   });
 
@@ -29,7 +26,7 @@ describe('registry', () => {
     const switcher = readComponentSource('ThemeSwitcher.tsx');
     expect(switcher).toContain("from '@offthegully/veneerui'");
     // sibling component imports stay relative so they land working together
-    expect(switcher).toContain("from './ImportPanel'");
+    expect(switcher).toContain("from './GalleryPanel'");
   });
 
   // The registry stays framework-neutral: no `'use client'` directive baked in.

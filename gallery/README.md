@@ -28,14 +28,13 @@ fully-realized example of a different design language, not a stub.
 
 ## Using a theme
 
-1. Open the app and click the theme switcher → **Manage themes**.
-2. Either:
-   - **Download** a `theme.json` and drop it into the import panel, or
-   - **Copy its raw URL** and paste it into the URL field.
-3. The app validates it locally and applies it as a **live preview**. If you like
-   it, click **Save to library**; otherwise **Stop preview**.
+Every gallery theme ships in the package as part of `BUILTIN_THEMES` (`npm run
+gen:builtin` vendors this folder in), so in the app it's already there: open the
+theme switcher → **Browse gallery** and apply it by look. In your own app, pass
+the set (or your own subset) to `<ThemeProvider themes={...}>`.
 
-Nothing is uploaded and there is no account — your library lives in your browser.
+Nothing is uploaded and there is no account — only your chosen theme is
+remembered in your browser.
 
 ## Authoring your own
 

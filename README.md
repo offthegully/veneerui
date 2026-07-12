@@ -45,9 +45,9 @@ playground under a different theme:
 - **A drop-in theme switcher.** Add a `ThemeSwitcher` so users pick from your set
   with live preview swatches; the choice persists and re-applies before first
   paint, with no flash.
-- **User-imported & user-authored themes.** Let people drop a `theme.json` or
-  paste a URL — it's validated and previewed live before they save it, alongside
-  your built-ins.
+- **Your own authored themes.** A theme is one JSON file of token values — copy
+  the closest gallery theme, edit it in your editor, and ship it with your app
+  like any built-in.
 
 ---
 
@@ -128,16 +128,16 @@ your base theme and consume it via `var()` (`[color:var(--color-x-gold)]`). See 
 
 ---
 
-## Let users bring their own
+## Let users pick their look
 
-Users browse your set in a switcher, or open **Manage themes** to pick from a
-gallery, drop a `theme.json`, or paste a URL — every theme is validated and
-previewed live before they keep it.
+Users browse your set in a switcher, or open **Browse gallery** to preview every
+shipped theme as a live mini-render and apply one by look. Their choice persists
+and re-applies before first paint.
 
-| | | |
-|---|---|---|
-| ![Theme switcher](./docs/assets/switcher.png) | ![Browse the gallery](./docs/assets/gallery-panel.png) | ![Import a theme](./docs/assets/import-panel.png) |
-| **Switch** — pick from your set | **Browse** — apply by look | **Import** — file or URL, validated locally |
+| | |
+|---|---|
+| ![Theme switcher](./docs/assets/switcher.png) | ![Browse the gallery](./docs/assets/gallery-panel.png) |
+| **Switch** — pick from your set | **Browse** — apply by look |
 
 ---
 
@@ -145,8 +145,10 @@ previewed live before they keep it.
 
 There's no in-app editor — you author JSON in your own editor and preview it live
 in a running app. Copy the closest [gallery](./gallery/README.md) theme, keep its
-`$schema` line for autocomplete, edit the values you care about, then drop the file
-into **Manage themes** to preview and save.
+`$schema` line for autocomplete, edit the values you care about, then ship it with
+your app via `defineTheme` / `normalizeAuthoredTheme` (or, working in this repo,
+add it under `gallery/themes/` and run `npm run gen:builtin` to see it in the
+playground).
 
 The **[authoring guide](./docs/authoring-guide.md)** covers picking a coherent
 palette (the light/dark surface flip, the `text-on-primary` trap, contrast), and
@@ -175,6 +177,16 @@ attack surface.
 
 ---
 
+## Roadmap
+
+- **User-imported themes.** Let end users drop a `theme.json` or paste a URL at
+  runtime, validated and previewed live before it joins their switcher. A working
+  implementation is shelved on the
+  [`user-themes`](https://github.com/offthegully/veneerui/tree/user-themes) branch
+  while the core stays focused on shipped + developer-authored themes.
+
+---
+
 ## Local development
 
 This is an npm **workspace** monorepo: `packages/theme` (the `@offthegully/veneerui`
@@ -191,9 +203,9 @@ npm install
 npm run dev          # builds @offthegully/veneerui, then runs the playground at http://localhost:5173
 ```
 
-The playground is the dev harness: it ships the gallery themes with the switcher,
-import, and live-preview flow wired up, so dropping a `theme.json` into **Manage
-themes** is how you preview a theme you're working on.
+The playground is the dev harness: it ships every built-in theme with the switcher
+and gallery panel wired up. To preview a theme you're working on, drop its folder
+under `gallery/themes/` and run `npm run gen:builtin` — it appears in the switcher.
 
 | Command | What it does |
 |---|---|

@@ -46,7 +46,7 @@ v4 apps: [Integration guide](https://github.com/offthegully/veneerui/blob/main/d
 
 | Import | What |
 |---|---|
-| `@offthegully/veneerui` | `ThemeProvider`, `useTheme`, `applyTheme`, `defineTheme`, `validateTheme`, `parseAndValidate` / `fetchTheme` / `isFetchableUrl`, `tokenValue`, `browserCheckValue`, `getAntiFlashScript`, `TOKEN_SCHEMA`, `BUILTIN_THEMES`, `SCHEMA_VERSION`, `CUSTOM_COLOR_PREFIX` / `CUSTOM_COLOR_RE` / `MAX_CUSTOM_COLORS` / `isCustomColorName`, and the `Theme` / `ThemeLibrary` / `TokenDef` types |
+| `@offthegully/veneerui` | `ThemeProvider`, `useTheme`, `applyTheme`, `defineTheme`, `validateTheme`, `tokenValue`, `browserCheckValue`, `getAntiFlashScript`, `TOKEN_SCHEMA`, `BUILTIN_THEMES`, `SCHEMA_VERSION`, `CUSTOM_COLOR_PREFIX` / `CUSTOM_COLOR_RE` / `MAX_CUSTOM_COLORS` / `isCustomColorName`, and the `Theme` / `ThemeLibrary` / `TokenDef` types |
 | `@offthegully/veneerui/tokens.css` | the generated `@theme` / `:root` token block |
 | `@offthegully/veneerui/vite` | `veneer()` — the Vite anti-flash plugin |
 | `@offthegully/veneerui/next` | `<AntiFlashScript />` — the Next anti-flash component |

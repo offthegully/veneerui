@@ -49,10 +49,6 @@ export function ThemeProvider({
   const [library, setLibrary] = useState<ThemeLibrary>(() =>
     loadLibrary(themes, defaultThemeId, defaultEnabledIds),
   );
-  // The app-owned tier: these ids are non-deletable and define the fallback set.
-  const appThemeIds = useMemo(() => new Set(themes.map((t) => t.id)), [themes]);
-  // A theme being previewed from the import screen — applied but not yet saved.
-  const [preview, setPreview] = useState<Theme | null>(null);
 
   // False during SSR and the first client render, true after mount. The library
   // above is seeded from localStorage, which only exists on the client — so under
@@ -65,15 +61,11 @@ export function ThemeProvider({
   const [hydrated, setHydrated] = useState(false);
   useEffect(() => setHydrated(true), []);
 
-  // The library is the single source of truth; persist any change.
-  const update = useCallback((next: (lib: ThemeLibrary) => ThemeLibrary) => {
-    setLibrary((lib) => {
-      const updated = next(lib);
-      if (updated === lib) return lib;
-      saveLibrary(updated);
-      return updated;
-    });
-  }, []);
+  // The library is the single source of truth; persist it on mount and on every
+  // change. The mount save matters: it refreshes the persisted `currentTokens`
+  // snapshot (what the anti-flash script applies) when the app ships a changed
+  // theme definition, and it migrates any legacy full-library blob.
+  useEffect(() => saveLibrary(library), [library]);
 
   const current = useMemo(
     () => library.themes.find((t) => t.id === library.currentId) ?? library.themes[0],
@@ -88,13 +80,10 @@ export function ThemeProvider({
     [themes, defaultThemeId],
   );
 
-  // The preview, while active, outranks the saved current theme on the DOM.
-  // Clearing it falls back to `current`, which re-applies and restores the UI.
   // Custom colors absent from the applied theme inherit from the base theme.
-  const target = preview ?? current;
   const applied = useMemo(
-    () => (target ? withCustomColorFallback(target, baseTheme) : target),
-    [target, baseTheme],
+    () => (current ? withCustomColorFallback(current, baseTheme) : current),
+    [current, baseTheme],
   );
   useLayoutEffect(() => {
     if (applied) applyTheme(applied);
@@ -103,41 +92,15 @@ export function ThemeProvider({
   // Switch the current theme. No-op if `id` isn't enabled or is already current.
   const setCurrent = useCallback(
     (id: string) =>
-      update((lib) =>
+      setLibrary((lib) =>
         !lib.enabledIds.includes(id) || lib.currentId === id ? lib : { ...lib, currentId: id },
       ),
-    [update],
-  );
-
-  const addTheme = useCallback(
-    (theme: Theme) =>
-      update((lib) => ({
-        ...lib,
-        themes: [...lib.themes.filter((t) => t.id !== theme.id), theme],
-        enabledIds: lib.enabledIds.includes(theme.id) ? lib.enabledIds : [...lib.enabledIds, theme.id],
-      })),
-    [update],
-  );
-
-  const removeTheme = useCallback(
-    (id: string) =>
-      update((lib) => {
-        if (appThemeIds.has(id)) return lib;
-        const enabledIds = lib.enabledIds.filter((e) => e !== id);
-        const droppedCurrent = lib.currentId === id;
-        return {
-          ...lib,
-          themes: lib.themes.filter((t) => t.id !== id),
-          enabledIds,
-          currentId: droppedCurrent ? pickFallbackId(enabledIds, defaultThemeId) : lib.currentId,
-        };
-      }),
-    [update, appThemeIds, defaultThemeId],
+    [],
   );
 
   const setEnabled = useCallback(
     (id: string, enabled: boolean) =>
-      update((lib) => {
+      setLibrary((lib) => {
         const enabledIds = enabled
           ? lib.enabledIds.includes(id)
             ? lib.enabledIds
@@ -147,25 +110,8 @@ export function ThemeProvider({
         const currentId = keptCurrent ? lib.currentId : pickFallbackId(enabledIds, defaultThemeId);
         return { ...lib, enabledIds, currentId };
       }),
-    [update, defaultThemeId],
+    [defaultThemeId],
   );
-
-  const previewTheme = useCallback((theme: Theme) => setPreview(theme), []);
-  const cancelPreview = useCallback(() => setPreview(null), []);
-
-  const commitPreview = useCallback(() => {
-    if (!preview) return;
-    const p = preview;
-    // Add (or replace), enable, and select in one persisted update, then drop
-    // the preview so the applied theme falls through to this now-saved `current`.
-    update((lib) => ({
-      ...lib,
-      themes: [...lib.themes.filter((t) => t.id !== p.id), p],
-      enabledIds: lib.enabledIds.includes(p.id) ? lib.enabledIds : [...lib.enabledIds, p.id],
-      currentId: p.id,
-    }));
-    setPreview(null);
-  }, [preview, update]);
 
   const value = useMemo<ThemeContextValue>(() => {
     const byId = new Map(library.themes.map((t) => [t.id, t]));
@@ -178,28 +124,10 @@ export function ThemeProvider({
       enabledThemes: library.enabledIds
         .map((id) => byId.get(id))
         .filter((t): t is Theme => t != null),
-      preview,
       setCurrent,
-      addTheme,
-      removeTheme,
       setEnabled,
-      previewTheme,
-      commitPreview,
-      cancelPreview,
     };
-  }, [
-    library,
-    current,
-    preview,
-    hydrated,
-    setCurrent,
-    addTheme,
-    removeTheme,
-    setEnabled,
-    previewTheme,
-    commitPreview,
-    cancelPreview,
-  ]);
+  }, [library, current, hydrated, setCurrent, setEnabled]);
 
   return <ThemeContext value={value}>{children}</ThemeContext>;
 }

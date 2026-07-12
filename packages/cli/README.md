@@ -34,10 +34,9 @@ To stop new islands from creeping back in, add
 
 ## Components
 
-`switcher` (theme dropdown; pulls in `import-panel` + `gallery-panel`),
+`switcher` (theme dropdown; pulls in `gallery-panel`),
 `gallery-panel` (grid that previews every theme and applies one on click),
-`import-panel` (drop / paste-URL validate-and-preview modal), `banner` (preview
-banner), `showcase` (a token-exercising demo surface). Run `veneerui list` for
+`showcase` (a token-exercising demo surface). Run `veneerui list` for
 the current set.
 
 ## Why components are copied, not imported

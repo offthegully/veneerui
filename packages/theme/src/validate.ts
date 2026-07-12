@@ -170,7 +170,7 @@ export function validateTheme(input: unknown, checkValue: ValueChecker): Validat
     tags: Array.isArray(obj.tags) ? obj.tags.filter((t): t is string => typeof t === 'string') : undefined,
     license: typeof obj.license === 'string' ? obj.license : undefined,
     tokens: cleaned,
-    source: 'custom',
+    source: 'builtin',
   };
 
   return { valid: true, errors: [], theme };

@@ -1,8 +1,8 @@
 /**
  * ThemeSwitcher — compact dropdown listing the enabled themes with preview
  * swatches and a checkmark on the current one. Selecting calls setCurrent, which
- * applies the theme instantly. The library/gallery links are placeholders until
- * Phase 3/4 land those screens.
+ * applies the theme instantly; the footer link opens the gallery panel for the
+ * themes not in the switcher.
  *
  * Styled entirely with semantic token utilities (bg-surface-*, text-text-*,
  * border-border, rounded-md, shadow-lg, …) so it re-skins with every theme —
@@ -18,7 +18,6 @@
  */
 import { useEffect, useRef, useState } from 'react';
 import { useTheme, tokenValue, type Theme } from '@offthegully/veneerui';
-import { ImportPanel } from './ImportPanel';
 import { GalleryPanel } from './GalleryPanel';
 
 function Swatches({ theme }: { theme: Theme }) {
@@ -67,7 +66,6 @@ export function ThemeSwitcher({ variant = 'header' }: { variant?: SwitcherVarian
   const { enabledThemes, currentId, current, hydrated, setCurrent } = useTheme();
   const floating = variant === 'floating';
   const [open, setOpen] = useState(false);
-  const [importOpen, setImportOpen] = useState(false);
   const [galleryOpen, setGalleryOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -151,17 +149,7 @@ export function ThemeSwitcher({ variant = 'header' }: { variant?: SwitcherVarian
               );
             })}
           </ul>
-          <div className="flex items-center justify-between border-t border-border px-3 py-2 text-xs text-text-muted">
-            <button
-              type="button"
-              className="font-medium hover:text-text"
-              onClick={() => {
-                setImportOpen(true);
-                setOpen(false);
-              }}
-            >
-              Manage themes
-            </button>
+          <div className="flex items-center justify-end border-t border-border px-3 py-2 text-xs text-text-muted">
             <button
               type="button"
               className="font-medium hover:text-text"
@@ -176,7 +164,6 @@ export function ThemeSwitcher({ variant = 'header' }: { variant?: SwitcherVarian
         </div>
       )}
 
-      {importOpen && <ImportPanel onClose={() => setImportOpen(false)} />}
       {galleryOpen && <GalleryPanel onClose={() => setGalleryOpen(false)} />}
     </div>
   );

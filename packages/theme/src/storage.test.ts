@@ -6,7 +6,6 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { loadLibrary, saveLibrary, STORAGE_KEY } from './storage';
 import { BUILTIN_THEMES, DEFAULT_THEME_ID } from './builtin';
 import { defineTheme } from './define-theme';
-import type { Theme } from './types';
 
 function memoryStorage() {
   let store: Record<string, string> = {};
@@ -21,16 +20,6 @@ function memoryStorage() {
 beforeEach(() => vi.stubGlobal('localStorage', memoryStorage()));
 afterEach(() => vi.unstubAllGlobals());
 
-const userTheme: Theme = {
-  id: 'custom-1',
-  name: 'Mine',
-  author: { id: '', name: 'me' },
-  version: '1.0.0',
-  schemaVersion: 1,
-  tokens: { 'color-primary': '#ff0000' },
-  source: 'imported',
-};
-
 describe('loadLibrary', () => {
   it('seeds all built-ins with Light current on a fresh load', () => {
     const lib = loadLibrary();
@@ -44,26 +33,34 @@ describe('loadLibrary', () => {
     expect(loadLibrary().currentId).toBe(DEFAULT_THEME_ID);
   });
 
-  it('replaces a stale persisted built-in with the live definition', () => {
-    saveLibrary({
-      themes: [{ ...BUILTIN_THEMES[0], tokens: { 'color-primary': '#000000' }, version: '0.0.1' }],
-      enabledIds: [DEFAULT_THEME_ID],
-      currentId: DEFAULT_THEME_ID,
-    });
+  it('always serves the live theme definitions, never persisted copies', () => {
+    // Even if a (legacy) blob carried stale theme definitions, the loaded
+    // library is built from the app bundle alone.
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify({
+        themes: [{ ...BUILTIN_THEMES[0], tokens: { 'color-primary': '#000000' }, version: '0.0.1' }],
+        enabledIds: [DEFAULT_THEME_ID],
+        currentId: DEFAULT_THEME_ID,
+      }),
+    );
     const loaded = loadLibrary().themes.find((t) => t.id === DEFAULT_THEME_ID)!;
     expect(loaded.tokens).toEqual(BUILTIN_THEMES[0].tokens);
     expect(loaded.version).toBe(BUILTIN_THEMES[0].version);
   });
 
-  it('preserves imported themes and a valid current selection', () => {
-    saveLibrary({
-      themes: [...BUILTIN_THEMES, userTheme],
-      enabledIds: [DEFAULT_THEME_ID, 'custom-1'],
-      currentId: 'custom-1',
-    });
+  it('honors currentId/enabledIds from a legacy full-library blob', () => {
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify({
+        themes: BUILTIN_THEMES,
+        enabledIds: [DEFAULT_THEME_ID, 'editorial'],
+        currentId: 'editorial',
+      }),
+    );
     const lib = loadLibrary();
-    expect(lib.themes.find((t) => t.id === 'custom-1')).toBeTruthy();
-    expect(lib.currentId).toBe('custom-1');
+    expect(lib.currentId).toBe('editorial');
+    expect(lib.enabledIds).toEqual([DEFAULT_THEME_ID, 'editorial']);
   });
 
   it('clamps a current/enabled id that no longer exists', () => {
@@ -80,6 +77,21 @@ describe('loadLibrary', () => {
   });
 });
 
+describe('saveLibrary', () => {
+  it('persists the current theme tokens for the anti-flash script, not the library', () => {
+    const editorial = BUILTIN_THEMES.find((t) => t.id === 'editorial')!;
+    saveLibrary({
+      themes: [...BUILTIN_THEMES],
+      enabledIds: BUILTIN_THEMES.map((t) => t.id),
+      currentId: 'editorial',
+    });
+    const persisted = JSON.parse(localStorage.getItem(STORAGE_KEY)!);
+    expect(persisted.currentId).toBe('editorial');
+    expect(persisted.currentTokens).toEqual(editorial.tokens);
+    expect(persisted.themes).toBeUndefined();
+  });
+});
+
 describe('loadLibrary with a developer-supplied theme set', () => {
   const appThemes = [
     defineTheme({ id: 'brutalist', name: 'Brutalist', tokens: { 'color-primary': '#000000' } }),
@@ -93,20 +105,8 @@ describe('loadLibrary with a developer-supplied theme set', () => {
     expect(lib.currentId).toBe('soft');
   });
 
-  it('re-seeds the app tier and preserves the user tier', () => {
-    saveLibrary({
-      themes: [appThemes[0], userTheme],
-      enabledIds: ['brutalist', 'custom-1'],
-      currentId: 'custom-1',
-    });
-    const lib = loadLibrary(appThemes, 'brutalist');
-    // both shipped themes present (re-seeded), plus the imported one preserved
-    expect(lib.themes.map((t) => t.id).sort()).toEqual(['brutalist', 'custom-1', 'soft']);
-    expect(lib.currentId).toBe('custom-1');
-  });
-
-  it('does not let a removed app theme linger as a fake user theme', () => {
-    // Persist an app theme that the live set no longer ships.
+  it('does not resurrect a removed app theme from the persisted state', () => {
+    // Persist choices pointing at an app theme the live set no longer ships.
     const removed = defineTheme({ id: 'retired', name: 'Retired', tokens: { 'color-primary': '#123456' } });
     saveLibrary({
       themes: [...appThemes, removed],

@@ -1,11 +1,13 @@
 /**
- * localStorage persistence for the theme library. There is no server — this is
- * the whole store. Everything here is defensive: a corrupt or stale blob must
- * never brick the app, so any problem falls back to "all built-ins, Light
- * current" rather than throwing.
+ * localStorage persistence for the visitor's theme choices. There is no server —
+ * this is the whole store. Everything here is defensive: a corrupt or stale blob
+ * must never brick the app, so any problem falls back to "all app themes, the
+ * default current" rather than throwing.
  *
- * The persisted value is the entire ThemeLibrary, including each theme's full
- * token map. That's deliberate: it's what lets the synchronous anti-flash script
+ * Theme definitions are NOT persisted — every theme re-seeds from the app bundle
+ * on load, so the app is always authoritative over what it ships. What persists
+ * is the visitor's choices (currentId, enabledIds) plus a snapshot of the current
+ * theme's tokens, which is what lets the synchronous anti-flash script
  * (anti-flash.ts) apply the current theme before any JS module loads — both read
  * STORAGE_KEY from ./storage-key so they can never drift.
  */
@@ -14,6 +16,18 @@ import { BUILTIN_THEMES, DEFAULT_THEME_ID } from './builtin';
 import { STORAGE_KEY } from './storage-key';
 
 export { STORAGE_KEY } from './storage-key';
+
+/**
+ * The persisted shape. `currentTokens` exists only for the anti-flash script;
+ * loadLibrary never reads it (the live theme definition wins). Older blobs
+ * persisted the full library — their `currentId`/`enabledIds` fields match this
+ * shape, so a returning visitor's selection survives the format change.
+ */
+interface PersistedState {
+  currentId: string;
+  enabledIds: string[];
+  currentTokens: Record<string, string>;
+}
 
 /**
  * The set shown in the switcher on a fresh load. Defaults to *every* app theme;
@@ -41,19 +55,17 @@ function defaultLibrary(
 }
 
 /**
- * Load and reconcile the library against the app's own theme set.
+ * Build the library from the app's own theme set plus the visitor's persisted
+ * choices.
  *
- * `appThemes` is the app-owned tier (the package built-ins by default, or a set
+ * `appThemes` is the app-owned set (the package built-ins by default, or a set
  * the developer ships via `<ThemeProvider themes={...}>`); `defaultId` is the
- * theme applied on a fresh load. The live `appThemes` always replace whatever
- * app-owned copies were persisted — so an app update that changes or removes a
- * shipped theme is reflected even for returning users — while a visitor's own
- * imported/custom themes are preserved. We partition by `source`, not by id:
- * an id-based filter would leave a *removed* shipped theme lingering forever as
- * a fake "user theme". enabledIds/currentId are clamped to themes that exist.
+ * theme applied on a fresh load. Themes always come from the live `appThemes` —
+ * so an app update that changes or removes a shipped theme is reflected even for
+ * returning users. enabledIds/currentId are clamped to themes that exist.
  *
  * `defaultEnabledIds` seeds the switcher on a *first* load only; once a visitor
- * has a persisted library their own enabled set is honored (they may have turned
+ * has a persisted state their own enabled set is honored (they may have turned
  * gallery themes on or off), so it is not re-applied on return.
  */
 export function loadLibrary(
@@ -70,20 +82,11 @@ export function loadLibrary(
   if (!raw) return defaultLibrary(appThemes, defaultId, defaultEnabledIds);
 
   try {
-    const parsed = JSON.parse(raw) as Partial<ThemeLibrary>;
-    if (!parsed || !Array.isArray(parsed.themes))
+    const parsed = JSON.parse(raw) as Partial<PersistedState>;
+    if (!parsed || typeof parsed !== 'object')
       return defaultLibrary(appThemes, defaultId, defaultEnabledIds);
 
-    // Keep only the user tier (imported/custom) and re-seed the app tier from
-    // the live definitions, so the app stays authoritative over what it ships.
-    const userThemes = parsed.themes.filter(
-      (t): t is ThemeLibrary['themes'][number] =>
-        !!t &&
-        typeof t === 'object' &&
-        typeof t.id === 'string' &&
-        (t.source === 'imported' || t.source === 'custom'),
-    );
-    const themes = [...appThemes, ...userThemes];
+    const themes = [...appThemes];
     const ids = new Set(themes.map((t) => t.id));
 
     let enabledIds = (Array.isArray(parsed.enabledIds) ? parsed.enabledIds : []).filter(
@@ -105,8 +108,14 @@ export function loadLibrary(
 }
 
 export function saveLibrary(library: ThemeLibrary): void {
+  const current = library.themes.find((t) => t.id === library.currentId);
+  const persisted: PersistedState = {
+    currentId: library.currentId,
+    enabledIds: library.enabledIds,
+    currentTokens: current?.tokens ?? {},
+  };
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(library));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(persisted));
   } catch {
     /* quota exceeded / storage disabled — non-fatal, in-memory state still works */
   }
