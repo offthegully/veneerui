@@ -1,0 +1,69 @@
+# Upstream-drift smoke test: scaffold every framework with the locally built
+# create-veneerui against the LIVE `create-*` tools and assert the wiring
+# contract (no VENEER-SETUP.md remains; the veneer/* lint gate actually fires;
+# the app builds / Expo bundles). Upstream template reshapes land on users
+# between our releases — create-vite v8 (ESLint→oxlint) and Expo SDK 56 both
+# broke setup silently — so this runs on a schedule, not on PRs: it tests the
+# world's drift, not our diffs, and must never add upstream network flake to CI.
+name: Upstream scaffold smoke
+
+on:
+  schedule:
+    - cron: '0 6 * * 1,4' # Mon + Thu — upstream drift is a weekly-scale event
+  workflow_dispatch: # and on demand, e.g. before a release
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false # one framework breaking must not hide another
+      matrix:
+        framework: [vite, next, react-router, expo]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build the scaffolder under test
+        run: npm run build:create
+
+      - name: Scaffold + assert (${{ matrix.framework }})
+        run: npx tsx scripts/smoke-scaffold.ts ${{ matrix.framework }}
+
+  # A red scheduled run nobody sees is the same as no test — file one deduped
+  # issue (manual workflow_dispatch failures are already being watched).
+  report:
+    needs: smoke
+    if: failure() && github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+    steps:
+      - name: Open an upstream-drift issue (if none is open)
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          gh label create upstream-drift --repo "$REPO" \
+            --description "An upstream create-* tool likely reshaped its template" \
+            --color D93F0B --force || true
+          open=$(gh issue list --repo "$REPO" --state open --label upstream-drift --json number --jq 'length')
+          if [ "$open" = "0" ]; then
+            gh issue create --repo "$REPO" --label upstream-drift \
+              --title "Upstream scaffold smoke failed ($(date -u +%F))" \
+              --body "The scheduled scaffold smoke test failed — an upstream \`create-*\` tool likely reshaped its template (see the per-framework jobs to identify which).
+
+          Run: $RUN_URL
+
+          Reproduce locally: \`npm run build:create && npx tsx scripts/smoke-scaffold.ts <framework>\` (the failing app dir is kept and printed)."
+          else
+            echo "An upstream-drift issue is already open — not filing a duplicate."
+          fi

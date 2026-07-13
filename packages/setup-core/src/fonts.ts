@@ -17,6 +17,7 @@
 import { FONT_PACKAGES } from '@veneerui/lint-core/font-packages';
 import { detect, type Framework } from './detect';
 import { getProfile } from './profiles';
+import { FONTS_GUIDE_URL } from './setup-plan';
 import { installHint, type PackageManager } from './pm';
 
 export interface FontsOptions {
@@ -62,5 +63,5 @@ export function runFonts(opts: FontsOptions): void {
   log('   hard-coded family overrides the token and silently disables font theming.');
 
   log('\nShipping only your own themes? You only need the families they name —');
-  log('see docs/fonts.md for the full family ↔ package mapping.');
+  log(`the full family ↔ package mapping: ${FONTS_GUIDE_URL}`);
 }

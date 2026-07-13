@@ -1,5 +1,6 @@
 /**
- * `veneerui init` — wire Veneer into a Vite or Next + Tailwind v4 app.
+ * `veneerui init` — wire Veneer into a React + Tailwind v4 app (any framework in
+ * the profile registry: Vite, Next, React Router 7, TanStack Start).
  *
  * This is the single wiring engine: both `veneerui init` (existing app) and the
  * `create-veneerui` scaffolder (new app) call it. It makes the deterministic edits
@@ -18,7 +19,7 @@
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { detect, type Detection } from './detect';
-import { getProfile } from './profiles';
+import { FRAMEWORK_PROFILES, getProfile } from './profiles';
 import {
   addEslintRule,
   addTokensImport,
@@ -30,7 +31,12 @@ import {
 } from './patch';
 import { createNextProviders, wireNextLayout, wireSsrRoot, wrapEntryWithProvider } from './entry-patch';
 import { agentDocTargets, readAgentGuide, upsertAgentGuide } from './agents';
-import { buildSetupPlan, EXPERIMENTAL_FRAMEWORKS, SETUP_FILE } from './setup-plan';
+import {
+  buildSetupPlan,
+  EXPERIMENTAL_FRAMEWORKS,
+  INTEGRATION_GUIDE_URL,
+  SETUP_FILE,
+} from './setup-plan';
 import { execHint, installHint, runHint, type PackageManager } from './pm';
 
 export interface InitOptions {
@@ -269,14 +275,15 @@ function wireEslint(opts: InitOptions, det: Detection, log: (line: string) => vo
 }
 
 /**
- * Anything that isn't Vite or Next. The CLI can't auto-wire the framework, but
+ * Anything the profile registry doesn't recognize. The CLI can't auto-wire it, but
  * Veneer's runtime is just React 19 + Tailwind v4, so a plausible React + Tailwind
  * project still gets the agent guide and a *generic* VENEER-SETUP.md (the manual
  * path) — making the "tell your agent to finish it" flow work everywhere.
  */
 function runOtherFramework(opts: InitOptions, det: Detection, log: (line: string) => void): void {
   const pm = opts.pm ?? det.pm;
-  log('Could not auto-detect Vite or Next — those are the two `init` wires for you.');
+  const wired = FRAMEWORK_PROFILES.map((p) => p.label).join(', ');
+  log(`Could not auto-detect a framework \`init\` wires for you (${wired}).`);
   log("Veneer's runtime is framework-agnostic (React 19 + Tailwind v4); these popular");
   log('setups should work via the manual steps, though they are not fully tested yet:');
   log(`  ${EXPERIMENTAL_FRAMEWORKS.join(', ')}.`);
@@ -287,7 +294,8 @@ function runOtherFramework(opts: InitOptions, det: Detection, log: (line: string
   if (!plausible) {
     log("\nThis doesn't look like a React + Tailwind project yet. Once `react` and");
     log(`\`tailwindcss\` are installed, re-run \`${execHint(pm, 'veneerui init')}\`, or follow the`);
-    log('"Other React frameworks" section of docs/integration.md by hand.');
+    log(`"Other React frameworks" section of the integration guide by hand:`);
+    log(`  ${INTEGRATION_GUIDE_URL}`);
     return;
   }
 

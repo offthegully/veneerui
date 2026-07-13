@@ -176,7 +176,10 @@ export function runScaffoldExpo(opts: ScaffoldOptions): { appDir: string } {
     log('Then copy the Veneer Expo templates (NativeWind + Tailwind config, token codegen,');
     log('ThemeProvider + ThemeSwitcher, a token-driven App), patch package.json,');
     if (install) {
-      log(`install deps (expo install ${EXPO_NATIVE_DEPS.join(' ')}; ${opts.pm} add -D ${EXPO_DEV_DEPS.join(' ')}),`);
+      // Print the exact spawns (incl. --legacy-peer-deps on npm) — dry-run is what
+      // a cautious user checks before trusting the tool, so it must not paraphrase.
+      log(`install deps (npx expo install ${EXPO_NATIVE_DEPS.join(' ')};`);
+      log(`${opts.pm} ${expoDevInstallArgs(opts.pm).join(' ')}),`);
       log(`and run \`${runHint(opts.pm, 'gen:tokens')}\` to generate global.css + the token maps.`);
     } else {
       log(`and skip install (run \`${opts.pm} install && ${runHint(opts.pm, 'gen:tokens')}\` yourself).`);

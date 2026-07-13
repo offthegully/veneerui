@@ -10,7 +10,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { cancel, intro, isCancel, outro, select, text } from '@clack/prompts';
-import { resolvePm, runScaffold } from '@veneerui/setup-core';
+import { FRAMEWORK_PROFILES, resolvePm, runScaffold, SETUP_FILE } from '@veneerui/setup-core';
 import type { ScaffoldFramework } from '@veneerui/setup-core';
 import { parse, validateName, type Parsed } from './args';
 
@@ -40,7 +40,19 @@ function version(): string {
   }
 }
 
-function nextSteps(name: string, pm: string, framework: ScaffoldFramework): string {
+function nextSteps(
+  name: string,
+  pm: string,
+  framework: ScaffoldFramework,
+  setupFileRemains: boolean,
+): string {
+  // The outro is the only part of the log most users read — it must own the
+  // setup-file state rather than declare "ready" over a leftover checklist.
+  const setupNote = setupFileRemains
+    ? `\n\nOne step couldn't be wired automatically — see ${SETUP_FILE} in the project\n` +
+      `(or tell your AI agent: "Finish the Veneer setup in ${SETUP_FILE}, then verify\n` +
+      `it and delete the file.")`
+    : '';
   if (framework === 'expo') {
     const start = pm === 'npm' ? 'npm start' : `${pm} start`;
     return (
@@ -49,7 +61,7 @@ function nextSteps(name: string, pm: string, framework: ScaffoldFramework): stri
       `Press i (iOS) / a (Android), or scan with Expo Go. Tap the ThemeSwitcher and watch\n` +
       `color, radius, border and shadow re-skin. Build screens from token utilities\n` +
       `(bg-surface, text-text, rounded-md, …) — see AGENTS.md. \`npm run gen:tokens\` refreshes\n` +
-      `the token data after upgrading Veneer.`
+      `the token data after upgrading Veneer.${setupNote}`
     );
   }
   const dev = pm === 'npm' ? 'npm run dev' : `${pm} dev`;
@@ -57,7 +69,7 @@ function nextSteps(name: string, pm: string, framework: ScaffoldFramework): stri
     `Done — your themed app is ready.\n\n` +
     `  cd ${name}\n  ${dev}\n\n` +
     `Open it, switch themes with the ThemeSwitcher, then build UI from token utilities\n` +
-    `(bg-surface, text-text, rounded-md, …) — see AGENTS.md for the rules.`
+    `(bg-surface, text-text, rounded-md, …) — see AGENTS.md for the rules.${setupNote}`
   );
 }
 
@@ -68,7 +80,8 @@ function otherGuidance(): string {
     '',
     "  1. Scaffold it with that framework's official tool",
     '  2. Inside it, run:  npx veneerui init',
-    '     (wires what it can and writes VENEER-SETUP.md for you — or your agent — to finish)',
+    '     (TanStack Start is recognized and auto-wired; anything else gets what init can',
+    '     wire plus a VENEER-SETUP.md for you — or your agent — to finish)',
     '',
     'For SSR frameworks the anti-flash script goes in your document <head> (not the Vite',
     'plugin) — init writes the exact step. Only React 19 + Tailwind v4 is required.',
@@ -120,11 +133,16 @@ function recoverSwallowedFlags(o: Parsed): void {
   const agent = take('agent');
   const dryRun = take('dry_run');
   const install = take('install');
+  const yes = take('yes');
   if (o.framework === undefined && fw) o.framework = fw === 'true' ? strayFramework() : fw;
   if (o.pm === undefined && pm && pm !== 'true') o.pm = pm;
   if (o.agent === undefined && agent) o.agent = (agent === 'true' ? 'auto' : agent) as Parsed['agent'];
   if (!o.dryRun && dryRun === 'true') o.dryRun = true;
   if (o.install && install === 'false') o.install = false;
+  // npm consumes `--yes` itself (it's a real npm-init config), but the user's intent
+  // is "don't prompt me" — without this, `npm create veneerui my-app --yes` still
+  // opens the interactive framework select.
+  if (!o.yes && yes === 'true') o.yes = true;
 }
 
 async function main(): Promise<void> {
@@ -168,11 +186,15 @@ async function main(): Promise<void> {
       const res = await select({
         message: 'Which framework?',
         options: [
-          { value: 'vite', label: 'Vite + React', hint: 'fastest — fully wired' },
-          { value: 'next', label: 'Next.js (App Router)', hint: 'SSR-safe — fully wired' },
-          { value: 'react-router', label: 'React Router 7', hint: 'SSR (the Remix successor) — fully wired' },
+          // Web frameworks come from the profile registry (labels/hints live in ONE
+          // place); Expo and "other" are the two paths outside the web wiring engine.
+          ...FRAMEWORK_PROFILES.filter((p) => p.scaffold).map((p) => ({
+            value: p.id as FrameworkChoice,
+            label: p.label,
+            hint: p.hint,
+          })),
           { value: 'expo', label: 'Expo (React Native)', hint: 'NativeWind — same tokens on native (experimental)' },
-          { value: 'other', label: 'Other React framework', hint: 'TanStack, Astro, Gatsby — manual + agent' },
+          { value: 'other', label: 'Other React framework', hint: 'TanStack Start, Astro, … — scaffold there, then `veneerui init`' },
         ],
       });
       if (isCancel(res)) return void cancel('Cancelled.');
@@ -192,8 +214,9 @@ async function main(): Promise<void> {
   }
 
   const pm = resolvePm(undefined, o.pm);
+  let appDir: string;
   try {
-    runScaffold({
+    ({ appDir } = runScaffold({
       parentDir,
       name,
       framework,
@@ -201,14 +224,15 @@ async function main(): Promise<void> {
       install: o.install,
       agent: o.agent ?? null,
       dryRun: o.dryRun,
-    });
+    }));
   } catch (err) {
     cancel(`Setup failed: ${err instanceof Error ? err.message : String(err)}`);
     process.exitCode = 1;
     return;
   }
 
-  if (!o.dryRun) outro(nextSteps(name, pm, framework));
+  if (o.dryRun) outro('Dry run complete — nothing was written.');
+  else outro(nextSteps(name, pm, framework, existsSync(join(appDir, SETUP_FILE))));
 }
 
 main().catch((err: unknown) => {

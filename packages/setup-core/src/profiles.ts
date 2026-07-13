@@ -53,8 +53,9 @@ export interface ScaffoldProfile {
   starter: { file: string; fnName: string; importFrom: string };
   /**
    * Extra dev deps to install for this scaffold beyond the runtime + the
-   * eslint-plugin. React Router ships no ESLint, so we add `eslint` +
-   * `typescript-eslint` to make the veneer/* themeability gate runnable out of the box.
+   * eslint-plugin. Templates that ship no ESLint (React Router; create-vite v8
+   * ships oxlint instead) add `eslint` + `typescript-eslint` here so the
+   * veneer/* themeability gate is runnable out of the box.
    */
   extraDevDeps?: string[];
 }
@@ -183,6 +184,9 @@ export const FRAMEWORK_PROFILES: FrameworkProfile[] = [
       bringsTailwind: false,
       autoInstalls: false,
       starter: { file: 'src/App.tsx', fnName: 'App', importFrom: './components' },
+      // create-vite v8 ships oxlint, not ESLint — without these the veneer/*
+      // themeability gate has no runner and can never wire.
+      extraDevDeps: ['eslint', 'typescript-eslint'],
     },
   },
 ];

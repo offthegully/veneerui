@@ -76,15 +76,21 @@ describe('detectPm (init: from the existing project)', () => {
 });
 
 describe('installArgs (spawn argv)', () => {
-  it('uses `npm install` / `<pm> add`', () => {
-    expect(installArgs('npm', ['x'])).toEqual(['install', 'x']);
+  it('uses `npm install` (quiet: no audit/fund banners) / `<pm> add`', () => {
+    expect(installArgs('npm', ['x'])).toEqual(['install', '--no-audit', '--no-fund', 'x']);
     expect(installArgs('pnpm', ['x'])).toEqual(['add', 'x']);
     expect(installArgs('yarn', ['x'])).toEqual(['add', 'x']);
     expect(installArgs('bun', ['x'])).toEqual(['add', 'x']);
   });
 
   it('threads the dev flag per package manager', () => {
-    expect(installArgs('npm', ['x'], true)).toEqual(['install', '--save-dev', 'x']);
+    expect(installArgs('npm', ['x'], true)).toEqual([
+      'install',
+      '--no-audit',
+      '--no-fund',
+      '--save-dev',
+      'x',
+    ]);
     expect(installArgs('pnpm', ['x'], true)).toEqual(['add', '-D', 'x']);
     expect(installArgs('bun', ['x'], true)).toEqual(['add', '-d', 'x']);
   });

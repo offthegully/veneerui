@@ -100,6 +100,8 @@ describe('expo deps', () => {
   it('passes --legacy-peer-deps only for npm', () => {
     expect(expoDevInstallArgs('npm')).toEqual([
       'install',
+      '--no-audit',
+      '--no-fund',
       '--save-dev',
       ...EXPO_DEV_DEPS,
       '--legacy-peer-deps',

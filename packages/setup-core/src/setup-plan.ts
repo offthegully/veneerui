@@ -22,6 +22,14 @@ import { execHint, installHint, runHint, type PackageManager } from './pm';
 export const SETUP_FILE = 'VENEER-SETUP.md';
 
 /**
+ * Docs pointers printed into consumer projects must be full URLs — a bare
+ * `docs/integration.md` is a path in *this* repo, which doesn't exist in theirs.
+ */
+export const INTEGRATION_GUIDE_URL =
+  'https://github.com/offthegully/veneerui/blob/main/docs/integration.md';
+export const FONTS_GUIDE_URL = 'https://github.com/offthegully/veneerui/blob/main/docs/fonts.md';
+
+/**
  * React frameworks Veneer's runtime works on, but which the CLI doesn't yet
  * auto-detect/wire (so they go through the generic manual path). React Router 7
  * and TanStack Start are NOT here — they're recognized and auto-wired now (see
@@ -264,8 +272,8 @@ export function buildSetupPlan(input: SetupPlanInput): string | null {
     '',
     'Automated checks — these exit on their own, so they are safe for an agent to run:',
     '',
-    `- typecheck — e.g. \`${runHint(pm, 'typecheck')}\` / \`tsc -b\``,
-    `- production build — e.g. \`${runHint(pm, 'build')}\``,
+    `- production build — \`${runHint(pm, 'build')}\` (typechecks too on TS templates)`,
+    `- typecheck on its own — \`npx tsc --noEmit\` (if the project has no \`typecheck\` script)`,
     '',
     `Manual check — skip this if an AI agent is finishing setup, since \`${runHint(pm, 'dev')}\``,
     'never exits and would hang an automated run:',
@@ -280,9 +288,9 @@ export function buildSetupPlan(input: SetupPlanInput): string | null {
     '',
     'Optional next steps (not required for setup):',
     '',
-    `- \`${execHint(pm, 'veneerui add switcher')}\` — drop in a theme switcher UI`,
+    `- \`${execHint(pm, 'veneerui add switcher')}\` — drop in a theme switcher UI (a fresh \`create-veneerui\` scaffold already has one)`,
     `- \`${execHint(pm, 'veneerui add fonts')}\` — load the fonts the built-in themes name`,
-    '- ship your own themes with `defineTheme` — see the integration guide',
+    `- ship your own themes with \`defineTheme\` — see ${INTEGRATION_GUIDE_URL}`,
     '',
   ].join('\n');
 }

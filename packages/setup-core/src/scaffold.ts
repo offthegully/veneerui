@@ -253,15 +253,21 @@ function normalizeReactRouterScaffold(appDir: string, log: (l: string) => void):
   }
 }
 
-/** A minimal ESLint flat config: parse TS/TSX and enforce only Veneer's gate. */
-const REACT_ROUTER_ESLINT_CONFIG = `// create-react-router ships no ESLint, so this is the whole linter — kept minimal
-// on purpose: a TS/TSX parser plus Veneer's themeability rules (veneer/*), and no
+/**
+ * A minimal ESLint flat config for templates that ship no ESLint of their own
+ * (React Router; create-vite v8 ships oxlint instead): a TS/TSX parser plus
+ * Veneer's themeability rules (veneer/*), and no opinionated style rules (so it
+ * never fails on the template's own code). Pure so it's unit-tested.
+ */
+export function minimalEslintConfig(ignores: string[]): string {
+  return `// This template ships no ESLint, so this is the whole linter — kept minimal on
+// purpose: a TS/TSX parser plus Veneer's themeability rules (veneer/*), and no
 // opinionated style rules (so it never fails on the template's own code).
 import tseslint from 'typescript-eslint';
 import veneer from 'eslint-plugin-veneer';
 
 export default [
-  { ignores: ['build/', '.react-router/'] },
+  { ignores: [${ignores.map((i) => `'${i}'`).join(', ')}] },
   {
     files: ['**/*.{ts,tsx}'],
     languageOptions: { parser: tseslint.parser },
@@ -269,29 +275,51 @@ export default [
   veneer.configs.recommended,
 ];
 `;
+}
+
+/** Build directories the minimal config must never lint, per framework. */
+const ESLINT_IGNORES: Partial<Record<WebFramework, string[]>> = {
+  'react-router': ['build/', '.react-router/'],
+  vite: ['dist/'],
+};
 
 /**
- * Make the veneer/* themeability gate runnable on a fresh React Router app, which
- * ships no ESLint: write a minimal `eslint.config.js` (with the Veneer preset
- * already in it, so `init` reports it wired rather than leaving a setup step) and
- * add a `lint` script. Both are skipped if the user already has them. The
- * `eslint` + `typescript-eslint` deps come from the profile's `extraDevDeps`.
+ * The `lint` script for a template with no ESLint. Pure and unit-tested: no
+ * script → `eslint .`; a script that already runs eslint → unchanged; another
+ * linter (create-vite v8's `oxlint`) → chain eslint after it, so `npm run lint`
+ * keeps the template's linter AND enforces the veneer/* gate.
  */
-function setUpReactRouterEslint(appDir: string, log: (l: string) => void): void {
+export function withEslintLintScript(existing: string | undefined): string {
+  if (!existing) return 'eslint .';
+  if (existing.includes('eslint')) return existing;
+  return `${existing} && eslint .`;
+}
+
+/**
+ * Make the veneer/* themeability gate runnable on a fresh app whose template
+ * ships no ESLint (React Router; create-vite v8 replaced ESLint with oxlint):
+ * write a minimal `eslint.config.js` (with the Veneer preset already in it, so
+ * `init` reports it wired rather than leaving a setup step) and make the `lint`
+ * script run eslint (chained after the template's own linter if it has one).
+ * Both are skipped if the user already has them. The `eslint` +
+ * `typescript-eslint` deps come from the profile's `extraDevDeps`.
+ */
+function setUpEslintGate(appDir: string, framework: WebFramework, log: (l: string) => void): void {
   const cfgAbs = join(appDir, 'eslint.config.js');
   if (!existsSync(cfgAbs)) {
-    writeFileSync(cfgAbs, REACT_ROUTER_ESLINT_CONFIG);
-    log('  ✓ eslint.config.js — the veneer/* themeability gate (React Router ships no ESLint)');
+    writeFileSync(cfgAbs, minimalEslintConfig(ESLINT_IGNORES[framework] ?? ['dist/']));
+    log('  ✓ eslint.config.js — the veneer/* themeability gate (this template ships no ESLint)');
   }
   const pkgAbs = join(appDir, 'package.json');
   if (existsSync(pkgAbs)) {
     try {
       const pkg = JSON.parse(readFileSync(pkgAbs, 'utf8')) as { scripts?: Record<string, string> };
       pkg.scripts ??= {};
-      if (!pkg.scripts.lint) {
-        pkg.scripts.lint = 'eslint .';
+      const lint = withEslintLintScript(pkg.scripts.lint);
+      if (lint !== pkg.scripts.lint) {
+        pkg.scripts.lint = lint;
         writeFileSync(pkgAbs, `${JSON.stringify(pkg, null, 2)}\n`);
-        log('  ✓ added a `lint` script');
+        log(`  ✓ \`lint\` script → \`${lint}\``);
       }
     } catch {
       /* malformed package.json — leave it; init's setup plan will note the gate. */
@@ -320,6 +348,8 @@ export function runScaffold(opts: ScaffoldOptions): { appDir: string } {
 
   log(`\nScaffolding ${opts.name} — ${opts.framework} + Tailwind v4 (${opts.pm})…`);
   run(cmd, args, opts.parentDir);
+  // The delegate prints its own "done / next steps" — preempt anyone following those.
+  log('\n(↑ that was the template scaffolder — ignore its next steps; Veneer continues below)');
 
   // A template either ships Tailwind v4 (Next, React Router) or doesn't (create-vite's
   // react-ts). When it doesn't, we add it — and that install also pulls the rest of
@@ -339,10 +369,12 @@ export function runScaffold(opts: ScaffoldOptions): { appDir: string } {
     run(opts.pm, installArgs(opts.pm, eslintDeps, true), appDir);
   }
 
-  // For a template with no ESLint of its own (React Router), drop in a minimal flat
-  // config + `lint` script BEFORE init, so init's wireEslint finds it and the gate is
-  // active out of the box (no leftover VENEER-SETUP.md step).
-  if (opts.framework === 'react-router') setUpReactRouterEslint(appDir, log);
+  // For a template with no ESLint of its own (React Router; create-vite v8 ships
+  // oxlint), drop in a minimal flat config + `lint` script BEFORE init, so init's
+  // wireEslint finds it and the gate is active out of the box (no leftover
+  // VENEER-SETUP.md step). Detected by the file, not the framework, so a template
+  // that re-adds ESLint upstream just skips this.
+  if (!detect(appDir).eslintConfigPath) setUpEslintGate(appDir, opts.framework, log);
 
   // Wire Veneer through the SAME engine `veneerui init` uses — tokens, provider,
   // anti-flash, the agent guide, and (only if a patch bails) VENEER-SETUP.md.

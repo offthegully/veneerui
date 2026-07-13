@@ -65,9 +65,17 @@ export function detectPm(root: string): PackageManager {
   return 'npm';
 }
 
-/** Argv for spawning an install (`npm install x` vs `<pm> add x`). */
+/**
+ * Argv for spawning an install (`npm install x` vs `<pm> add x`). npm gets
+ * `--no-audit --no-fund` so the scaffold log isn't dominated by audit/funding
+ * banners from every install we spawn (the wiring output is the signal). The
+ * printed `installHint` strings stay bare — a user typing the command should get
+ * their normal npm behavior.
+ */
 export function installArgs(pm: PackageManager, pkgs: string[], dev = false): string[] {
-  if (pm === 'npm') return ['install', ...(dev ? ['--save-dev'] : []), ...pkgs];
+  if (pm === 'npm') {
+    return ['install', '--no-audit', '--no-fund', ...(dev ? ['--save-dev'] : []), ...pkgs];
+  }
   const devFlag = dev ? (pm === 'bun' ? '-d' : '-D') : null;
   return ['add', ...(devFlag ? [devFlag] : []), ...pkgs];
 }

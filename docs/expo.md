@@ -10,15 +10,16 @@ re-skins the tree at runtime.
 > **new-app scaffolder** — the templates it writes live in
 > [`packages/setup-core/assets/expo/`](../packages/setup-core/assets/expo).
 >
-> **Known issue — version drift with the latest Expo SDK.** The scaffolder delegates
-> to `create-expo-app@latest`, which now produces **Expo SDK 56 / React Native 0.85**,
-> but the pinned `nativewind@5.0.0-preview.4` + `react-native-css@3.0.7` (the newest
-> published preview) don't yet bundle on that Metro — `expo export`/run fails with
-> `AssertionError: Chunk containing module not found: …/react-native-css/…/index.cjs`.
-> Until NativeWind v5 supports RN 0.85, pin the scaffold to a **tested Expo SDK** (the
-> SDK the templates were validated against) rather than `@latest`. Always run the
-> Expo smoke test end-to-end (it must actually scaffold Expo — see the `--` separator
-> note in [integration.md](./integration.md#new-app)) when bumping any of these pins.
+> **The scaffold pins Expo SDK 55 — deliberately.** The latest SDK (56 / React
+> Native 0.85) does **not** work yet: the pinned `nativewind@5.0.0-preview.4` +
+> `react-native-css@3.0.7` (the newest published preview) don't bundle on its Metro
+> — `expo export`/run fails with `AssertionError: Chunk containing module not found:
+> …/react-native-css/…/index.cjs`. So the scaffolder targets the last validated SDK
+> (55 / RN 0.83) instead of `@latest`, and an existing app you wire by hand should
+> too. Maintainers: when NativeWind v5 supports a newer RN, bump
+> `EXPO_SDK_TEMPLATE` in `scaffold-expo.ts` and re-run the Expo smoke test
+> end-to-end (it must actually scaffold Expo — see the `--` separator note in
+> [integration.md](./integration.md#new-app)).
 
 ## Two ways in
 
@@ -46,7 +47,7 @@ re-skin; build screens from the token utilities (see the app's `AGENTS.md`).
 
 ### Option B — add to an existing Expo app
 
-**1. Install** (Expo SDK 56+, React 19):
+**1. Install** (Expo SDK 55 / React 19 — SDK 56 doesn't bundle yet, see the note above):
 
 ```sh
 npx expo install nativewind react-native-css react-native-reanimated \

@@ -83,7 +83,8 @@ Examples:
   npx veneerui add switcher banner --dir src/ui
   npx veneerui add fonts
 
-Every change init makes is also documented in docs/integration.md, and the
+Every change init makes is also documented in the integration guide —
+https://github.com/offthegully/veneerui/blob/main/docs/integration.md — and the
 remaining manual steps are written to VENEER-SETUP.md, so you can always finish
 by hand (or have your AI agent do it).`;
 

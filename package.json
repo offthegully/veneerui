@@ -15,6 +15,7 @@
     "check:builtin": "tsx scripts/gen-builtin.ts --check",
     "check:generated": "npm run gen:theme && npm run gen:builtin && npm run gen:registry && git diff --exit-code",
     "gen:registry": "tsx scripts/build-registry.ts",
+    "smoke:scaffold": "tsx scripts/smoke-scaffold.ts",
     "build:theme": "npm run gen:theme && npm run gen:builtin && npm run build -w @offthegully/veneerui",
     "build:cli": "npm run gen:registry && tsx scripts/sync-setup-assets.ts packages/cli && npm run build -w veneerui",
     "build:create": "npm run gen:registry && tsx scripts/sync-setup-assets.ts packages/create-veneerui && npm run build -w create-veneerui",

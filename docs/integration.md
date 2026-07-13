@@ -53,8 +53,11 @@ It asks one thing — **which framework** (Vite + React, Next.js App Router, Rea
 or [Expo / React Native](./expo.md) — experimental) — then delegates to that framework's
 official scaffolder (`create-vite` / `create-next-app` / `create-react-router` /
 `create-expo-app`), installs Veneer, wires the tokens `@import` + `<ThemeProvider>` +
-anti-flash script (or, on Expo, the NativeWind config + token codegen + provider), copies
-in a `ThemeSwitcher`, and writes an `AGENTS.md` of the token rules. Then:
+anti-flash script (or, on Expo, the NativeWind config + token codegen + provider), enables
+the `veneer/*` themeability lint gate (when the template ships no ESLint — create-vite v8
+ships oxlint, React Router none — it adds a minimal flat config and chains `eslint` into
+the `lint` script), copies in a `ThemeSwitcher`, and writes an `AGENTS.md` of the token
+rules. Then:
 
 ```sh
 cd my-app && npm run dev
@@ -214,7 +217,8 @@ Next-specific hydration footgun for components that render theme *identity* —
 the bundled `ThemeSwitcher` already handles it; see the [SSR notes](#ssr) before
 writing your own.
 
-> **Fonts on a fresh Next app — the one thing to undo.** `create-next-app` pins
+> **Fonts on an existing Next app — the one thing to undo.** (A fresh
+> `create-veneerui` scaffold already does this for you.) `create-next-app` pins
 > `next/font` (Geist) on the document and writes `body { font-family: … }` plus a
 > `--font-sans: var(--font-geist-sans)` mapping into `app/globals.css`. Those
 > override Veneer's `font-sans` token, so **body text won't follow a theme's font**

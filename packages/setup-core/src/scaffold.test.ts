@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { buildScaffoldCommand, starterPage } from './scaffold';
+import {
+  buildScaffoldCommand,
+  minimalEslintConfig,
+  starterPage,
+  withEslintLintScript,
+} from './scaffold';
 
 describe('buildScaffoldCommand', () => {
   it('delegates Vite to create-vite (react-ts), non-interactive, with -- for npm', () => {
@@ -89,5 +94,24 @@ describe('starterPage', () => {
     expect(rr).toContain('export default function Home()');
     expect(rr).toContain('bg-surface');
     expect(rr).not.toMatch(/bg-(?:blue|red|gray|green|black|white)-?\d*/);
+  });
+});
+
+// The gate for templates that ship no ESLint (React Router; create-vite v8 ships oxlint).
+describe('the minimal ESLint gate', () => {
+  it('minimalEslintConfig enables the veneer preset and the given ignores', () => {
+    const cfg = minimalEslintConfig(['dist/']);
+    expect(cfg).toContain("import veneer from 'eslint-plugin-veneer'");
+    expect(cfg).toContain('veneer.configs.recommended');
+    expect(cfg).toContain("ignores: ['dist/']");
+  });
+
+  it('withEslintLintScript: adds, preserves, or chains the lint script', () => {
+    // no script at all (React Router) → eslint is the linter
+    expect(withEslintLintScript(undefined)).toBe('eslint .');
+    // already runs eslint → untouched
+    expect(withEslintLintScript('eslint .')).toBe('eslint .');
+    // another linter (create-vite v8's oxlint) → keep it AND run the veneer gate
+    expect(withEslintLintScript('oxlint')).toBe('oxlint && eslint .');
   });
 });
