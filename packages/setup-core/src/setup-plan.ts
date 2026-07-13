@@ -28,6 +28,7 @@ export const SETUP_FILE = 'VENEER-SETUP.md';
 export const INTEGRATION_GUIDE_URL =
   'https://github.com/offthegully/veneerui/blob/main/docs/integration.md';
 export const FONTS_GUIDE_URL = 'https://github.com/offthegully/veneerui/blob/main/docs/fonts.md';
+export const EXPO_GUIDE_URL = 'https://github.com/offthegully/veneerui/blob/main/docs/expo.md';
 
 /**
  * React frameworks Veneer's runtime works on, but which the CLI doesn't yet
@@ -64,6 +65,12 @@ export interface SetupPlanInput {
   antiFlashWired: boolean;
   /** True once Veneer's `veneer/*` ESLint rules are wired. When `false`, the lint step is added. */
   eslintWired?: boolean;
+  /**
+   * create-next-app template pins detected on an *existing* app (init warns, it
+   * never rewrites an existing project's files) — each true adds a removal step.
+   */
+  nextFontPinned?: boolean;
+  nextTemplateCssPinned?: boolean;
 }
 
 /** Render an agent-doc list as `` `AGENTS.md` `` / `` `CLAUDE.md` ``, or a default. */
@@ -188,6 +195,39 @@ function eslintStep(pm: PackageManager, n: number): string[] {
 }
 
 /**
+ * The create-next-app template pins that silently defeat theming — detected by
+ * `init` on an existing Next app and left as removal steps here (the scaffolder
+ * strips them itself on a fresh app; `init` never rewrites an existing project's
+ * opinionated files).
+ */
+function nextFontPinStep(n: number): string[] {
+  return [
+    `### ${n}. Remove the template's \`next/font\` pin (it disables font theming)`,
+    '',
+    'Your layout still loads the create-next-app fonts (Geist) via `next/font` and pins',
+    "them on `<body>`. A hard-coded family overrides Veneer's `font-sans` token, so no",
+    'theme can change body text. In your `app/layout.tsx`, remove the `next/font` import,',
+    'the `Geist…({ … })` const blocks, and the `${….variable}` classes they add to `<body>`.',
+    '',
+    `More on why: ${FONTS_GUIDE_URL}`,
+    '',
+  ];
+}
+
+function nextTemplateCssStep(n: number): string[] {
+  return [
+    `### ${n}. Remove the template's own color system from \`app/globals.css\``,
+    '',
+    'The create-next-app stylesheet ships a `:root { --background; --foreground }` pair,',
+    'an `@theme inline` block, a `@media (prefers-color-scheme: dark)` flip, and a',
+    '`body { background; color }` rule. Together they pin the page surface to a fixed',
+    'light/dark value that never follows the chosen theme. Delete those blocks and drive',
+    'the surface from tokens instead (e.g. `<body className="bg-surface text-text">`).',
+    '',
+  ];
+}
+
+/**
  * Build the setup checklist, or return `null` when nothing manual remains (so
  * `init` can skip writing the file and report a clean setup instead).
  */
@@ -199,7 +239,11 @@ export function buildSetupPlan(input: SetupPlanInput): string | null {
   const needsAntiFlash = !input.antiFlashWired;
   // Only when explicitly false — an undefined (older caller) means "don't ask".
   const needsEslint = input.eslintWired === false;
-  if (!needsInterlock && !needsProvider && !needsAntiFlash && !needsEslint) return null;
+  const needsFontUnpin = input.nextFontPinned === true;
+  const needsCssUnpin = input.nextTemplateCssPinned === true;
+  if (!needsInterlock && !needsProvider && !needsAntiFlash && !needsEslint && !needsFontUnpin && !needsCssUnpin) {
+    return null;
+  }
 
   // Remaining steps, numbered dynamically so a single-step run reads "1.".
   const steps: string[] = [];
@@ -220,6 +264,8 @@ export function buildSetupPlan(input: SetupPlanInput): string | null {
   if (needsProvider) steps.push(...providerStep(input, n++));
   if (needsAntiFlash) steps.push(...antiFlashStep(input, n++));
   if (needsEslint) steps.push(...eslintStep(pm, n++));
+  if (needsFontUnpin) steps.push(...nextFontPinStep(n++));
+  if (needsCssUnpin) steps.push(...nextTemplateCssStep(n++));
 
   // What init already handled — so the agent/dev has the full picture and does
   // not redo it. (On an unrecognized framework, often just the agent guide.)
@@ -273,7 +319,7 @@ export function buildSetupPlan(input: SetupPlanInput): string | null {
     'Automated checks — these exit on their own, so they are safe for an agent to run:',
     '',
     `- production build — \`${runHint(pm, 'build')}\` (typechecks too on TS templates)`,
-    `- typecheck on its own — \`npx tsc --noEmit\` (if the project has no \`typecheck\` script)`,
+    `- typecheck on its own — \`${execHint(pm, 'tsc --noEmit')}\` (if the project has no \`typecheck\` script)`,
     '',
     `Manual check — skip this if an AI agent is finishing setup, since \`${runHint(pm, 'dev')}\``,
     'never exits and would hang an automated run:',

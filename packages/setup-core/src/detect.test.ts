@@ -6,9 +6,17 @@ describe('frameworkFromDeps', () => {
     expect(frameworkFromDeps({ dependencies: { next: '15.0.0', react: '19' } })).toBe('next');
   });
 
-  it('detects Vite (by vite or the react plugin)', () => {
-    expect(frameworkFromDeps({ devDependencies: { vite: '8' } })).toBe('vite');
-    expect(frameworkFromDeps({ devDependencies: { '@vitejs/plugin-react': '6' } })).toBe('vite');
+  it('detects Vite (by vite or a react plugin) — but only with react present', () => {
+    expect(frameworkFromDeps({ dependencies: { react: '19' }, devDependencies: { vite: '8' } })).toBe('vite');
+    expect(frameworkFromDeps({ dependencies: { react: '19' }, devDependencies: { '@vitejs/plugin-react': '6' } })).toBe('vite');
+    expect(frameworkFromDeps({ dependencies: { react: '19' }, devDependencies: { '@vitejs/plugin-react-swc': '4' } })).toBe('vite');
+  });
+
+  it('vite without react is NOT the Vite + React profile (Vue apps, vitest-only repos)', () => {
+    // The profile's wiring + snippets are React-shaped; matching a Vue/Svelte app
+    // (or a repo that has vite only for vitest) would confidently patch the wrong project.
+    expect(frameworkFromDeps({ devDependencies: { vite: '8' } })).toBe('unknown');
+    expect(frameworkFromDeps({ dependencies: { vue: '3' }, devDependencies: { vite: '8' } })).toBe('unknown');
   });
 
   it('prefers Next when both are present', () => {
@@ -37,7 +45,9 @@ describe('frameworkFromDeps', () => {
   });
 
   it('plain Vite + the react-router *library* (no dev plugin) stays vite', () => {
-    expect(frameworkFromDeps({ dependencies: { 'react-router-dom': '7' }, devDependencies: { vite: '8' } })).toBe('vite');
+    expect(
+      frameworkFromDeps({ dependencies: { react: '19', 'react-router-dom': '7' }, devDependencies: { vite: '8' } }),
+    ).toBe('vite');
   });
 
   it('detects TanStack Start (also Vite-based — its plugin wins over the generic SPA)', () => {

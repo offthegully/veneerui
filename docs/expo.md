@@ -40,24 +40,46 @@ npm start          # press i (iOS) / a (Android), or scan with Expo Go
 This delegates to `create-expo-app`, then wires Veneer: the NativeWind + Tailwind v4
 config, a token codegen, a `ThemeProvider` + `ThemeSwitcher`, and a token-driven starter
 screen — and runs `npm run gen:tokens` so it boots themed. Tap the switcher and watch it
-re-skin; build screens from the token utilities (see the app's `AGENTS.md`).
+re-skin; build screens from the token utilities (see the app's `AGENTS.md`). Note the
+`veneer/*` lint gate is **not wired on native yet** (it's web-only for now) — the
+`AGENTS.md` guide carries the token rules instead.
 
 > **Use Node LTS** (20 or 22). Expo and Metro target the active LTS lines; a newer
 > non-LTS Node can surface odd Metro/bundler warnings.
 
 ### Option B — add to an existing Expo app
 
-**1. Install** (Expo SDK 55 / React 19 — SDK 56 doesn't bundle yet, see the note above):
+**1. Install** (Expo SDK 55 / React 19 — SDK 56 doesn't bundle yet, see the note above).
+Use the exact pinned set the scaffolder installs — the unpinned `@latest` versions are
+precisely the drift the intro warns about:
 
 ```sh
-npx expo install nativewind react-native-css react-native-reanimated \
-  react-native-worklets react-native-safe-area-context
-npm i -D tailwindcss @tailwindcss/postcss   # or pnpm add -D / yarn add -D / bun add -d
+# native deps — nativewind + react-native-css pinned EXACTLY (a caret on a prerelease
+# still floats forward); the rest SDK-matched by `expo install`
+npx expo install nativewind@5.0.0-preview.4 react-native-css@3.0.7 babel-preset-expo \
+  react-native-reanimated react-native-worklets react-native-safe-area-context
+
+# build/dev deps — the Tailwind toolchain + the token-codegen source
+npm i -D tailwindcss @tailwindcss/postcss postcss @offthegully/veneerui --legacy-peer-deps
+# (pnpm add -D / yarn add -D / bun add -d — the flag is npm-only)
 ```
 
+`babel-preset-expo` must be a *direct* dep (npm can nest the transitive copy where Babel
+can't resolve it — Metro then fails with "Cannot find module 'babel-preset-expo'").
+`@offthegully/veneerui` is the *web* runtime, installed dev-only so the token codegen can
+read its theme data; on npm its `react-dom`/`vite` peers hard-fail ERESOLVE — irrelevant
+on native, hence `--legacy-peer-deps`.
+
 Wire `metro.config.js` (`withNativewind`) and `babel-preset-expo` — copy both from the
-scaffolder's templates in [`packages/setup-core/assets/expo/`](../packages/setup-core/assets/expo)
-(and its `lightningcss` pin).
+scaffolder's templates in [`packages/setup-core/assets/expo/`](../packages/setup-core/assets/expo).
+Then pin `lightningcss` in your `package.json` (a known NativeWind-v5-preview build
+gotcha), under the key your package manager reads:
+
+```jsonc
+"overrides":    { "lightningcss": "1.30.1" }      // npm, bun
+"pnpm":         { "overrides": { "lightningcss": "1.30.1" } }  // pnpm
+"resolutions":  { "lightningcss": "1.30.1" }      // yarn
+```
 
 **2. `global.css`** — mind [the two gotchas](#the-two-gotchas) below, then generate it
 from Veneer's published tokens with the scaffolder's `scripts/generate-veneer-tokens.mjs`

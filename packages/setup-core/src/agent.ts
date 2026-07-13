@@ -138,7 +138,15 @@ export function runAgentHandoff(opts: AgentHandoffOptions): AgentHandoffResult {
   log(`\nHanding off to ${agent} to finish setup (it will edit files in this project):`);
   log(`  ${display(cmd, args)}\n`);
   try {
-    const res = spawnSync(cmd, args, { cwd: opts.root, stdio: 'inherit' });
+    // claude/codex are npm-installed .cmd shims on Windows, which spawnSync only
+    // finds through a shell — and a shell doesn't quote argv for us, so quote the
+    // args with spaces (the prompt) there. The prompt is our own constant, never
+    // user input, so there's no injection surface.
+    const winShell = process.platform === 'win32';
+    const spawnArgs = winShell
+      ? args.map((a) => (/\s/.test(a) ? `"${a.replaceAll('"', '\\"')}"` : a))
+      : args;
+    const res = spawnSync(cmd, spawnArgs, { cwd: opts.root, stdio: 'inherit', shell: winShell });
     if (res.status === 0) return { invoked: true, agent };
     log(`\n${agent} exited with status ${res.status ?? 'unknown'}. Finish the remaining steps manually:`);
     printSetupPrompt(log);

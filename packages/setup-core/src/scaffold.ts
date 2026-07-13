@@ -33,6 +33,11 @@ import { SETUP_FILE } from './setup-plan';
 import { runScaffoldExpo } from './scaffold-expo';
 import { installArgs, type PackageManager } from './pm';
 
+// The Expo path's public pieces flow out through this module (the package index
+// re-exports `./scaffold`, not `./scaffold-expo`); the outro in create-veneerui
+// prints the same recovery commands the Expo skip-install path logs.
+export { expoRecoveryCommands } from './scaffold-expo';
+
 /** Frameworks wired through the shared web path (official scaffolder + runInit). */
 export type WebFramework = 'vite' | 'next' | 'react-router';
 /** Every framework `create-veneerui` can scaffold. `expo` takes a separate native path. */
@@ -71,8 +76,10 @@ export function buildScaffoldCommand(
   // installs and launches the dev server itself, blocking us. The user Ctrl+C's the
   // server, which kills this whole process before any Veneer wiring runs, leaving a
   // bare Vite app. The flag forces non-interactive scaffold-only.
-  // React Router: `--yes` accepts defaults non-interactively; `--no-git-init` keeps
-  // the scaffold inside our flow (we manage git). Its template installs deps itself.
+  // React Router: `--yes` accepts defaults non-interactively; `--no-git-init` stops
+  // the delegate from making a pre-Veneer initial commit. We never run `git init`
+  // ourselves, so git state differs by delegate (create-next-app initializes a repo,
+  // create-vite doesn't). Its template installs deps itself.
   const flags =
     framework === 'next'
       ? nextFlags(pm)
@@ -116,6 +123,34 @@ export default function ${fn}() {
 `;
 }
 
+/** The slice of package.json the `--no-install` path touches. */
+interface ScaffoldPackageJson {
+  dependencies?: Record<string, string>;
+  devDependencies?: Record<string, string>;
+  [k: string]: unknown;
+}
+
+/**
+ * Record the Veneer dependency set in package.json — the `--no-install` path.
+ * Nothing runs an installer, so writing the specs (at `latest`, the same tag the
+ * imperative installs resolve) keeps the project completable: a later
+ * `<pm> install` finishes exactly what the install path would have. Pure so it's
+ * unit-tested.
+ */
+export function addVeneerDeps(
+  pkg: ScaffoldPackageJson,
+  opts: { bringsTailwind: boolean; extraDevDeps?: string[] },
+): ScaffoldPackageJson {
+  const dev = [...(opts.bringsTailwind ? [] : TAILWIND_PKGS), ESLINT_PKG, ...(opts.extraDevDeps ?? [])];
+  const spec = (names: string[]): Record<string, string> =>
+    Object.fromEntries(names.map((n) => [n, 'latest']));
+  return {
+    ...pkg,
+    dependencies: { ...pkg.dependencies, ...spec([RUNTIME_PKG]) },
+    devDependencies: { ...pkg.devDependencies, ...spec(dev) },
+  };
+}
+
 export interface ScaffoldOptions {
   /** Directory to create the app under (typically the user's cwd). */
   parentDir: string;
@@ -132,7 +167,9 @@ export interface ScaffoldOptions {
 }
 
 function run(cmd: string, args: string[], cwd: string): void {
-  const res = spawnSync(cmd, args, { cwd, stdio: 'inherit' });
+  // npm/pnpm/yarn/bun/npx are .cmd shims on Windows, which spawnSync only finds
+  // through a shell. Every arg is a simple validated token, so no quoting hazard.
+  const res = spawnSync(cmd, args, { cwd, stdio: 'inherit', shell: process.platform === 'win32' });
   if (res.error) throw res.error;
   if (res.status !== 0) throw new Error(`\`${cmd} ${args.join(' ')}\` failed (exit ${res.status ?? '?'})`);
 }
@@ -336,12 +373,28 @@ export function runScaffold(opts: ScaffoldOptions): { appDir: string } {
   const log = opts.log ?? console.log;
   const appDir = join(opts.parentDir, opts.name);
   const { cmd, args } = buildScaffoldCommand(opts.framework, opts.pm, opts.name);
+  const scaffoldProfile = getProfile(opts.framework)?.scaffold;
+  const bringsTailwind = scaffoldProfile?.bringsTailwind ?? false;
+  // The lint gate (dev): eslint-plugin-veneer, enabled by runInit's wireEslint.
+  // Some templates ship no ESLint at all (React Router) — extraDevDeps supplies it.
+  const eslintDeps = [ESLINT_PKG, ...(scaffoldProfile?.extraDevDeps ?? [])];
 
   if (opts.dryRun) {
+    // Print the exact spawns — dry-run is what a cautious user checks before
+    // trusting the tool, so it must not paraphrase.
     log(`Would scaffold:  ${cmd} ${args.join(' ')}   (cwd: ${opts.parentDir})`);
-    log('Then install Veneer + eslint-plugin-veneer and run the same `veneerui init` wiring');
-    log('an existing app uses (tokens + <ThemeProvider> + anti-flash + the lint gate), add a');
-    log('switcher, and drop a token-driven starter page.');
+    if (opts.install !== false) {
+      log(`Then install (in ${opts.name}/):`);
+      if (!bringsTailwind) log(`  ${opts.pm} ${installArgs(opts.pm, TAILWIND_PKGS, true).join(' ')}`);
+      log(`  ${opts.pm} ${installArgs(opts.pm, [RUNTIME_PKG], false).join(' ')}`);
+      log(`  ${opts.pm} ${installArgs(opts.pm, eslintDeps, true).join(' ')}`);
+    } else {
+      const dev = [...(bringsTailwind ? [] : TAILWIND_PKGS), ...eslintDeps];
+      log(`Then record in package.json (install skipped): ${RUNTIME_PKG}; dev: ${dev.join(' ')}.`);
+    }
+    log('Then run the same `veneerui init` wiring an existing app uses (tokens +');
+    log('<ThemeProvider> + anti-flash + the lint gate), add a switcher, and drop a');
+    log('token-driven starter page.');
     if (opts.agent) log(`Then hand off to: ${opts.agent === 'auto' ? 'an installed agent' : opts.agent}.`);
     return { appDir };
   }
@@ -355,18 +408,21 @@ export function runScaffold(opts: ScaffoldOptions): { appDir: string } {
   // react-ts). When it doesn't, we add it — and that install also pulls the rest of
   // the (uninstalled) template tree. When it does, the official scaffolder already
   // installed everything, so we only add Veneer on top.
-  const scaffoldProfile = getProfile(opts.framework)?.scaffold;
-  const bringsTailwind = scaffoldProfile?.bringsTailwind ?? false;
   if (!bringsTailwind) setUpViteTailwind(appDir, log);
 
   if (opts.install !== false) {
     log('\nInstalling Veneer…');
     if (!bringsTailwind) run(opts.pm, installArgs(opts.pm, TAILWIND_PKGS, true), appDir);
     run(opts.pm, installArgs(opts.pm, [RUNTIME_PKG], false), appDir);
-    // The lint gate (dev): eslint-plugin-veneer, enabled by runInit's wireEslint.
-    // Some templates ship no ESLint at all (React Router) — extraDevDeps supplies it.
-    const eslintDeps = [ESLINT_PKG, ...(scaffoldProfile?.extraDevDeps ?? [])];
     run(opts.pm, installArgs(opts.pm, eslintDeps, true), appDir);
+  } else {
+    // `--no-install` must still hand back a completable project: record the same
+    // dependency set in package.json so a later `<pm> install` finishes the job.
+    const pkgAbs = join(appDir, 'package.json');
+    const pkg = JSON.parse(readFileSync(pkgAbs, 'utf8')) as ScaffoldPackageJson;
+    const withDeps = addVeneerDeps(pkg, { bringsTailwind, extraDevDeps: scaffoldProfile?.extraDevDeps });
+    writeFileSync(pkgAbs, `${JSON.stringify(withDeps, null, 2)}\n`);
+    log(`\n  ✓ Veneer deps added to package.json (install skipped — run \`${opts.pm} install\` before starting)`);
   }
 
   // For a template with no ESLint of its own (React Router; create-vite v8 ships
@@ -378,8 +434,11 @@ export function runScaffold(opts: ScaffoldOptions): { appDir: string } {
 
   // Wire Veneer through the SAME engine `veneerui init` uses — tokens, provider,
   // anti-flash, the agent guide, and (only if a patch bails) VENEER-SETUP.md.
+  // `fromScaffold` mutes init's existing-app extras: the template-pin warnings
+  // (normalizeNextScaffold strips those pins right below) and the "add switcher"
+  // outro hint (the scaffold adds one itself).
   log('\nWiring Veneer…');
-  runInit({ root: appDir, log });
+  runInit({ root: appDir, log, fromScaffold: true });
 
   // Copy the switcher (+ its panels), then a token-driven starter page that uses it.
   runAdd(STARTER_COMPONENTS, { root: appDir, log: () => {} });

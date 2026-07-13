@@ -30,7 +30,18 @@ function insertAfterLastImport(src: string, line: string): string {
  * but preserves whatever indentation `<App />` had so other shapes stay tidy.
  */
 export function wrapEntryWithProvider(src: string): PatchResult {
-  if (src.includes('ThemeProvider')) return { content: src, changed: false };
+  if (src.includes('ThemeProvider')) {
+    // Ours ⇒ already wired (idempotent no-op). Another library's (next-themes, …)
+    // ⇒ bail: importing a second `ThemeProvider` identifier would not compile, and
+    // silently counting it as wired is how theming "doesn't work" with a ✓ log.
+    return src.includes('@offthegully/veneerui')
+      ? { content: src, changed: false }
+      : {
+          content: src,
+          changed: false,
+          reason: "a ThemeProvider from another library is already in the entry — nest Veneer's provider inside it manually",
+        };
+  }
   if (!/<App\s*\/>/.test(src)) {
     return { content: src, changed: false, reason: 'no <App /> element found in the entry' };
   }
@@ -122,6 +133,16 @@ export function wireNextLayout(src: string): PatchResult {
  * structural anchors (`<html>` and a JSX `{children}`) aren't found.
  */
 export function wireSsrRoot(src: string): PatchResult {
+  // A foreign ThemeProvider (next-themes, …): importing a second `ThemeProvider`
+  // identifier would not compile, and the `<ThemeProvider>` wrap guard below would
+  // mistake it for ours — bail to the manual step instead.
+  if (src.includes('ThemeProvider') && !src.includes('@offthegully/veneerui')) {
+    return {
+      content: src,
+      changed: false,
+      reason: "a ThemeProvider from another library is already in the root document — nest Veneer's provider inside it manually",
+    };
+  }
   if (!/<html[\s>]/.test(src)) {
     return { content: src, changed: false, reason: 'no <html> element found in the root document' };
   }

@@ -21,8 +21,16 @@ export interface Detection {
   root: string;
   hasVeneerTheme: boolean;
   hasTailwind: boolean;
+  /**
+   * Leading major of the declared `tailwindcss` range (`"^4.1.0"` → 4), or
+   * undefined for tag/workspace refs — so init can refuse v3 instead of writing
+   * a v4-only `@theme` import into a build that can't parse it.
+   */
+  tailwindMajor?: number;
   /** True when `react` is a dependency — used to gate help for unrecognized frameworks. */
   hasReact: boolean;
+  /** True for an Expo / React Native app — init's web wiring doesn't apply there. */
+  hasExpo: boolean;
   /** True when `eslint-plugin-veneer` is already a dependency. */
   hasEslintPlugin: boolean;
   viteConfigPath?: string;
@@ -30,6 +38,8 @@ export interface Detection {
   entryPath?: string;
   /** The project's ESLint flat config, if one exists — where the lint gate is wired. */
   eslintConfigPath?: string;
+  /** A legacy `.eslintrc.*`, when no flat config exists — the preset can't wire into it. */
+  legacyEslintConfigPath?: string;
   componentsDir: string;
   /** The project's package manager (corepack field → lockfile → npm), so the
    * "we never install, we instruct" output speaks the right dialect. */
@@ -44,13 +54,22 @@ export interface Detection {
 export function frameworkFromDeps(pkg: PackageJsonish): Framework {
   const deps = { ...pkg.dependencies, ...pkg.devDependencies };
   for (const p of FRAMEWORK_PROFILES) {
-    if (p.detectDeps.some((d) => deps[d])) return p.id;
+    if (!p.detectDeps.some((d) => deps[d])) continue;
+    if (p.requireDeps && !p.requireDeps.every((d) => deps[d])) continue;
+    return p.id;
   }
   return 'unknown';
 }
 
+/** Leading major from a semver range ("^4.1.0" → 4); undefined for tags/workspace refs. */
+function majorFromRange(range: string | undefined): number | undefined {
+  const m = range?.match(/\d+/);
+  return m ? Number(m[0]) : undefined;
+}
+
 const VITE_CONFIGS = ['vite.config.ts', 'vite.config.js', 'vite.config.mts', 'vite.config.mjs'];
-const ESLINT_CONFIGS = ['eslint.config.js', 'eslint.config.mjs', 'eslint.config.ts', 'eslint.config.cjs'];
+const ESLINT_CONFIGS = ['eslint.config.js', 'eslint.config.mjs', 'eslint.config.ts', 'eslint.config.mts', 'eslint.config.cjs'];
+const LEGACY_ESLINT_CONFIGS = ['.eslintrc.js', '.eslintrc.cjs', '.eslintrc.json', '.eslintrc.yml', '.eslintrc.yaml', '.eslintrc'];
 
 function firstExisting(root: string, candidates: string[]): string | undefined {
   return candidates.find((c) => existsSync(join(root, c)));
@@ -96,7 +115,9 @@ export function detect(root: string): Detection {
     root,
     hasVeneerTheme: '@offthegully/veneerui' in allDeps,
     hasTailwind: 'tailwindcss' in allDeps,
+    tailwindMajor: majorFromRange(allDeps['tailwindcss']),
     hasReact: 'react' in allDeps,
+    hasExpo: 'expo' in allDeps || 'react-native' in allDeps,
     hasEslintPlugin: 'eslint-plugin-veneer' in allDeps,
     // Only the SPA-on-Vite wiring patches the Vite config (for the index.html
     // anti-flash plugin); SSR-on-Vite (RR7) uses a head script instead.
@@ -104,6 +125,7 @@ export function detect(root: string): Detection {
     globalCssPath: findGlobalCss(root, cssCandidates),
     entryPath: firstExisting(root, entryCandidates),
     eslintConfigPath: firstExisting(root, ESLINT_CONFIGS),
+    legacyEslintConfigPath: firstExisting(root, LEGACY_ESLINT_CONFIGS),
     componentsDir: profile?.componentsDir ?? (usesSrcDir ? 'src/components' : 'components'),
     pm: detectPm(root),
   };

@@ -15,7 +15,7 @@
  * they tell you what to run, so the dialect has to match your package manager.
  */
 import { existsSync, readFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
 
 export type PackageManager = 'npm' | 'pnpm' | 'yarn' | 'bun';
 
@@ -50,19 +50,27 @@ const LOCKFILES: ReadonlyArray<readonly [string, PackageManager]> = [
  * explicit declaration) → a committed lockfile → npm as the default.
  */
 export function detectPm(root: string): PackageManager {
-  try {
-    const pkg = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8')) as {
-      packageManager?: string;
-    };
-    const named = pkg.packageManager?.split('@')[0];
-    if (isPackageManager(named)) return named;
-  } catch {
-    /* no / unreadable package.json — fall through to lockfiles */
+  // Walk up from the project dir: in a workspace, the lockfile (and usually the
+  // corepack `packageManager` field) lives at the monorepo root, so checking only
+  // the app package would fall back to npm and print the wrong dialect.
+  let dir = root;
+  for (;;) {
+    try {
+      const pkg = JSON.parse(readFileSync(join(dir, 'package.json'), 'utf8')) as {
+        packageManager?: string;
+      };
+      const named = pkg.packageManager?.split('@')[0];
+      if (isPackageManager(named)) return named;
+    } catch {
+      /* no / unreadable package.json — fall through to lockfiles */
+    }
+    for (const [file, pm] of LOCKFILES) {
+      if (existsSync(join(dir, file))) return pm;
+    }
+    const parent = dirname(dir);
+    if (parent === dir) return 'npm';
+    dir = parent;
   }
-  for (const [file, pm] of LOCKFILES) {
-    if (existsSync(join(root, file))) return pm;
-  }
-  return 'npm';
 }
 
 /**

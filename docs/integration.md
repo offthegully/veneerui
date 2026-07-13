@@ -11,8 +11,11 @@ Veneer drives your whole visual surface from theme tokens. Wiring it in rests on
 you. This guide shows the one-command path, the invariants in detail, how they land
 per framework, and the agent hand-off.
 
-> **Requires React 19 and Tailwind v4** (the CSS-first `@theme` engine). Tailwind
-> v3 and non-React frameworks aren't supported.
+> **Requirements:** React 19 · Tailwind **v4** (the CSS-first `@theme` engine —
+> v3 and non-React frameworks aren't supported, and `init` errors early on v3) ·
+> **Vite ≥ 8** when using the Vite plugin · Node 20+. Note: adding Veneer to an
+> existing app on Vite < 8 fails npm's peer resolution (**ERESOLVE**) at install —
+> upgrade Vite first.
 
 **Pick your path:**
 
@@ -24,6 +27,17 @@ per framework, and the agent hand-off.
   **Experimental.**
 - **The invariants & per-framework wiring:** [interlock](#interlock) · [Vite](#vite) ·
   [Next.js](#nextjs) · [React Router 7](#react-router) · [other React + Tailwind v4](#other)
+
+**Framework support at a glance:**
+
+| Framework | New app — `npm create veneerui` | Existing app — `veneerui init` |
+|---|---|---|
+| Vite + React | scaffold + full wiring | auto-wired |
+| Next.js (App Router) | scaffold + full wiring | auto-wired |
+| React Router 7 | scaffold + full wiring | auto-wired |
+| TanStack Start | scaffold with its own tool, then `init` | auto-wired |
+| Expo / React Native | scaffold + full wiring — **experimental** ([guide](./expo.md)) | manual — `init` points you at the [Expo guide](./expo.md) |
+| Astro · Gatsby · RedwoodJS · any other React 19 + Tailwind v4 | scaffold with its own tool, then `init` | manual checklist — [`VENEER-SETUP.md`](#agent) + [the three steps](#other) |
 
 ---
 
@@ -70,10 +84,12 @@ rest with the token utilities (`bg-surface`, `text-text`, `rounded-md`, …).
 
 | Flag | Effect |
 |---|---|
-| `--framework <vite\|next\|react-router\|expo>` | skip the prompt (`react-router` = React Router 7, also accepts `remix`; `expo` = React Native, [experimental](./expo.md)) |
-| `--agent[=claude\|codex]` | after wiring, hand off to an installed agent to finish/customize ([below](#agent)) |
+| `--framework <vite\|next\|react-router\|expo\|other>` | skip the prompt (`react-router` = React Router 7, also accepts `remix`; `expo` = React Native, [experimental](./expo.md); `other` prints the checklist path for anything else) |
+| `--yes` / `-y` | fully non-interactive — accept defaults, never prompt (name required; framework defaults to Vite) |
+| `--agent[=claude\|codex\|auto\|none]` | after wiring, hand off to an installed agent to finish/customize ([below](#agent)) |
 | `--pm <npm\|pnpm\|yarn\|bun>` | override the detected package manager |
-| `--no-install` · `--dry-run` | as named |
+| `--no-install` | skip installing: on web frameworks the Veneer dependency specs are still written to `package.json` (run `<pm> install` afterwards); on Expo it prints the exact `npx expo install …` + dev-install + `gen:tokens` commands to run later |
+| `--dry-run` | print what would happen; change nothing |
 
 > **With npm, prefer the `--` separator** so npm forwards every flag straight to the
 > scaffolder instead of consuming some itself:
@@ -126,10 +142,16 @@ so switching a theme re-skins every utility instantly with no re-render.
 plugin/script, **and** wrapping the root in `<ThemeProvider>`. Anything whose shape
 it can't patch safely it leaves in a self-removing [`VENEER-SETUP.md`](#agent) for
 you (or your agent) to finish. It **detects your framework** and **your package
-manager** (from the lockfile), **never installs packages** (it prints the exact
-`npm` / `pnpm` / `yarn` / `bun` command to run — pass `--pm` to override), and is
-idempotent + `--dry-run`-able. Here's what lands per framework — also the recipe if
-you're wiring by hand.
+manager** (the `packageManager` field in package.json, else the lockfile), **never
+installs packages** (it prints the exact `npm` / `pnpm` / `yarn` / `bun` command to
+run — pass `--pm` to override), and is idempotent + `--dry-run`-able. Here's what
+lands per framework — also the recipe if you're wiring by hand.
+
+**Monorepos:** run `veneerui init` from the app package's directory (the one with
+that app's `package.json`), not the workspace root — that's where the wiring edits
+land. Package-manager detection walks up from there, so a `packageManager` field or
+lockfile at the workspace root is still found; pass `--pm` if the printed hints ever
+come out wrong.
 
 <a id="vite"></a>
 
@@ -372,9 +394,9 @@ from every other target; tokens, anti-flash, and the `veneer/*` themeability lin
 Tailwind v4 app and adds the [`eslint-plugin-veneer`](../packages/eslint-plugin) gate
 — it patches the common create-vite / create-next shapes in place, and anything it
 can't patch safely lands in a [`VENEER-SETUP.md`](#agent). Since `init` only instructs
-(it never installs), it reads your lockfile and prints every dependency command in
-your package manager's dialect — `pnpm add …`, `yarn add …`, `bun add …` — with `--pm`
-to override. But wiring is the easy 10%:
+(it never installs), it detects your package manager (the `packageManager` field, else
+your lockfile) and prints every dependency command in its dialect — `pnpm add …`,
+`yarn add …`, `bun add …` — with `--pm` to override. But wiring is the easy 10%:
 the real work is **moving your current styles onto tokens**. Veneer only re-skins
 elements that already use token utilities (`bg-surface`, `text-text`,
 `border-border`), so hardcoded colors, baked shadows (`shadow-md` →
@@ -443,6 +465,36 @@ built-in themes' families. The one footgun: **drive body text from the
 `font-sans` token** — don't pin a framework font (e.g. Next's `next/font` on
 `<body>`), which overrides the token and silently disables all font theming. Full
 family ↔ package mapping: **[fonts.md](./fonts.md)**.
+
+---
+
+<a id="troubleshooting"></a>
+
+## Troubleshooting
+
+By symptom — each links to the section with the fix:
+
+- **Switching themes changes nothing (or only some elements).** Veneer only re-skins
+  styles that use token utilities — hardcoded colors stay put until they
+  [move onto tokens](#existing). On a create-next-app template, check the theme-killers
+  in [the Next fonts note](#nextjs): the `next/font` pin and the template's own
+  `globals.css` color system (`--background`, the `@theme inline` block) — `init` now
+  warns about both and adds them as `VENEER-SETUP.md` steps. Also make sure the
+  `<ThemeProvider>` wrapping your root imports from `@offthegully/veneerui` — older
+  `init` versions counted a provider from another library (e.g. `next-themes`) as wired.
+- **Styles don't apply, or the build errors inside `tokens.css`.** You're on Tailwind
+  v3 — v4 is required (see the [requirements](#new-app) above; `init` now errors early
+  on v3) — or the `@import` order is wrong: the tokens import must come *after*
+  `@import "tailwindcss"` ([the interlock](#interlock)).
+- **`npm install` fails with ERESOLVE.** The Vite plugin's peer requires **Vite ≥ 8**
+  — upgrade Vite (or use another package manager's laxer peer handling, but upgrading
+  is the fix).
+- **Fonts don't change with themes.** The `font-sans` pin — a framework font (e.g.
+  `next/font`) is overriding the token. See [Fonts](#fonts) and
+  [fonts.md](./fonts.md).
+- **A `VENEER-SETUP.md` is lingering in the repo.** Steps remain — finish them (or
+  [hand them to your agent](#agent)) — or it's stale: re-run `npx veneerui init`,
+  which deletes it once everything is wired.
 
 ---
 

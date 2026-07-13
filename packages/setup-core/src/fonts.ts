@@ -28,12 +28,15 @@ export interface FontsOptions {
 }
 
 /** Where to put the side-effect import lines, per framework. */
-function importHint(framework: Framework): string {
+function importHint(framework: Framework, globalCssPath?: string): string {
   if (framework === 'next') {
     return 'Import them once in app/layout.tsx (a Server Component import is fine — these are CSS side-effects):';
   }
   if (framework === 'vite') {
-    return 'Import them in src/main.tsx, above your `./index.css` import:';
+    // Name the project's actual stylesheet import (src/app.css apps shouldn't be
+    // told to look above a `./index.css` line they don't have).
+    const cssRef = globalCssPath?.startsWith('src/') ? `./${globalCssPath.slice('src/'.length)}` : './index.css';
+    return `Import them in src/main.tsx, above your \`${cssRef}\` import:`;
   }
   if (getProfile(framework)?.wiring === 'ssr-root') {
     return 'Import them in your root document (React Router app/root.tsx, TanStack Start src/routes/__root.tsx), above your global CSS import:';
@@ -54,7 +57,7 @@ export function runFonts(opts: FontsOptions): void {
   log('1. Install the Fontsource packages:');
   log(`   ${installHint(pm, pkgs)}\n`);
 
-  log(`2. ${importHint(det.framework)}`);
+  log(`2. ${importHint(det.framework, det.globalCssPath)}`);
   for (const spec of imports) log(`     import '${spec}'`);
   log('');
 

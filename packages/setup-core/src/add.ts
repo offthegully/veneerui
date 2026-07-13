@@ -66,18 +66,21 @@ export function runAdd(names: string[], opts: AddOptions): void {
       log(`• skip  ${destRel} (exists — pass --force to overwrite)`);
       continue;
     }
+    const source = readComponentSource(c.file);
+    const out = withClientDirective(source, det.framework);
+    if (out !== source) injectedClient = true;
     if (opts.dryRun) {
       log(`• would write  ${destRel}`);
       continue;
     }
-    const source = readComponentSource(c.file);
-    const out = withClientDirective(source, det.framework);
-    if (out !== source) injectedClient = true;
     writeFileSync(destAbs, out);
     log(`✓ ${destRel}`);
   }
 
-  if (injectedClient) log("\nAdded 'use client' for Next — these components use hooks (inert on other setups).");
+  if (injectedClient) {
+    log(`\n${opts.dryRun ? "Would add" : "Added"} 'use client' for Next — these components use hooks (inert on other setups).`);
+  }
   const pm = opts.pm ?? det.pm;
-  log(`\nThese import from "@offthegully/veneerui" — ensure it is installed (\`${installHint(pm, ['@offthegully/veneerui'])}\`).`);
+  if (det.hasVeneerTheme) log('\n✓ @offthegully/veneerui is installed — the copied components import from it.');
+  else log(`\nThese import from "@offthegully/veneerui" — install it first (\`${installHint(pm, ['@offthegully/veneerui'])}\`).`);
 }

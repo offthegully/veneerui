@@ -144,6 +144,15 @@ describe('wrapEntryWithProvider (Vite main.tsx)', () => {
     expect(r.changed).toBe(false);
     expect(r.reason).toMatch(/App/);
   });
+
+  it("bails (with a reason) on another library's ThemeProvider — not a silent no-op", () => {
+    // next-themes et al: a second `ThemeProvider` identifier wouldn't compile, and
+    // counting the foreign one as wired is how theming "doesn't work" under a ✓ log.
+    const src = `import { ThemeProvider } from 'next-themes'\n${VITE_MAIN}`;
+    const r = wrapEntryWithProvider(src);
+    expect(r.changed).toBe(false);
+    expect(r.reason).toMatch(/another library/);
+  });
 });
 
 describe('addTailwindVite (vite.config.ts)', () => {
@@ -366,6 +375,13 @@ describe('wireSsrRoot (React Router app/root.tsx)', () => {
     const out = wireSsrRoot(notARoot);
     expect(out.changed).toBe(false);
     expect(out.reason).toMatch(/<html>/);
+  });
+
+  it("bails on another library's ThemeProvider instead of importing a clashing identifier", () => {
+    const src = `import { ThemeProvider } from 'next-themes'\n${RR_ROOT}`;
+    const out = wireSsrRoot(src);
+    expect(out.changed).toBe(false);
+    expect(out.reason).toMatch(/another library/);
   });
 
   // The registry payoff: the SAME patcher wires TanStack Start's __root.tsx

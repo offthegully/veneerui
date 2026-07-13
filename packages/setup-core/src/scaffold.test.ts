@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  addVeneerDeps,
   buildScaffoldCommand,
   minimalEslintConfig,
   starterPage,
@@ -94,6 +95,41 @@ describe('starterPage', () => {
     expect(rr).toContain('export default function Home()');
     expect(rr).toContain('bg-surface');
     expect(rr).not.toMatch(/bg-(?:blue|red|gray|green|black|white)-?\d*/);
+  });
+});
+
+// The `--no-install` path: nothing runs an installer, so the dependency set is
+// recorded in package.json and a later `<pm> install` completes the project.
+describe('addVeneerDeps', () => {
+  it('records the runtime + Tailwind + the lint gate when the template ships no Tailwind (Vite)', () => {
+    const out = addVeneerDeps(
+      { dependencies: { react: '^19.0.0' } },
+      { bringsTailwind: false, extraDevDeps: ['eslint', 'typescript-eslint'] },
+    );
+    expect(out.dependencies).toMatchObject({ react: '^19.0.0', '@offthegully/veneerui': 'latest' });
+    expect(out.devDependencies).toMatchObject({
+      tailwindcss: 'latest',
+      '@tailwindcss/vite': 'latest',
+      'eslint-plugin-veneer': 'latest',
+      eslint: 'latest',
+      'typescript-eslint': 'latest',
+    });
+  });
+
+  it('skips the Tailwind packages when the template brings Tailwind (Next)', () => {
+    const out = addVeneerDeps({}, { bringsTailwind: true });
+    expect(out.dependencies).toEqual({ '@offthegully/veneerui': 'latest' });
+    expect(out.devDependencies).toEqual({ 'eslint-plugin-veneer': 'latest' });
+  });
+
+  it('is non-destructive to existing deps and unrelated fields', () => {
+    const out = addVeneerDeps(
+      { name: 'x', scripts: { dev: 'vite' }, devDependencies: { typescript: '~6.0.2' } },
+      { bringsTailwind: true },
+    );
+    expect(out.name).toBe('x');
+    expect(out.scripts).toEqual({ dev: 'vite' });
+    expect(out.devDependencies).toMatchObject({ typescript: '~6.0.2' });
   });
 });
 

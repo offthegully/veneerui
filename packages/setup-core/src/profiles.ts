@@ -71,6 +71,12 @@ export interface FrameworkProfile {
    * Vite) must come before the generic `vite` SPA profile.
    */
   detectDeps: string[];
+  /**
+   * ALL of these must also be present for the profile to match — the guard for
+   * profiles whose `detectDeps` are shared tooling (Vue and vitest-only repos
+   * also depend on `vite`; requiring `react` keeps them out).
+   */
+  requireDeps?: string[];
   tailwind: TailwindPipeline;
   antiFlash: AntiFlashPlacement;
   wiring: WiringKind;
@@ -172,7 +178,11 @@ export const FRAMEWORK_PROFILES: FrameworkProfile[] = [
     id: 'vite',
     label: 'Vite + React',
     hint: 'fastest — fully wired',
-    detectDeps: ['vite', '@vitejs/plugin-react'],
+    detectDeps: ['vite', '@vitejs/plugin-react', '@vitejs/plugin-react-swc'],
+    // `vite` alone is ambiguous (Vue/Svelte apps, vitest-only repos): the wiring
+    // and printed snippets are React-shaped, so a React-less match would confidently
+    // patch the wrong project.
+    requireDeps: ['react'],
     tailwind: 'vite-plugin',
     antiFlash: 'vite-index-html',
     wiring: 'vite-spa',

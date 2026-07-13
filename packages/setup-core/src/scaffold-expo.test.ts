@@ -10,6 +10,7 @@ import {
   EXPO_DEV_DEPS,
   EXPO_SDK_TEMPLATE,
   expoDevInstallArgs,
+  expoRecoveryCommands,
 } from './scaffold-expo';
 
 const assetDir = fileURLToPath(new URL('../assets/expo/', import.meta.url));
@@ -109,6 +110,27 @@ describe('expo deps', () => {
     for (const pm of ['pnpm', 'yarn', 'bun'] as const) {
       expect(expoDevInstallArgs(pm)).not.toContain('--legacy-peer-deps');
     }
+  });
+});
+
+// The `--no-install` recovery: native deps can't be recorded in package.json (only
+// `expo install` resolves SDK-compatible versions), so the printed commands must be
+// the SAME argvs the install path spawns — a bare `<pm> install` leaves NativeWind,
+// babel-preset-expo, and the codegen source missing, and `gen:tokens` crashing.
+describe('expoRecoveryCommands', () => {
+  it('prints the exact argvs the install path spawns, then the codegen', () => {
+    expect(expoRecoveryCommands('npm')).toEqual([
+      `npx expo install ${EXPO_NATIVE_DEPS.join(' ')}`,
+      `npm ${expoDevInstallArgs('npm').join(' ')}`,
+      'npm run gen:tokens',
+    ]);
+  });
+
+  it("speaks the chosen package manager's dialect", () => {
+    expect(expoRecoveryCommands('pnpm')[1]).toBe(`pnpm ${expoDevInstallArgs('pnpm').join(' ')}`);
+    expect(expoRecoveryCommands('pnpm')[2]).toBe('pnpm gen:tokens');
+    // the native-deps step is always `npx expo install` (expo resolves the versions)
+    expect(expoRecoveryCommands('pnpm')[0]).toContain('npx expo install');
   });
 });
 

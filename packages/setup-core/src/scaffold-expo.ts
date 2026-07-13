@@ -15,12 +15,11 @@
  * the template manifest — are unit-tested; `runScaffoldExpo` is the fs/process glue.
  */
 import { spawnSync } from 'node:child_process';
-import { cpSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { cpSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { type ScaffoldOptions } from './scaffold';
 import { installArgs, runHint, type PackageManager } from './pm';
-import { runAgentHandoff } from './agent';
 
 /** The runtime data slice the codegen reads from; dev-only (the app never imports it). */
 const VENEER_PKG = '@offthegully/veneerui';
@@ -59,6 +58,22 @@ export const EXPO_DEV_DEPS = ['tailwindcss', '@tailwindcss/postcss', 'postcss', 
 export function expoDevInstallArgs(pm: PackageManager): string[] {
   const args = installArgs(pm, EXPO_DEV_DEPS, true);
   return pm === 'npm' ? [...args, '--legacy-peer-deps'] : args;
+}
+
+/**
+ * The exact commands that complete a skipped install — the SAME argvs the install
+ * path spawns. Native deps must go through `expo install` (it resolves SDK-compatible
+ * versions), so unlike the web path they can't be recorded in package.json; printing
+ * the real commands is the only honest recovery. A bare `<pm> install` would leave
+ * NativeWind/babel-preset-expo/the codegen source missing and `gen:tokens` crashing.
+ * Pure so it's unit-tested.
+ */
+export function expoRecoveryCommands(pm: PackageManager): string[] {
+  return [
+    `npx expo install ${EXPO_NATIVE_DEPS.join(' ')}`,
+    `${pm} ${expoDevInstallArgs(pm).join(' ')}`,
+    runHint(pm, 'gen:tokens'),
+  ];
 }
 
 /** asset (in assets/expo/) → path written into the scaffolded app. */
@@ -142,7 +157,9 @@ export function patchExpoPackageJson(pkg: ExpoPackageJson, pm: PackageManager): 
 }
 
 function run(cmd: string, args: string[], cwd: string): void {
-  const res = spawnSync(cmd, args, { cwd, stdio: 'inherit' });
+  // npm/pnpm/yarn/bun/npx are .cmd shims on Windows, which spawnSync only finds
+  // through a shell. Every arg is a simple validated token, so no quoting hazard.
+  const res = spawnSync(cmd, args, { cwd, stdio: 'inherit', shell: process.platform === 'win32' });
   if (res.error) throw res.error;
   if (res.status !== 0) throw new Error(`\`${cmd} ${args.join(' ')}\` failed (exit ${res.status ?? '?'})`);
 }
@@ -182,7 +199,9 @@ export function runScaffoldExpo(opts: ScaffoldOptions): { appDir: string } {
       log(`${opts.pm} ${expoDevInstallArgs(opts.pm).join(' ')}),`);
       log(`and run \`${runHint(opts.pm, 'gen:tokens')}\` to generate global.css + the token maps.`);
     } else {
-      log(`and skip install (run \`${opts.pm} install && ${runHint(opts.pm, 'gen:tokens')}\` yourself).`);
+      // Same discipline with the install skipped — the recovery commands, verbatim.
+      log('and skip install — finish later with:');
+      for (const c of expoRecoveryCommands(opts.pm)) log(`  ${c}`);
     }
     if (opts.agent) log(`Then hand off to: ${opts.agent === 'auto' ? 'an installed agent' : opts.agent}.`);
     return { appDir };
@@ -190,6 +209,8 @@ export function runScaffoldExpo(opts: ScaffoldOptions): { appDir: string } {
 
   log(`\nScaffolding ${opts.name} — Expo + NativeWind + Tailwind v4 (${opts.pm})…`);
   run(cmd, args, opts.parentDir);
+  // The delegate prints its own "done / next steps" — preempt anyone following those.
+  log('\n(↑ that was the template scaffolder — ignore its next steps; Veneer continues below)');
 
   log('\nWiring Veneer…');
   writeTemplates(appDir, log);
@@ -203,12 +224,18 @@ export function runScaffoldExpo(opts: ScaffoldOptions): { appDir: string } {
     run('node', ['scripts/generate-veneer-tokens.mjs'], appDir);
     log('  ✓ global.css + src/veneer-themes.generated.ts');
   } else {
-    log(`  (skipped install — run \`${opts.pm} install && ${runHint(opts.pm, 'gen:tokens')}\` before starting)`);
+    // A bare `<pm> install` would NOT be enough here (see expoRecoveryCommands) —
+    // print the exact commands the install path would have spawned.
+    log('\n  (skipped install — the app can\'t start until you run:)');
+    for (const c of expoRecoveryCommands(opts.pm)) log(`    ${c}`);
   }
 
+  // Mirror the web path's handoff guard: the agent prompt drives the SETUP_FILE
+  // checklist, and the Expo path never writes one — everything above is wired
+  // deterministically. A handoff would point an agent at a file that doesn't exist,
+  // so skip it and say why.
   if (opts.agent) {
-    const noGit = !existsSync(join(appDir, '.git'));
-    runAgentHandoff({ root: appDir, agent: opts.agent, noGit, log });
+    log('\n✓ Expo was fully wired deterministically — no manual steps, so no agent handoff is needed.');
   }
 
   return { appDir };

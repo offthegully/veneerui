@@ -156,4 +156,35 @@ describe('buildSetupPlan', () => {
     })!;
     expect(md).toContain('`AGENTS.md` / `CLAUDE.md`');
   });
+
+  it('adds the create-next-app template-pin removal steps when init detected them', () => {
+    // Fully wired otherwise — the pins alone must still produce a plan (they are
+    // exactly the "theming silently doesn't work" failure on an existing Next app).
+    const md = buildSetupPlan({
+      ...base,
+      framework: 'next',
+      entryPath: 'app/layout.tsx',
+      providerWired: true,
+      antiFlashWired: true,
+      nextFontPinned: true,
+      nextTemplateCssPinned: true,
+    })!;
+    expect(md).toContain('Remove the template\'s `next/font` pin');
+    expect(md).toContain("Remove the template's own color system from `app/globals.css`");
+    expect(md).toContain('font-sans');
+  });
+
+  it('template-pin flags default off — a wired Next app without them stays null', () => {
+    expect(
+      buildSetupPlan({
+        ...base,
+        framework: 'next',
+        entryPath: 'app/layout.tsx',
+        providerWired: true,
+        antiFlashWired: true,
+        nextFontPinned: false,
+        nextTemplateCssPinned: false,
+      }),
+    ).toBeNull();
+  });
 });
