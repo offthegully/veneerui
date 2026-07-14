@@ -26,9 +26,13 @@ jobs:
           registry-url: 'https://registry.npmjs.org'
 
       # Trusted publishing + provenance require npm >= 11.5.1; the runner's
-      # bundled npm may be older, so pin it.
+      # bundled npm may be older, so pin it. Stay on the v11 line: npm 12
+      # changed `npm info --json` to emit an array, which breaks changesets'
+      # published-version check — it sees no versions, "republishes" everything,
+      # and already-published packages fail the run with "cannot publish over".
+      # Revisit once @changesets/cli handles npm 12 output.
       - name: Update npm
-        run: npm install -g npm@latest
+        run: npm install -g npm@11
 
       - name: Install dependencies
         run: npm ci
